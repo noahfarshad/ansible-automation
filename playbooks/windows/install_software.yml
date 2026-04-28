@@ -54,7 +54,7 @@
         msg: "Will install: {{ _combined_packages }}"
 
     - name: Confirm Chocolatey is installed
-      ansible.windows.win_chocolatey:
+      chocolatey.chocolatey.win_chocolatey:
         name: chocolatey
         state: present
 
@@ -63,13 +63,13 @@
     # Path 1: dedicated install_<pkg> roles in roles/
     # (Add roles here as the library gains more install_* roles)
     # ---------------------------------------------------------------------
-    - name: Install via dedicated role — winscp
+    - name: Install via dedicated role ??? winscp
       ansible.builtin.include_role:
         name: install_winscp
       when: "'winscp' in _combined_packages"
       tags: [winscp]
 
-    - name: Install via dedicated role — Trellix antivirus agent
+    - name: Install via dedicated role ??? Trellix antivirus agent
       ansible.builtin.include_role:
         name: install_trellix_agent_win
       when: "'trellix' in _combined_packages or install_trellix | default(false) | bool"
@@ -79,7 +79,7 @@
     # Path 2: install everything else via Chocolatey
     # ---------------------------------------------------------------------
     - name: Install packages via Chocolatey
-      ansible.windows.win_chocolatey:
+      chocolatey.chocolatey.win_chocolatey:
         name: "{{ windows_chocolatey_packages[item] | default(item) }}"
         state: present
       loop: "{{ _combined_packages }}"
