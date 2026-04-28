@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>haproxy</short>
+  <description>For haproxy web server communications.</description>
+  <port protocol="tcp" port="443"/>
+</service>

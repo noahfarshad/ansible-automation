@@ -1,0 +1,14 @@
+- name: Configure Kafka
+  hosts: kafka
+  serial: 1
+  vars_files:
+    - group_vars/kafka
+  roles:
+    - role: installers/install_kafka
+    - role: service_management/restart_linux_service_java_app_with_port
+      vars:
+         service_name: "{{kafka_name}}"
+         pid_location: "{{kafka_dir}}/{{kafka_name}}.pid"
+         port_number: "{{kafka_port_number}}"
+         service_java_home: "{{kafka_java_home}}"
+         command_required: true

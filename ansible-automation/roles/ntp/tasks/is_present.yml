@@ -1,0 +1,26 @@
+---
+- name: Install NTP package
+  become: true
+  ansible.builtin.yum:
+    name: "ntp"
+    state: "{{ ntp_rpm_version }}"
+
+- name: Set additions for server
+  ansible.builtin.set_fact:
+    ntp_additions: "{{ ntp_template_additions['server']['additions'] }}"
+  when: is_ntp_server is defined and is_ntp_server
+
+- name: Move ntp.conf template
+  become: true
+  ansible.builtin.template:
+    src: "{{ ntp_config_template }}"
+    dest: "{{ ntp_template_dest }}"
+    owner: "root"
+    ansible.builtin.group: "root"
+    mode: "0644"
+
+- name: Enable NTP service
+  become: true
+  ansible.builtin.systemd:
+    name: "ntpd"
+    enabled: yes

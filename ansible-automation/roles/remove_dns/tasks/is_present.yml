@@ -1,0 +1,19 @@
+---
+
+- name: Remove DNS A Record
+  community.windows.win_dns_record:
+    computer_name: "{{ dcserver }}"
+    name: "{{inventory_hostname}}."
+    type: "A"
+    zone: "{{ domain }}"
+    state: absent
+  delegate_to: "{{ dcserver }}"
+
+- name: Ensure primary zone is removed
+  community.windows.win_dns_zone:
+    name: "{{ip_public.split('.')[2]}}.{{ip_public.split('.')[1]}}.{{ip_public.split('.')[0]}}.in-addr.arpa" 
+    replication: domain
+    type: primary
+    state: absent
+    dns_servers: '{{ dns_servers }}'
+  delegate_to: "{{ dcserver }}"

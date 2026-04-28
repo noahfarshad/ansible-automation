@@ -1,0 +1,172 @@
+---
+
+#
+#  Sets/Changes Oracle Database Parameter values as specified by the variable list.
+#
+#    Will validate the list of parameters to be changed and will terminate with no changes
+#       if a single parameter is invalid
+#    Will exit with no change to the database if no parameter value actually changes
+#       from the existing set value
+#    Will not actually bounce the database if the variable reboot_database_permitted is not true
+#    Otherwise, it will change only the parameter values that differ from the existing values
+#       and will reboot the database to invoke the changes.  However this reboot will only
+#       happen if one of the changed parameters requires a reboot.  If all parameters
+#       needing to be changed do not require a database reboot the database will not be
+#       bounced!
+
+# First just check again that the database is actually running
+- ansible.builtin.include_tasks: check_db_status.yml
+- name: "2.0 Check for spool file which was created in the previous yml file"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.stat:
+    path=/tmp/DBA_DB_PARAM_session_output.lst
+  register: stat_result
+
+- name: "Fail if file does not exist"
+  ansible.builtin.fail: msg="Required Spool file does not exist"
+  when: stat_result.stat.exists == False
+
+
+# 
+#  Reads the spool file created by the role: inspect_db_parameters
+#
+- name: "2.0 Read in the output spool file"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.command: cat /tmp/DBA_DB_PARAM_session_output.lst
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  register: spool_file_output
+
+  changed_when: false
+- debug: msg="Spool File Contents.   {{spool_file_output.stdout}}"
+
+#
+#  Ensure there were no invalid parameters that were attempted
+#  to be set; if there were any terminate processing and let
+#  the user know
+#
+#
+- name: "2.0 Check for Invalid Parameters"
+  ansible.builtin.fail: msg="Invalid Parameters names submitted. {{ spool_file_output.stdout }} "
+  when: spool_file_output.stdout.find('~~INVALID_PARM~~') != -1
+
+#
+#  If no parameter values actually changed; there is no more work to 
+#  do so terminate
+#
+- debug: msg="2.0  No Database Parameter Changes, Playbook Terminating "
+  when: spool_file_output.stdout.find('~~NO_CHANGE~~') != -1
+
+- name: "2.0 End Play When No Change to Database Parameters"
+  ansible.builtin.meta: end_play
+  when: spool_file_output.stdout.find('~~NO_CHANGE~~') != -1
+
+
+#
+#  Parameter values must have changed; so get the 
+#  list of changed parameters for reporting purposes
+#
+#
+- name: "2.0 Get Changed Changed Parameters List"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.command: grep ~~CHANGED_PARM~~ /tmp/DBA_DB_PARAM_session_output.lst
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  when: spool_file_output.stdout.find('~~CHANGED_PARM~~') != -1
+  register: change_parm_list
+
+
+#   This works fine for ansible 2.3 but not for 1.9
+#
+#  Report on the list of Parameters that will change
+#
+#
+#  In Ansible 1.9 the 2.3 notation for with_items: "{{change_parm_list.stdout_lines}}"
+#  is throwing an error.
+#
+  changed_when: false
+- debug: msg="2.0  {{ item }} "
+  loop: "{{change_parm_list.stdout_lines}}"
+  when: spool_file_output.stdout.find('~~CHANGED_PARM~~') != -1
+
+#
+#  Now set the changed parameters
+#
+- name: "2.0 Deploy the Database Parameters - Execute "
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: | 
+    $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+    set serveroutput on;
+    spool /tmp/DBA_DB_PARAM_session_output
+    exec SYS.DBA_DB_PARAM_PKG.execute('{{read_only_parm}}');
+    exit; 
+    EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  register: command_output
+
+
+# 
+#  The execute job above creates a spool file in the /tmp
+#  directory, read in the contents of the spool file in order
+#  to see what happened during the setting of the database
+#  parameters
+# 
+#
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF
+- name: "2.0 Read in the output spool file"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.command: cat /tmp/DBA_DB_PARAM_session_output.lst
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  register: spool_file_output
+
+
+#
+#  Parameter values changed; we are just re-verifying the change 
+#
+#
+  changed_when: false
+- name: "2.0 Get Changed Changed Parameters List"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.command: grep ~~CHANGED_PARM~~ /tmp/DBA_DB_PARAM_session_output.lst
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  when: spool_file_output.stdout.find('~~CHANGED_PARM~~') != -1
+  register: change_parm_list
+
+  changed_when: false
+- debug: msg="2.0  End Play if the reboot parameter is not set to true "
+  when: reboot_database_permitted == "false"
+
+
+- name: "2.0 End Play if the reboot parameter is not set to true "
+  ansible.builtin.meta: end_play
+  when: reboot_database_permitted == "false"
+
+
+# Stop the database
+- ansible.builtin.include_tasks: shutdown_database.yml
+# Start the database
+- ansible.builtin.include_tasks: start_database.yml

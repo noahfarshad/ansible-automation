@@ -1,0 +1,27 @@
+---
+
+- name: Exporting the {{item}} user DNs from OID
+  become: true
+  become_user: app_admin
+  environment:
+     ORACLE_HOME: "{{ldap_oid_directory}}"
+  ansible.builtin.shell: >-
+     {{ldap_bin_directory}}/ldapsearch -p 3060 -h localhost
+     -D "{{oid_ldap_user}}" -w '{{ldap_password}}'
+     -L -s one -b "{{group_base_dn}}" "(&(objectclass=*)(cn={{item}}))" "uniquemember" 
+     > /tmp/oid_{{item | replace(' ','')}}_group.ldif
+
+  # TODO: review changed_when for: {{ldap_bin_directory}}/ldapsearch -p 3060 -h localhost
+- name: Fetch the {{item}} file and place it in the staging directory
+  become: true
+  ansible.builtin.fetch:
+    src: "/tmp/oid_{{item | replace(' ','')}}_group.ldif"
+    dest: "{{staging}}"
+    flat: yes
+
+- name: Remove the {{item}} ldif file from the remote folder
+  become_user: app_admin
+  become: true
+  ansible.builtin.file: 
+     path: "/tmp/oid_{{item | replace(' ','')}}_group.ldif"
+     state: absent

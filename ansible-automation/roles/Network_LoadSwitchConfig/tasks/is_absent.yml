@@ -1,0 +1,9 @@
+---
+# tasks file for Network_LoadSwitchConfig — absent
+#
+# This role's operation is environment-specific or one-off and has no
+# clean automated inverse. Define teardown manually if needed.
+
+- name: "Network_LoadSwitchConfig — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: "Role 'Network_LoadSwitchConfig' has no automated inverse. Define teardown manually if required."

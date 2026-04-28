@@ -1,0 +1,61 @@
+---
+- name: "Remove Decompress_directory if it exists"
+  become: true
+  file:
+    path: "{{ decompressed_directory }}"
+    state: absent
+
+- name: "Creating temporary directory for database-scripts files"
+  become: true
+  file:
+    path: "{{ decompressed_directory }}"
+    state: directory
+    owner: ora_rmt
+    group: ora_rmt
+
+- name: "Creating temporary unpacked version of database-scripts tar file"
+  become: true
+  unarchive:
+    owner: ora_rmt
+    group: ora_rmt
+    src: "{{ staging }}/database-{{ version }}-scripts.tar.gz"
+    dest: "{{ decompressed_directory }}"
+    mode: 0755
+
+- name: "Check if Flyway is installed"
+  stat: path="{{ destination_directory }}"
+  register: p
+
+- name: "Unarchive flyway in the correct folder"
+  become: true
+  become_user: ora_rmt
+  unarchive: src="flyway-commandline-3.2.1-linux-x64.tar.gz"  dest=/opt/oracle/app/ owner=ora_rmt group=ora_rmt mode=0755 copy=yes
+  when: p.stat.exists == False
+
+- name: "Copy files over to flyway db working directory"
+  become: true
+  become_user: ora_rmt
+  shell: "if [ -d {{decompressed_directory}}example/ ]; then cp {{ decompressed_directory }}example/* {{ destination_directory }}; fi"
+
+- name: "replace the password in V22_0001 script for app_db_user"
+  become: true
+  replace: dest={{decompressed_directory}}example/V22_0001__GC10654_Set_User_DATA.sql regexp='app_db_user_db_password' replace="{{oracle_db_example_app_db_user_password}}"
+
+#- name: "replace the password in V22_0002 script for cp_example_app"
+#  become: true
+#  replace: dest={{decompressed_directory}}example/V22_0002__GC10655_Copy_Users_DATA.sql regexp='cp_example_app_db_password' replace="{{oracle_db_vciedb_cp_example_app_password}}"
+
+- name: "Delete the V22_0002 script for cp_example_app"
+  become: true
+  file:
+    path: "{{ decompressed_directory }}/example/V22_0002__GC10655_Copy_Users_DATA.sql"
+    state: absent
+
+- name: "Copy over JDBC Driver"
+  become: true
+  become_user: ora_rmt
+  copy: src={{ JDBC_Driver }} dest="{{ destination_directory }}/drivers/" owner=ora_rmt group=ora_rmt mode=0755
+
+- name: "Replacing flyway conf file"
+  become: true
+  template: src=flyway.conf dest="{{ destination_directory }}/conf/" owner=ora_rmt group=ora_rmt mode=0644

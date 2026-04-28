@@ -1,0 +1,28 @@
+---
+# tasks file for download_images — present
+
+- name: Pull and save images
+  become: true
+  docker_image:
+     name: "{{base_repo_url}}/{{item.name}}"
+     tag: "{{item.tag}}"
+     archive_path: "{{images_staging}}/{{item.name | regex_replace('/','_')}}_{{item.tag}}.tar"
+  loop:
+    - "{{dagr_images}}"
+    - "{{microservice_images}}"
+  tags:
+     - download.images
+     - download_artifacts
+
+- name: Create hash files for the images
+  become: true
+  ansible.builtin.shell: >-
+     docker inspect --format='{{'{{'}}index .Id{{'}}'}}' {{base_repo_url}}/{{item.name}}:{{item.tag}} 
+     > {{images_staging}}/{{item.name | regex_replace('/','_')}}_{{item.tag}}.txt
+  loop:
+    - "{{dagr_images}}"
+    - "{{microservice_images}}"
+  tags:
+     - download.images
+     - download_artifacts
+  changed_when: false

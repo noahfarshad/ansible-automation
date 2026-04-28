@@ -1,0 +1,29 @@
+---
+# tasks file for create_plugin_update_list — present
+
+- name: "Create Tar directory"
+  ansible.builtin.file:
+    state: directory
+    path: "{{ jenkins_tar_dir_path }}"
+    mode: 0744
+
+- name: "Get the list of plugins"
+  ansible.builtin.shell: java -jar "{{ cli_location }}"/jenkins-cli.jar -"http" -s "{{ jenkins_url }}" -auth "{{ cli_user }}":"{{ cli_auth_token }}" list-plugins | cut -d' ' -f1 > "{{ jenkins_plugins_list_path }}"
+
+  # TODO: review changed_when for: java -jar "{{ cli_location }}"/jenkins-cli.jar -"http" -s "{
+- name: "Append jenkins war"
+  ansible.builtin.lineinfile:
+    dest: "{{ jenkins_plugins_list_path }}"
+    regexp: "^{{ jenkins_war_identifier }}$"
+    line: "{{ jenkins_war_identifier }}"
+
+- name: "Moving PS1"
+  ansible.builtin.template:
+    src: "retrieve_jenkins_plugins.ps1"
+    dest: "{{ jenkins_tar_dir_path }}/"
+
+- name: "Zipping up {{ jenkins_tar_dir_name }}"
+  ansible.builtin.archive:
+    path: "{{ jenkins_tar_dir_path }}"
+    dest: "{{ jenkins_tar_dir_path }}.zip"
+    format: zip

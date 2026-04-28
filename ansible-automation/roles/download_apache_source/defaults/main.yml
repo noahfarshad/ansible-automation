@@ -1,0 +1,10 @@
+---
+# defaults file for download_apache_source
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# apache_source: ""
+# nexus_host: ""
+# nexus_public: ""
+# staging: ""

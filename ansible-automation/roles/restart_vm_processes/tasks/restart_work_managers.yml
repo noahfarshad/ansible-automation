@@ -1,0 +1,52 @@
+---
+- name: "Checking if Weblogic Application Work Manager 1 (wlsappwm1) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsappwm1
+  register: wlsappwm1_status
+  tags:
+    - workmanagers
+    - workmanagers-vm81
+    - vcie
+
+- name: "Restarting Weblogic Application Work Manager 1 (wlsappwm1) service"
+  become: true
+  ansible.builtin.service: name=wlsappwm1 state=restarted
+  when: wlsappwm1_status.stat.exists
+  tags:
+    - workmanagers
+    - workmanagers-vm81
+    - vcie
+
+- name: "Checking if Weblogic Application Work Manager 2 (wlsappwm2) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsappwm2
+  register: wlsappwm2_status
+  tags:
+    - workmanagers
+    - workmanagers-vm82
+    - vcie
+
+- name: "Restarting Weblogic Application Work Manager 2 (wlsappwm2) service"
+  become: true
+  ansible.builtin.service: name=wlsappwm2 state=restarted
+  when: wlsappwm2_status.stat.exists
+  tags:
+    - workmanagers
+    - workmanagers-vm82
+    - vcie
+
+- name: "Checking if Weblogic Application Work Manager 3 (wlsappwm3) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsappwm3
+  register: wlsappwm3_status
+  tags:
+    - workmanagers
+    - workmanagers-vm83
+    - vcie
+
+- name: "Restarting Weblogic Application Work Manager 3 (wlsappwm3) service"
+  become: true
+  ansible.builtin.service: name=wlsappwm3 state=restarted
+  when: wlsappwm3_status.stat.exists
+  tags:
+    - workmanagers
+    - workmanagers-vm83
+    - vcie
+

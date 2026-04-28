@@ -1,0 +1,14 @@
+---
+# tasks file for download_apache_source — present
+
+# Downloads apache source code, fips, openssl, etc. 
+- name: Create string staging directory if it does not exist.
+  ansible.builtin.file: path="{{staging}}" state=directory mode=0755
+
+- name: Download apache source files
+  ansible.builtin.get_url:
+    url: http://{{ nexus_host }}/{{ nexus_public }}/{{ item.0.group }}/{{ item.1 }}/{{ item.0.version }}/{{ item.1 }}-{{ item.0.version }}.{{item.0.ext}}
+    dest: "{{staging}}"
+  with_subelements:
+    - "{{apache_source}}"
+    - files

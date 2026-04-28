@@ -1,0 +1,22 @@
+---
+# tasks file for configure_volumes — absent
+#
+# Removes the configured logical volumes. Use with caution: data is destroyed.
+
+- name: Unmount logical volumes
+  ansible.posix.mount:
+    path: "{{ item.mount }}"
+    state: absent
+  loop: "{{ lvm_volumes | default([]) }}"
+  loop_control:
+    label: "{{ item.mount | default(item.lv) }}"
+
+- name: Remove logical volumes
+  community.general.lvol:
+    vg: "{{ item.vg }}"
+    lv: "{{ item.lv }}"
+    state: absent
+    force: true
+  loop: "{{ lvm_volumes | default([]) }}"
+  loop_control:
+    label: "{{ item.lv }}"

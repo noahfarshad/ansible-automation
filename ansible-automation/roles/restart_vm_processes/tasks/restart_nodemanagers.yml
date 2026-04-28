@@ -1,0 +1,43 @@
+---
+- name: "Checking if basic Weblogic Node Manager (wlsnodman) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsnodman
+  register: wlsnodman_status
+  tags:
+    - nodemanagers
+
+- name: "Restarting basic Weblogic Node Manager service (wlsnodman)"
+  become: true
+  ansible.builtin.service: name=wlsnodman state=restarted
+  when: wlsnodman_status.stat.exists
+  tags:
+    - nodemanagers
+
+- name: "Checking if OSB Weblogic Node Manager (wlsnodman_osb) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsnodman_osb
+  register: wlsnodman_osb_status
+  tags:
+    - nodemanagers
+    - nodemanagers-osb
+
+- name: "Restarting OSB Weblogic Node Manager service (wlsnodman_osb)"
+  become: true
+  ansible.builtin.service: name=wlsnodman_osb state=restarted
+  when: wlsnodman_osb_status.stat.exists
+  tags:
+    - nodemanagers
+    - nodemanagers-osb
+
+- name: "Checking if OIAM Weblogic Node Manager (wlsnodman_oiam) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsnodman_oiam
+  register: wlsnodman_oiam_status
+  tags:
+    - nodemanagers
+    - nodemanagers-oiam
+
+- name: "Restarting OIAM Weblogic Node Manager service (wlsnodman_oiam)"
+  become: true
+  ansible.builtin.service: name=wlsnodman_oiam state=restarted
+  when: wlsnodman_oiam_status.stat.exists
+  tags:
+    - nodemanagers
+    - nodemanagers-oiam

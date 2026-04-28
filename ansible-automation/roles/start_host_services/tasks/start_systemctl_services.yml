@@ -1,0 +1,9 @@
+- name: "Starting Services"
+  become: true
+  become_user: "{{ service_user }}"
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: started
+  loop:
+      - "{{ services }}"
+  when: services is defined and services is not none and services|length>0

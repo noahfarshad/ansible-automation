@@ -1,0 +1,9 @@
+---
+# tasks file for patch_wl_10.3.6 — present
+
+#This task is to deploy Oracle Weblogic 10.3.6 patch
+
+
+- ansible.builtin.include_tasks: stop_nodemanagers.yml
+- ansible.builtin.include_tasks: stop_authentication.yml
+- ansible.builtin.include_tasks: apply_patch.yml

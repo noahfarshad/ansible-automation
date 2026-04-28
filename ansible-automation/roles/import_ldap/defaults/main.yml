@@ -1,0 +1,17 @@
+---
+dagr_ldap_dir: /opt/dagr/ldap
+dagr_ldap_ldif_dir: "{{ dagr_ldap_dir }}/ldif/for_import"
+in_container_import_dir: "/tmp/ldif/for_import"
+dagr_ldap_tar_gz: dagr-ldif-{{version}}.tar.gz
+nexus_gold_repository: goldData_storage
+
+
+users_base_dn: ou=users,dc=gaps,dc=cie,dc=local
+groups_base_dn: ou=groups,dc=gaps,dc=cie,dc=local
+roles_base_dn: cn=roles,dc=gaps,dc=cie,dc=local
+
+user_roles:
+   - AllUsers
+   - Administrators
+   - Focal Point Control
+   - Toggle Users

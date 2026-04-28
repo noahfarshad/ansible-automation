@@ -1,0 +1,22 @@
+---
+# tasks file for install_horizon_client
+# DESCRIPTION:
+# Installs horizon client with following options:
+# connection server defaults 'connect.<system_name>.local'
+
+- name: Install Horizon Agent from SAN
+  ansible.windows.win_package:
+    path: "{{ artifact_staging }}{{ horizonclient }}"
+    arguments: /silent VDM_SERVER=connect.{{system_name}}.local
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{ system_name }}\\{{ domainadmin_user }}"
+    ansible_become_password: '{{ domain_password }}'
+
+- name: Wait for Connection
+  ansible.builtin.wait_for_connection:
+    delay: 60
+    timeout: 600

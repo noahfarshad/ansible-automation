@@ -1,0 +1,14 @@
+# Deploy a guest from a template
+- name: Remove resource pool
+  vmware_resource_pool:
+    ansible.builtin.hostname: "{{ vsphere_host }}"
+    username: "{{ vsphere_user }}"
+    password: "{{ vsphere_pass }}"
+    validate_certs: no
+    datacenter: "{{ vsphere_datacenter }}"
+    cluster: "{{ vsphere_cluster }}"
+    resource_pool: "{{ string_resource_pool }}"
+    state: absent
+  delegate_to: localhost
+  run_once: true
+  when: remove_pool

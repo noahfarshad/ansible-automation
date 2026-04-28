@@ -1,0 +1,52 @@
+---
+- set_fact:
+    time_stamp_30_days_ago: "{{ '%Y-%m-%d %H:%M:%S' | strftime((ansible_date_time['epoch']|int)-(86400*30)) }}"
+    # test_dict: {''}
+
+- name: DATE
+  ansible.builtin.debug:
+    msg: "30 DAYS AGO = {{ time_stamp_30_days_ago }}"
+
+- name: Get all AD Users
+  microsoft.ad.object_info:
+    ldap_filter: (&(objectClass=user)(objectCategory=Person))
+    #filter: ObjectClass -eq 'user'
+    properties:
+      - sAMAccountName
+      - displayName
+      - LastLogonTimestamp
+      - lastLogon
+  register: users
+  become: true
+
+- name: Add accounts that are older than 30 days to dictionary
+  ansible.builtin.set_fact: 
+    old_accounts: "{{ old_accounts | combine({item.sAMAccountName:(item.lastLogon | microsoft.ad.as_datetime(format='%Y-%m-%d %H:%M:%S'))}) }}"
+    #var1: "{{ item.lastLogon | microsoft.ad.as_datetime(format='%Y-%m-%d %H:%M:%S') }}"
+  when: item.lastLogon and (( item.lastLogon | microsoft.ad.as_datetime(format='%Y-%m-%d %H:%M:%S') | to_datetime ) < (time_stamp_30_days_ago | to_datetime))
+  loop_control:
+    label: "{{ item.sAMAccountName }}"
+  loop: "{{ users.objects }}"
+  vars:
+    old_accounts: {}
+
+# - name: set_fact
+#   set_fact: 
+#     old_accounts: "{{ old_accounts | combine({'testUser':'12345'}) }}"
+    
+# - name: debug
+#   debug:
+#     msg: "{{ item.key }}"
+#   when: item.key == "test"
+#   loop: "{{ old_accounts | dict2items }}"
+
+- name: Disable accounts that are older than 30 days
+  ansible.windows.win_user:
+    name: "{{ item.key }}"
+    account_disabled: true
+    state: present
+  #when: item.key == "testUser"
+  loop: "{{ old_accounts | dict2items }}"
+  
+
+  

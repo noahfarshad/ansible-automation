@@ -1,0 +1,25 @@
+---
+# tasks file for import_signed_certs — present
+
+# Import CA certificate
+  - name: Import CA cert
+    become: true
+    become_user: app_admin
+    ansible.builtin.command: "{{keytool_path}}/keytool -import -trustcacerts -alias {{CA_name}} -file {{target_dir}}/{{CA_name}}/{{CA_name}}.cer -keystore {{target_dir}}/{{CA_name}}/cert_staging/{{machine_cert_jks_name}} -storepass {{cert_pass}} -keypass {{cert_pass}} -noprompt"
+
+# Import signed certificate
+    # TODO: review changed_when for: {{keytool_path}}/keytool -import -trustcacerts -alias {{CA_n
+  - name: Import signed cert
+    become: true
+    become_user: app_admin
+    ansible.builtin.command: "{{keytool_path}}/keytool -import -alias {{item}}.local -file {{target_dir}}/{{CA_name}}/certs/{{item}}.cer -keystore {{target_dir}}/{{CA_name}}/cert_staging/{{machine_cert_jks_name}} -storepass {{cert_pass}} -keypass {{cert_pass}}  -noprompt"
+    loop:
+      "{{alias_items}}"
+
+    # TODO: review changed_when for: {{keytool_path}}/keytool -import -alias {{item}}.local -file
+  - name: Import extsvcs signed cert
+    become: true
+    become_user: app_admin
+    ansible.builtin.command: "{{keytool_path}}/keytool -import -alias extsvcs -file {{target_dir}}/{{CA_name}}/certs/extsvcs.cer -keystore {{target_dir}}/{{CA_name}}/cert_staging/{{machine_cert_jks_name}} -storepass {{cert_pass}} -keypass {{cert_pass}}  -noprompt"
+    ignore_errors: yes
+    # TODO: review changed_when for: {{keytool_path}}/keytool -import -alias extsvcs -file {{targ

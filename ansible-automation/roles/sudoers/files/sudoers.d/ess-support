@@ -1,0 +1,9 @@
+#ESS Support sudoers file
+
+
+# User Aliases
+User_Alias      ESS_ADMINS = +fn_sems-sysadmin, un_tads-sysadmin
+
+
+# Command aliases
+ESS_ADMINS      ALL=(root) LOG_OUTPUT: LOG_INPUT: ALL

@@ -1,0 +1,143 @@
+---
+# tasks file for discover_gap_machines — present
+
+- name: List out computer name
+  ansible.builtin.set_fact:
+    name_list: "{{ lookup('dig', '{{ip_template}}/PTR') }}"
+  with_sequence: "{{ip_range}}"
+  register: name_result
+
+- name: List out IP
+  ansible.builtin.set_fact:
+    ip_list: "{{ip_template}}"
+  with_sequence: "{{ip_range}}"
+  register: ip_result
+
+- set_fact:
+    ip_name: "{{ name_result.results | selectattr('ansible_facts', 'defined') | map(attribute='ansible_facts.name_list') | list }}"
+    ip_address: "{{ ip_result.results | selectattr('ansible_facts', 'defined') | map(attribute='ansible_facts.ip_list') | list }}"
+
+- name: Create dictionary
+  ansible.builtin.set_fact:
+    mapping_dict: "{{ mapping_dict | default([]) + [dict(ip=item.0, name=item.1)] }}"
+  with_together:
+    - "{{ip_address}}"
+    - "{{ip_name}}"
+
+- debug:
+    var: mapping_dict
+
+- name: Output IP address of dev-vms
+  ansible.builtin.set_fact:
+    dev_machines_ip: "{{ mapping_dict | selectattr( 'name', 'search', 'vm-centos7') | map(attribute='ip') | list }}"
+
+- name: Output name of dev-vms
+  ansible.builtin.set_fact:
+    dev_machines_name: "{{ mapping_dict | selectattr( 'name', 'search', 'vm-centos7') | map(attribute='name') | list }}"
+
+- name: Output IP address of Prod Jenkins Agent machines
+  ansible.builtin.set_fact:
+    prod_jenkins_machines_ip: "{{ mapping_dict | selectattr( 'name', 'search', 'plinuxagent') | map(attribute='ip') | list }}"
+
+- name: Output name of Prod Jenkins Agent machines
+  ansible.builtin.set_fact:
+    prod_jenkins_machines_name: "{{ mapping_dict | selectattr( 'name', 'search', 'plinuxagent') | map(attribute='name') | list }}"
+
+- name: Output IP address of Test Jenkins Agent machines
+  ansible.builtin.set_fact:
+    test_jenkins_machines_ip: "{{ mapping_dict | selectattr( 'name', 'search', 'tlinuxagent') | map(attribute='ip') | list }}"
+
+- name: Output name of Test Jenkins Agent machines
+  ansible.builtin.set_fact:
+    test_jenkins_machines_name: "{{ mapping_dict | selectattr( 'name', 'search', 'tlinuxagent') | map(attribute='name') | list }}"
+
+- name: Output IP address of other machines
+  ansible.builtin.set_fact:
+    other_machines_ip: "{{ mapping_dict | rejectattr( 'name', 'search', 'NXDOM')
+                                        | rejectattr( 'name', 'search', 'vm-centos7')
+                                        | rejectattr( 'name', 'search', 'linuxagent')
+                                        | map(attribute='ip')
+                                        | list }}"
+
+- name: Output name of other machines
+  ansible.builtin.set_fact:
+    other_machines_name: "{{ mapping_dict | rejectattr( 'name', 'search', 'NXDOM')
+                                          | rejectattr( 'name', 'search', 'vm-centos7')
+                                          | rejectattr( 'name', 'search', 'linuxagent')
+                                          | map(attribute='name')
+                                          | list }}"
+
+- name: Output usused IP addresses
+  ansible.builtin.set_fact:
+    unused_machines_ip: "{{  mapping_dict | selectattr( 'name', 'search', 'NXDOM') | map(attribute='ip') | list}}"
+
+- name: Remove old inventory file
+  ansible.builtin.file:
+    path: "{{ inventory_target }}"
+    state: absent
+
+- name: Create new inventory file
+  ansible.builtin.file:
+    path: "{{ inventory_target }}"
+    state: touch
+
+- name: Add group names to inventory file
+  ansible.builtin.lineinfile:
+    path: "{{ inventory_target }}"
+    line: "{{item}}"
+  loop:
+    - "[dev]"
+    - "\n[plinux]"
+    - "\n[tlinux]"
+    - "\n[other]"
+    - "\n[unused]"
+
+- name: Add dev-machines to inventory file
+  ansible.builtin.lineinfile:
+    path: "{{ inventory_target }}"
+    insertafter: ".*dev"
+    line: "{{item.0}}  ansible_ssh_host={{item.1}}"
+  with_together:
+    - "{{dev_machines_name}}"
+    - "{{dev_machines_ip}}"
+
+- name: Add Prod Jenkin Agents to inventory file
+  ansible.builtin.lineinfile:
+    path: "{{ inventory_target }}"
+    insertafter: ".*plinux"
+    line: "{{item.0}}  ansible_ssh_host={{item.1}}"
+  with_together:
+    - "{{prod_jenkins_machines_name}}"
+    - "{{prod_jenkins_machines_ip}}"
+
+- name: Add Test Jenkin Agents to inventory file
+  ansible.builtin.lineinfile:
+    path: "{{ inventory_target }}"
+    insertafter: ".*tlinux"
+    line: "{{item.0}}  ansible_ssh_host={{item.1}}"
+  with_together:
+    - "{{test_jenkins_machines_name}}"
+    - "{{test_jenkins_machines_ip}}"
+
+- name: Add other machines to inventory file
+  ansible.builtin.lineinfile:
+    path: "{{ inventory_target }}"
+    insertafter: ".*other"
+    line: "{{item.0}}  ansible_ssh_host={{item.1}}"
+  with_together:
+    - "{{other_machines_name}}"
+    - "{{other_machines_ip}}"
+
+- name: Add unused machines to inventory file
+  ansible.builtin.lineinfile:
+    path: "{{ inventory_target }}"
+    insertafter: ".*unused"
+    line: "N/A  ansible_ssh_host={{item.0}}"
+  with_together:
+    - "{{unused_machines_ip}}"
+
+- name: Remove tail-end of host name
+  ansible.builtin.replace:
+    path: "{{ inventory_target }}"
+    regexp: ".example.coach."
+    ansible.builtin.replace: ""

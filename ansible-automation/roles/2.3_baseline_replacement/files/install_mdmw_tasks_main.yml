@@ -1,0 +1,214 @@
+---
+- name: Create Working directory
+  become: true
+  file:
+    path: "{{mdmw_collector_dir}}"
+    state: directory
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: Check if a site disk cache backup exists
+  become: true
+  stat:
+    path: "{{mdmw_site_disk_cache_backup_dir}}"
+  register: backup
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: Gather site disk cache items
+  become: true
+  shell: "ls {{mdmw_site_disk_cache_backup_dir}}"
+  register: sites
+  when: backup.stat.exists and backup.stat.isdir
+  tags:
+    - mdmw_collector.uninstall
+    - mdmw_collector
+
+- name: Create site disk cache directory
+  become: true
+  file:
+    path: "{{mdmw_site_disk_cache_dir}}"
+    state: directory
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  when: backup.stat.exists and backup.stat.isdir
+  tags:
+    - mdmw_collector.uninstall
+    - mdmw_collector
+
+- name: Copy site disk cache backup
+  become: true
+  copy:
+    remote_src: yes
+    src: "{{mdmw_site_disk_cache_backup_dir}}{{item}}"
+    dest: "{{mdmw_site_disk_cache_dir}}"
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  when: backup.stat.exists and backup.stat.isdir
+  loop:
+    - "{{sites.stdout_lines}}"
+  tags:
+    - mdmw_collector.uninstall
+    - mdmw_collector
+
+- name: Clean up site disk cache backup
+  become: true
+  file:
+    path: "{{mdmw_site_disk_cache_backup_dir}}"
+    state: absent
+  when: backup.stat.exists
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: Copy Service Configuration files
+  become: true
+  become_user: app_admin
+  template:
+    src: "{{shared_config_path}}/{{item}}"
+    dest: "{{mdmw_collector_dir}}/{{item}}"
+  loop:
+    - "{{service_configuration}}"
+    - "{{mdmw_em4_properties}}"
+    - "{{mdmw_configuration_file}}"
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: Copy service jar
+  become: true
+  become_user: app_admin
+  copy:
+    src: "{{staging}}/{{service_artifact}}"
+    dest: "{{mdmw_collector_dir}}/{{service_artifact}}"
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: Create MDMW directories
+  become: true
+  file:
+    path: "{{mdmw_collector_dir}}/{{item}}"
+    state: directory
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  loop:
+    - "lib"
+    - "security"
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: Copy java.security file
+  become: true
+  become_user: app_admin
+  template:
+    src: "{{mdmw_collector_java_security_file}}"
+    dest: "{{security_dir}}/java.security"
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: Backup cacerts file
+  become: true
+  become_user: app_admin
+  command: "mv /opt/Oracle/java/jre/lib/security/cacerts /opt/Oracle/java/jre/lib/security/cacerts.back"
+
+- name: Copy domain specific cacerts file to jre/lib/security
+  become: true
+  become_user: app_admin
+  command: "cp {{mdmw_truststore_file}} /opt/Oracle/java/jre/lib/security/cacerts"
+
+- name: Copy Service Caching dependencies
+  become: true
+  become_user: app_admin
+  copy:
+    src: "{{staging}}/{{item}}"
+    dest: "{{mdmw_collector_dir}}/lib/{{item}}"
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  loop:
+    - "{{mdmw_collector_dependencies}}"
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: "Setting keystore alias"
+  set_fact:
+    keystore_alias: "{{ hostvars['localhost']['docker_host_ip'] }}"
+  when: system == "dev"
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: Update the mdmw_em4.properties file with the keystore alias
+  become: true
+  become_user: app_admin
+  lineinfile:
+    path: "{{mdmw_collector_dir}}/{{mdmw_em4_properties}}"
+    regexp: "^com.solers.es.soafmsg.em.sdk.messageSecurityConfiguration.keystore.keyAlias="
+    line: "com.solers.es.soafmsg.em.sdk.messageSecurityConfiguration.keystore.keyAlias={{keystore_alias}}"
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: Encrypt Password
+  become: true
+  become_user: app_admin
+  shell: "{{java_path}} -cp {{mdmw_collector_classpath}} {{encrypt_properties}} {{mdmw_collector_encryption_classname}} {{cert_pass}}"
+  register: encrypt_contents
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: Update the mdmw_em4.properties file with the encrypted password
+  become: true
+  become_user: app_admin
+  lineinfile:
+    path: "{{mdmw_collector_dir}}/{{mdmw_em4_properties}}"
+    regexp: "^{{item}}="
+    line: "{{item}}={{encrypt_contents.stdout_lines | last}}"
+  loop:
+    - com.solers.es.soafmsg.em.sdk.messageSecurityConfiguration.truststore.storePasswordKey
+    - com.solers.es.soafmsg.em.sdk.messageSecurityConfiguration.keystore.keyPasswordKey
+    - com.solers.es.soafmsg.em.sdk.messageSecurityConfiguration.keystore.storePasswordKey
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: Copy the startup script to /etc/init.d
+  become: true
+  template:
+    src: "{{mdmw_collector_service_name}}"
+    dest: "/etc/init.d/{{mdmw_collector_service_name}}"
+    mode: 0755
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector
+
+- name: "Start the MDMW Collector instance"
+  become: true
+  command: "/etc/init.d/{{mdmw_collector_service_name}} restart"
+  tags:
+    - mdmw_collector.install
+    - mdmw_collector.start
+    - mdmw_collector
+
+- include_role:
+     name: service_management/register_with_consul
+  vars:
+     service_name: "{{mdmw_collector_service_name}}"
+     port_number: "8180"
+     ignore_registration_errors: True

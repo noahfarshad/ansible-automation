@@ -1,0 +1,8 @@
+---
+- name: restart iptables
+  become: true
+  ansible.builtin.service: name=iptables state=restarted
+
+- name: restart network
+  become: true
+  ansible.builtin.service: name=iptables state=restarted

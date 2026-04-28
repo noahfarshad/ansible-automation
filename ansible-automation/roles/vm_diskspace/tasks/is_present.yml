@@ -1,0 +1,51 @@
+---
+# tasks file for vm_diskspace — present
+
+- name: Copy over inventory file
+  ansible.builtin.shell: "cp {{ inventory_target }} ../test_vm_list"
+
+  # TODO: cp: not idempotent — convert to ansible.builtin.copy with src/dest
+  # TODO: review changed_when for: cp {{ inventory_target }} ../test_vm_list
+- name: List out largest disk space usages on dev VMs
+  ansible.builtin.shell: ' ansible -i ../test_vm_list -m command -a "df -h --output=used,source" dev
+           | grep -e "[0-9\.]\+G" -e vm
+           | grep -v // >{{ diskspace_target }}'
+  register: output_list
+
+  # TODO: review changed_when for:  ansible -i ../test_vm_list -m command -a "df -h --output=us
+- name: Grab dev VM names
+  ansible.builtin.shell: ' cut -d" " -f1 {{ diskspace_target }}
+           | sed "/^$/d"
+           | sort -V '
+  register: names
+
+  # TODO: review changed_when for:  cut -d" " -f1 {{ diskspace_target }}
+- debug:
+    var: names.stdout_lines
+
+- name: List out largest directories on dev VMs
+  ansible.builtin.shell: ' ansible -i ../test_vm_list -m command -a "du -hc / --exclude={/proc,/sys,/dev} --max-depth={{depth}}" dev
+           | sed "/cannot/d"
+           | sed "s/\. //" >{{ directories_target }} '
+
+  # TODO: review changed_when for:  ansible -i ../test_vm_list -m command -a "du -hc / --exclud
+- name: Remove previously sorted VM directories
+  ansible.builtin.file:
+    path: ./sorted_directories.out
+    state: absent
+
+- name: Organize the dev VM directories by size
+  ansible.builtin.shell: ' awk "/^{{item}} /,/\/$/" {{ directories_target }}
+           | sed "/^0/d"
+           | sed "/UNREACHABLE/,+4 d"
+           | sed "s/|.*//"
+           | sort -h
+           | sed "/\/$/a \ "  >>{{ sorted_directories_target }} '
+  loop:
+    - "{{names.stdout_lines}}"
+
+  changed_when: false
+- name: Remove copied inventory file
+  ansible.builtin.file:
+    path: ../test_vm_list
+    state: absent

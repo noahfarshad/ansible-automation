@@ -1,0 +1,4 @@
+{{ yum_local_report_header }}
+{% for result in yum_diff_packages %}
+{{ result.name }},{{ result.version }},{{ result.release }}
+{% endfor %}

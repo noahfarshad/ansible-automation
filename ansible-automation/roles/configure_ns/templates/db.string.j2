@@ -1,0 +1,28 @@
+$TTL    604800
+@       IN      SOA     ns01.string.local. admin.string.local. (
+                  3     ; Serial
+             604800     ; Refresh
+              86400     ; Retry
+            2419200     ; Expire
+             604800 )   ; Negative Cache TTL
+;
+; name servers - NS records
+                              IN      NS      ns01.string.local.
+
+; name servers - A records.string.local.             IN      A       10.100.100.3
+ns01.string.local.             IN      A       10.100.100.3
+; 10.100.0.0/16 - A records
+{% if 'string_' + current_string + '_physical' in groups %}
+{% for h in groups[ 'string_' + current_string + '_physical' ] %}
+{% if 'networking' in hostvars[ h ] %}
+{{ h | regex_search('((\w)+-*(\w))(\w)')  }}.string.local.     IN     A     {{ hostvars[ h ].networking.interfaces[0].ip }} 
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if 'string_' + current_string in groups %}
+{% for h in groups[ 'string_' + current_string ] %}
+{% if 'networking' in hostvars[ h ] %}
+{{ h | regex_search('((\w)+-*(\w))(\w)') }}.string.local.     IN     A     {{ hostvars[ h ].networking.interfaces[0].ip }} 
+{% endif %}
+{% endfor %}
+{% endif %}

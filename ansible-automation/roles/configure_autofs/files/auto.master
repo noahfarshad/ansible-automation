@@ -1,0 +1,6 @@
+# Configuration to mount /sa when running commands from ess-satellite-01d:/var/sfw
+# Point to auto.sa file
+#/-      /etc/auto.sa
+
+# Configuration for SSHFS mounted filesystems
+/-          /etc/auto.sshfs

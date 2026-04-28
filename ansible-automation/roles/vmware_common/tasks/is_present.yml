@@ -1,0 +1,28 @@
+---
+# tasks file for vmware_common — present
+
+- block:
+    - name: Modify virtual machine state "{{ vm_state | upper }}"
+      vmware_guest:
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}" 
+        username: "{{ users.vcenter_admin_user }}"
+        password: "{{ users.vcenter_admin_password }}"
+        validate_certs: False
+        name: "{{ inventory_hostname }}"
+        folder: "{{ parameters.folder_name }}"
+        datacenter: "{{ vmware.datacenter }}"
+        force: yes
+        state: "{{ vm_state }}"
+      failed_when: false
+      delegate_to: localhost
+
+    # If state is set to present and virtual machine exists, ensure the virtual machine configurations conforms to task arguments.
+    # If state is set to absent and virtual machine exists, then the specified virtual machine is removed with its associated components.
+    # If state is set to one of the following poweredon, poweredoff, present, restarted, suspended and virtual machine does not exists, then virtual machine is deployed with given parameters.
+    # If state is set to poweredon and virtual machine exists with powerstate other than powered on, then the specified virtual machine is powered on.
+    # If state is set to poweredoff and virtual machine exists with powerstate other than powered off, then the specified virtual machine is powered off.
+    # If state is set to restarted and virtual machine exists, then the virtual machine is restarted.
+    # If state is set to suspended and virtual machine exists, then the virtual machine is set to suspended mode.
+    # If state is set to shutdownguest and virtual machine exists, then the virtual machine is shutdown.
+    # If state is set to rebootguest and virtual machine exists, then the virtual machine is rebooted.
+  become: true

@@ -1,0 +1,7 @@
+---
+# defaults file for install_java
+jdk_package: jre1
+java_major_version: 8.0
+java_minor_version: 2210.11
+java_version_padded: 8.0_221
+java_install_loc: "C:\\Program Files\\Java\\"

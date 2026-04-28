@@ -1,0 +1,80 @@
+---
+
+#
+#  Establishes additional security settings to the security realm
+#
+
+
+
+- name: Pickle role vars
+  local_action: command python {{pickler}} {{role_path}}/vars/main.yml {{role_path}}/files/pickled_vars.p
+  run_once: true
+
+- name: "Copy Over Pickle File"
+  become: true
+  become_user: "{{os_user}}"
+  ansible.builtin.copy:
+    src: "{{pickle_file_name}}"
+    dest: "{{remote_dir}}"
+    owner: "{{os_user}}"
+    ansible.builtin.group: "{{os_group}}"
+    mode: 0600
+
+
+- name: "Copy Over Template files"
+  become: true
+  become_user: "{{os_user}}"
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{remote_dir}}"
+    owner: "{{os_user}}"
+    ansible.builtin.group: "{{os_group}}"
+    mode: 0600
+  loop:
+    - addSecuritySettings.py
+
+
+- name: "Copy Pickle File locally"
+  local_action: command cp {{role_path}}/files/pickled_vars.p "{{remote_dir}}"
+  run_once: true
+
+- name: "Copy addSecuritySettingsFile.py locally"
+  local_action: template src=addSecuritySettingsFile.py dest="{{remote_dir}}" 
+  run_once: true
+
+
+- name: Add the Security Settings
+  become: true
+  become_user: '{{os_user}}'
+  ansible.builtin.shell: "{{gc2_wlst_path}} {{remote_dir}}/addSecuritySettings.py {{run_mode}}"
+
+
+  # TODO: review changed_when for: {{gc2_wlst_path}} {{remote_dir}}/addSecuritySettings.py {{ru
+- name: Generate the add security settings file
+  local_action: command python {{remote_dir}}/addSecuritySettingsFile.py
+  run_once: true
+
+- name: "Remove addSecuritySettings.py"
+  become: true
+  become_user: "{{os_user}}"
+  ansible.builtin.file: 
+    path: "{{remote_dir}}/addSecuritySettings.py"
+    state: absent 
+
+
+- name: "Remove pickle file"
+  become: true
+  become_user: "{{os_user}}"
+  ansible.builtin.file: 
+    path: "{{remote_dir}}/pickled_vars.p"
+    state: absent 
+ 
+
+- name: "Remove local addSecuritySettingsFile.py"
+  local_action: file path={{remote_dir}}/addClusterSettingsFile.py state=absent
+  run_once: true
+
+
+- name: "Remove local pickle file"
+  local_action: file path={{remote_dir}}/pickled_vars.p state=absent
+  run_once: true

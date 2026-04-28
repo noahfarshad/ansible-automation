@@ -1,0 +1,20 @@
+---
+# tasks file for update_vm_nics — present
+
+# This task connects to VSphere, updates the MAC addresses on the guest NICs
+# and the IP addresses on eth1 and eth2 of the load balancers and renames the
+# VMs in VCenter
+
+# copy the string IP csv to a local var/tmp directory
+  - name: Copy template to tmp directory
+    ansible.builtin.copy: src={{ system }}IPs.csv dest=/var/tmp/{{ system }}IPs.csv
+
+# Execute the python script to update the NICs
+  - name: Run python script to update NICs
+    ansible.builtin.command: python {{ network_configuration_update_script }} {{vsphere_user}}  {{vsphere_pass}} {{string_user}}  {{string_pass}}  {{system}} 'STANDARD'
+
+# Execute the python script to update the virtual machine names
+    # TODO: review changed_when for: python {{ network_configuration_update_script }} {{vsphere_u
+  - name: Update virtual machine names
+    ansible.builtin.command: python {{ vm_name_update_script }} {{vsphere_user}}  {{vsphere_pass}} {{ system }} {{ source }}
+    # TODO: review changed_when for: python {{ vm_name_update_script }} {{vsphere_user}}  {{vsphe

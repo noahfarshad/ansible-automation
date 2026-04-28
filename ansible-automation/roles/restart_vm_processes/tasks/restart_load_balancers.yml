@@ -1,0 +1,10 @@
+---
+- name: "Restarting iptables and ZEUS (Stingray) on Load Balancers (vmlb1 and vmlb2)"
+  become: true
+  ansible.builtin.service: name={{ item.services }} state=restarted
+  loop:
+   - { services: 'iptables' }
+   - { services: 'zeus' }
+  when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vmlb1' or '{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vmlb2'"
+  tags:
+    - loadbalancers

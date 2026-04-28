@@ -1,0 +1,30 @@
+#
+# Don't use sudo aliases - it messes up the Ansible validation command and is largely unneeded with Ansible doing the sudo management
+#  Just list the required sudo command
+#
+#
+
+# SEMS privileged users stanza
++un_sems-cm             ALL=(cm) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-cm             ALL=(cmtest) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-afwwebs        ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-testers        ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-afwwebs        ALL=(root) /bin/systemctl start httpd24-httpd, /bin/systemctl stop httpd24-httpd, /bin/systemctl restart httpd24-httpd, /bin/systemctl status httpd24-httpd, /bin/journalctl -u httpd24-httpd
++un_sems-scs            ALL=(root) /bin/systemctl start httpd24-httpd, /bin/systemctl stop httpd24-httpd, /bin/systemctl restart httpd24-httpd, /bin/systemctl status httpd24-httpd, /bin/journalctl -u httpd24-httpd
++un_sems-cm             ALL=(process) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-wdd            ALL=(process) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
+
+# TADS privileged users stanza
++un_tads-cm             ALL=(cm) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-cm             ALL=(cmtest) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-testers        ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-afwwebs        ALL=(root) /bin/systemctl start httpd24-httpd, /bin/systemctl stop httpd24-httpd, /bin/systemctl restart httpd24-httpd, /bin/systemctl status httpd24-httpd, /bin/journalctl -u httpd24-httpd
++un_tads-scs            ALL=(root) /bin/systemctl start httpd24-httpd, /bin/systemctl stop httpd24-httpd, /bin/systemctl restart httpd24-httpd, /bin/systemctl status httpd24-httpd, /bin/journalctl -u httpd24-httpd
++un_tads-cm             ALL=(process) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-wdd            ALL=(process) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
+
+# Individual privileged users stanza
++un_sys-cm              ALL=(cmgov) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++fn_afwMETWEB           ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++jenkins                ALL=(root) /bin/systemctl start httpd24-httpd, /bin/systemctl stop httpd24-httpd, /bin/systemctl restart httpd24-httpd, /bin/systemctl status httpd24-httpd, /bin/journalctl -u httpd24-httpd
+

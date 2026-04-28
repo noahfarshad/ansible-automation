@@ -1,0 +1,12 @@
+---
+# defaults file for upload_artifact
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# nexus_admin: ""
+# nexus_host: ""
+# nexus_password: ""
+# nexus_upload: ""
+# staging: ""
+# upload_artifacts: ""

@@ -1,0 +1,6 @@
+---
+- name: Remove controlled repo file
+  become: true
+  ansible.builtin.file:
+    path: "{{ yum_repos_directory }}/{{ yum_repo_file }}"
+    state: absent

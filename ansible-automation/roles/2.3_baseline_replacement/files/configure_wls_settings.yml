@@ -1,0 +1,22 @@
+---
+
+#----------------------------------------------------------------------------------------
+# This Playbook inspects Weblogic Server settings and identifies if values differ from 
+# the expected values and if the value is modifiable will set it back to the expected value
+#-------------------------------------------------------------------------------------------
+
+ - hosts: adminserver:managedservers
+   tasks:
+    - name: Backup cacerts file
+      become: true
+      become_user: app_admin
+      command: "mv /opt/Oracle/java/jre/lib/security/cacerts /opt/Oracle/java/jre/lib/security/cacerts.back"
+    - name: Copy domain specific cacerts file to jre/lib/security
+      become: true
+      become_user: app_admin
+      command: "cp /opt/identity/cacerts /opt/Oracle/java/jre/lib/security/cacerts"
+
+ - hosts: adminserver
+   roles:
+       - common/config_wl_settings 
+

@@ -1,0 +1,58 @@
+---
+# The two stages of this role will:
+# 1. download baseline required packages defined in /<system_name>/inventories/<string>/all
+# 2. download packages defined in /<system_name>/inventories/<string>/<virtual machine flavor>
+- block:
+    - name: Install/verify baseline required packages
+
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ baseline_rhel_packages }}"
+      register: baseline_package_installation
+
+    - name: Display status of package installation
+      ansible.builtin.debug:
+        msg: "{{ item.item }} is successfully installed"
+      loop: "{{ baseline_package_installation.results }}"
+      when: item.changed
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Verify if packages are up-to-date
+
+      ansible.builtin.package:
+        name: "{{item}}"
+        state: "{{ package_upgrade | default(false) | ternary('latest', 'present') }}"
+      loop: "{{ baseline_rhel_packages }}"
+
+    #################################################################
+
+    #################################################################
+
+    - name: Install delta packages
+      when: rhel_delta_packages is defined
+      block: 
+      - name: Install/verify delta packages
+
+        ansible.builtin.package:
+          name: "{{ item }}"
+          state: present
+        loop: "{{ rhel_delta_packages }}"
+        register: delta_package_installation
+
+      - name: Display status of delta package installation
+        ansible.builtin.debug:
+          msg: "{{ item.item }} is successfully installed"
+        loop: "{{ delta_package_installation.results }}"
+        when: item.changed
+        loop_control:
+          label: "{{ item.item }}"
+
+      - name: Verify if delta packages are up-to-date
+
+        ansible.builtin.package:
+          name: "{{item}}"
+          state: "{{ package_upgrade | default(false) | ternary('latest', 'present') }}"
+        loop: "{{ rhel_delta_packages }}"
+  become: true

@@ -1,0 +1,4 @@
+depth: 1
+diskspace_target: ./list_vm_diskspace.out
+directories_target: ./directories.out
+sorted_directories_target: ./sorted_directories.out

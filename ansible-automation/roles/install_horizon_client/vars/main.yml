@@ -1,0 +1,3 @@
+---
+# vars file for install_horizon_client
+client_version: '8.13.0'

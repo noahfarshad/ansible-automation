@@ -1,0 +1,136 @@
+---
+# tasks file for restart_authentication_services — present
+
+- block:
+    - name: "Checking if Oracle Fusion Middleware Control (ora_fmwc) service exists"
+      ansible.builtin.stat: path=/etc/init.d/ora_fmwc
+      register: ora_fmwc_status
+      tags:
+        - authentication
+        - fmwc
+
+    - name: "Restarting Oracle Fusion Middleware Control (ora_fmwc) Services"
+      ansible.builtin.service: name=ora_fmwc state=restarted
+      when: ora_fmwc_status.stat.exists
+      tags:
+        - authentication
+        - fmwc
+
+    - name: "Checking if Oracle Directory Services Manager (ora_odsm) service exists"
+      ansible.builtin.stat: path=/etc/init.d/ora_odsm
+      register: ora_odsm_status
+      tags:
+        - authentication
+        - odsm
+
+    - name: "Restarting Oracle Directory Services Manager (ora_odsm) Services"
+      ansible.builtin.service: name=ora_odsm state=restarted
+      when: ora_odsm_status.stat.exists
+      tags:
+        - authentication
+        - odsm
+
+    - name: "Checking if Oracle Internet Directory (ora_oid) service exists"
+      ansible.builtin.stat: path=/etc/init.d/ora_oid
+      register: ora_oid_status
+      tags:
+        - authentication
+        - oid
+
+    - set_fact:
+        failureOid: False
+      tags:
+        - authentication
+        - oid
+
+    - name: "Restarting Oracle Directory Services Manager (ora_oid) Services"
+      block:
+        - name: "Restarting services"
+          ansible.builtin.service: name=ora_oid state=restarted
+      rescue:
+        - pause:
+            minutes: 10
+        - set_fact:
+            failureOid: True
+      when: ora_oid_status.stat.exists
+      tags:
+        - authentication
+        - oid
+
+    - name: "Check if OID is running and if not fail"
+      ansible.builtin.service: name=ora_oid state=started
+      when: failureOid == True
+      tags:
+        - authentication
+        - oid
+
+    - name: "Checking if Oracle Fusion Middleware Control for Oracle Identity and Access Management (ora_fmwc_oiam) service exists"
+      ansible.builtin.stat: path=/etc/init.d/ora_fmwc_oiam
+      register: ora_fmwc_oiam_status
+      tags:
+        - authentication
+        - fmwc-oiam
+
+    - name: "Restarting Oracle Fusion Middleware Control for Oracle Identity and Access Management (ora_fmwc_oiam) Services"
+      ansible.builtin.service: name=ora_fmwc_oiam state=restarted
+      when: ora_fmwc_oiam_status.stat.exists
+      tags:
+        - authentication
+        - fmwc-oiam
+
+    - name: "Checking if Oracle Authentication Manager 1 (ora_oam1) service exists"
+      ansible.builtin.stat: path=/etc/init.d/ora_oam1
+      register: ora_oam1_status
+      tags:
+        - authentication
+        - oam
+
+    - name: "Restarting Oracle Authentication Manager 1 (ora_oam1) Services"
+      ansible.builtin.service: name=ora_oam1 state=restarted
+      when: ora_oam1_status.stat.exists
+      tags:
+        - authentication
+        - oam
+
+    - name: "Checking if Oracle Identity Manager 1 (ora_oim1) service exists"
+      ansible.builtin.stat: path=/etc/init.d/ora_oim1
+      register: ora_oim1_status
+      tags:
+        - authentication
+        - oim
+
+    - name: "Restarting Oracle Identity Manager 1 (ora_oim1) Services"
+      ansible.builtin.service: name=ora_oim1 state=restarted
+      when: ora_oim1_status.stat.exists
+      tags:
+        - authentication
+        - oim
+
+    - name: "Checking if Oracle Service Orientated Architecture 1 (ora_soa1) service exists"
+      ansible.builtin.stat: path=/etc/init.d/ora_soa1
+      register: ora_soa1_status
+      tags:
+        - authentication
+        - soa
+
+    - name: "Restarting Oracle Service Orientated Architecture 1 (ora_soa1) Services"
+      ansible.builtin.service: name=ora_soa1 state=restarted
+      when: ora_soa1_status.stat.exists
+      tags:
+        - authentication
+        - soa
+
+    - name: "Checking if Lightweight Directory Access Protocal (aluildap) service exists"
+      ansible.builtin.stat: path=/etc/init.d/aluildap
+      register: aluildap_status
+      tags:
+        - authentication
+        - ldap
+
+    - name: "Restarting Lightweight Directory Access Protocal (aluildap) Services"
+      ansible.builtin.service: name=aluildap state=restarted
+      when: aluildap_status.stat.exists
+      tags:
+        - authentication
+        - ldap
+  become: true

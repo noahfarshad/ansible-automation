@@ -1,0 +1,37 @@
+# deploy_docker_test_image
+
+**Platform:** Linux
+**Archetype:** `unarchive`
+
+## What this role does
+
+Extracts an archive into an install directory.
+
+See `tasks/is_present.yml` for the actual implementation and
+`tasks/is_absent.yml` for the removal logic.
+
+## Lifecycle (desired_state)
+
+| Value     | Behavior                                                        |
+|-----------|-----------------------------------------------------------------|
+| `present` | Run is_present.yml (default)                                   |
+| `absent`  | Run is_absent.yml                                               |
+| `started` | Reserved — uncomment in tasks/main.yml when needed              |
+| `stopped` | Reserved — uncomment in tasks/main.yml when needed              |
+
+## Variables
+
+No user-facing input variables. See `defaults/main.yml`.
+
+## Example
+
+```yaml
+- hosts: all
+  roles:
+    - role: deploy_docker_test_image
+      desired_state: present
+```
+
+## License
+
+MIT

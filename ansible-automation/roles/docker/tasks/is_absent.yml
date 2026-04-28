@@ -1,0 +1,26 @@
+---
+- name: Disable Docker service
+
+  ansible.builtin.systemd:
+    name: docker
+    state: stopped
+    enabled: no
+
+- name: Remove versioned packages
+
+  ansible.builtin.yum:
+    name: "{{ docker_present_packages }}"
+    state: absent
+
+- name: Remove latest packages
+
+  ansible.builtin.yum:
+    name: "{{ docker_latest_packages }}"
+    state: absent
+
+- name: Remove the Docker directory
+
+  ansible.builtin.file:
+    path: "{{ docker_daemon_target_dir }}"
+    state: absent
+

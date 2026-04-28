@@ -1,0 +1,6 @@
+
+- name: "Configuring Consul as a Server"
+  ansible.builtin.template:
+    mode: 0755
+    src: server-config.json
+    dest: "{{consul_config_file}}"

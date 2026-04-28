@@ -1,0 +1,29 @@
+---
+# tasks file for retrieve_imported_cert — present
+
+#
+# Author: Paul Stratman
+#
+# External dependancies: 
+# staging - group_vars/all/all
+# domain - group_vars/all/ng
+# system - provided via command line
+# the vault
+#
+- name: "Building {{ generated_cert_store }} if it doesn't exist"
+  ansible.builtin.file: 
+    path: "{{ generated_cert_store }}"
+    state: directory
+
+- name: "Extracting cert for {{ string_cert_alias }}"
+  ansible.builtin.command: "{{ cert_extraction_script }}"
+  args:
+    chdir: '{{ files_dir }}'
+
+  # TODO: review changed_when for: {{ cert_extraction_script }}
+- name: Generate PEM
+  assemble:
+    src: "{{ generated_cert_store }}"
+    dest: "{{ generated_cert_store }}/{{ pem_name }}"
+    mode: 0644
+    regexp: "{{ regexp_expression }}"

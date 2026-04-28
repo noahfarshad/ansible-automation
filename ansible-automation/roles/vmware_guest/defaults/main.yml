@@ -1,0 +1,96 @@
+vm_template: "{{ vsphere_string_template }}"
+vm_hostname: "{{ inventory_hostname }}"
+vm_name: "{{ system }}_{{ inventory_hostname }}"
+
+vsphere_vm_nics:
+  - name: "{{ string_vlan }}"
+    type: static
+    gateway: 192.168.0.9
+    ip: "{{ host_internal_vlan_ip }}"
+    netmask: "{{ string_internal_network_netmask }}"
+    start_connected: true
+  - name: "{{ string_management_vlan }}"
+    type: static
+    ip: "{{ string_management_vlan_ip }}"
+    netmask: "{{ string_management_network_netmask }}"
+    start_connected: true
+
+string_vm_struct:
+  extra_large:
+    disks:
+      # Main/sda
+      - size_gb: 128
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+      # sdb - /opt
+      - size_gb: 50
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+      # sdc - /u01
+      - size_gb: 411
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+      # sdd - /u02
+      - size_gb: 411
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+    hardware:
+      memory_mb: 28000
+      num_cpus: 8
+  large:
+    disks:
+      # Main/sda
+      - size_gb: 128
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+      # sdb - /opt
+      - size_gb: 50
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+      # sdc - /u01
+      - size_gb: 411
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+      # sdd - /u02
+      - size_gb: 411
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+    hardware:
+      memory_mb: 24000
+      num_cpus: 8
+  medium:
+    disks:
+      # Main/sda
+      - size_gb: 128
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+      # sdb - opt
+      - size_gb: 124
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+      # sdc - u01
+      - size_gb: 248
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+    hardware:
+      memory_mb: 16000
+      num_cpus: 4
+  small:
+    disks:
+      # Main/sda
+      - size_gb: 128
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+      # sdb - opt
+      - size_gb: 42
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+      # sdc - u01
+      - size_gb: 80
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+    hardware:
+      memory_mb: 2000
+      num_cpus: 2
+
+vm_size_target: "{{ string_vm_struct[vm_size] }}"

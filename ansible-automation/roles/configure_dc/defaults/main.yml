@@ -1,0 +1,11 @@
+---
+# defaults file for configure_dc
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# changed: ""
+# dcserver01: ""
+# dcserver02: ""
+# system: ""
+# users: ""

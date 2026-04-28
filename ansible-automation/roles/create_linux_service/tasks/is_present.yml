@@ -1,0 +1,25 @@
+---
+# tasks file for create_linux_service — present
+
+- name: "Assert that proper parameters have been sent"
+  ansible.builtin.assert:
+    that:
+      - service_name is defined
+      - service_dir is defined
+      - service_startup_cmd is defined
+
+- name: "Create {{service_name}} logs directory"
+  become: true
+  ansible.builtin.file:
+    path: "{{service_log_dir}}"
+    state: directory
+    owner: "{{app_user}}"
+    ansible.builtin.group: "{{app_group}}"
+    mode: 0755
+
+- name: "Create the {{service_name}} service"
+  become: true
+  ansible.builtin.template:
+    mode: 0755
+    src: service.sh
+    dest: "/etc/init.d/{{service_name}}"

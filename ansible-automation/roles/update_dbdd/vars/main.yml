@@ -1,0 +1,23 @@
+---
+decompressed_directory: /var/tmp/SQL/
+database_name: example
+ORACLE_HOME: /opt/oracle/app/ora_rmt/product/12.1.0
+ORACLE_SID: example
+
+
+fetch_qc_list:
+  - DBDD_QC_EMPTY_COL_COMMENTS
+  - DBDD_QC_EMPTY_TBL_COMMENTS
+  - DBDD_QC_COMMAS_IN_COL_COMMENTS
+  - DBDD_QC_COMMAS_IN_TBL_COMMENTS
+  - DBDD_QC_REPAIR_COL_COMMENTS
+  - DBDD_QC_REPAIR_TBL_COMMENTS
+
+
+fetch_csv_list:
+  - GENERATED_DBDD_ATTRIBUTES_CSV_FILE.csv
+  - GENERATED_DBDD_ENTITIES_CSV_FILE.csv
+  - GENERATED_DBDD_TABLE_CSV_FILE.csv
+
+
+

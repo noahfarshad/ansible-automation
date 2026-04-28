@@ -1,0 +1,1 @@
+#---Filebeats is not needed on VM3i but for deploy_monitoring.yml playbook to run this file needs to exist--------

@@ -1,0 +1,9 @@
+---
+# tasks file for download_installation_binaries — absent
+#
+# This role only performs checks/assertions (debug, fail, assert).
+# It makes no changes to the system, so 'absent' has no meaningful action.
+
+- name: "download_installation_binaries — absent is a no-op (this role only performs checks)"
+  ansible.builtin.debug:
+    msg: "Role 'download_installation_binaries' makes no system changes; nothing to undo."

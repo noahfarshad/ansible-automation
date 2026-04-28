@@ -1,0 +1,21 @@
+- name: Ensure NIC removals
+  become: true
+  ansible.builtin.lineinfile:
+    path: "/etc/sysconfig/network-scripts/ifcfg-{{ item.0 }}"
+    regexp: "^{{ item.1 }}.*"
+    state: absent
+  loop: "{{ ansible_interfaces | product(network_exclude_config) | list }}"
+  when: item.0 is not regex(network_exclude_regxp) and network_exclude_config is defined
+  notify: Restart Network
+
+- name: Ensure NIC additions
+  become: true
+  ansible.builtin.lineinfile:
+    path: "/etc/sysconfig/network-scripts/ifcfg-{{ item.0 }}"
+    regexp: "^{{ item.1 }}.*"
+    insertbefore: "BOF"
+    line: "{{ item.1 }}"
+    state: present
+  loop: "{{ ansible_interfaces | product(network_include_config) | list }}"
+  when: item.0 is not regex(network_exclude_regxp) and network_include_config is defined
+  notify: Restart Network

@@ -1,0 +1,9 @@
+---
+# defaults file for ansible_modules
+#
+# REQUIRED: ansible_files — list of files to push, with dest/owner/group/mode.
+# Example:
+# ansible_files:
+#   - { name: foo.py,  dest: /usr/share/ansible/plugins/modules/foo.py,  owner: root, group: root, mode: '0644' }
+#   - { name: bar.py,  dest: /usr/share/ansible/plugins/modules/bar.py,  owner: root, group: root, mode: '0644' }
+ansible_files: []

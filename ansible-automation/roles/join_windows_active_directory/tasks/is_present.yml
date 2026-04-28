@@ -1,0 +1,84 @@
+---
+# tasks file for join_windows_active_directory — present
+
+- name: Create top level ou string
+  ansible.builtin.set_fact:
+    top_level_ou: "OU={{ parameters.win_ou_string }},"
+  when: parameters.win_ou_string is defined and parameters.win_ou_string
+
+- name: Create second level ou string
+  ansible.builtin.set_fact:
+    second_level_ou: "OU={{ parameters.win_ou }},"
+  when: parameters.win_ou is defined and parameters.win_ou
+
+- name: Combine OU Strings
+  ansible.builtin.set_fact:
+    merge_ou: "{{ second_level_ou if second_level_ou is defined and second_level_ou else '' }}{{ top_level_ou }}"
+
+- name: Create Domain Computer Object
+  ignore_errors: true
+  vars:
+    ansible_user: "{{ hostvars[ 'dcserver01' + '.' + system.tld ].ansible_user }}"
+    ansible_password: "{{ hostvars[ 'dcserver01' + '.' + system.tld ].ansible_password }}"
+    ansible_winrm_transport: kerberos
+  microsoft.ad.computer:
+    name: "{{ inventory_hostname_short }}"
+    dns_hostname: "{{ inventory_hostname_short }}"
+    domain_username: "{{ users.domainadmin_user }}"
+    domain_password: "{{ users.domain_password }}"
+    enabled: yes
+    path: "{{ merge_ou }}DC={{ system.tld.split('.')[0] }},DC={{ system.tld.split('.')[1] }}"
+    state: present
+  delegate_to: "dcserver01.{{ system.tld }}"
+  register: domain_result
+
+##Below Join host to Domain Works
+#- name: Join host to Domain with automatic reboot
+#  microsoft.ad.membership:
+#    dns_domain_name: "{{ system.tld }}"
+#    hostname: "{{ inventory_hostname_short }}"
+#    domain_admin_user: "{{ users.domainadmin_user }}@{{ system.tld }}"
+#    domain_admin_password: "{{ users.domain_password }}"
+#    state: domain
+#    reboot: true
+
+ # win_domain_computer:
+ #   name: "{{ inventory_hostname_short }}"
+ #   dns_hostname: "{{ inventory_hostname_short }}"
+ #   domain_username: "{{ users.domainadmin_user }}"
+ #   domain_password: "{{ users.domain_password }}"
+ #   enabled: yes
+ #   ou: "{{ merge_ou }}DC={{ system.tld.split('.')[0] }},DC={{ system.tld.split('.')[1] }}"
+ #   state: present
+ # delegate_to: "dcserver01.{{ system.tld }}"
+ # register: domain_result
+
+#- name: Join Active Directory
+#  win_domain_membership:
+#    dns_domain_name: "{{ system.tld }}"
+#    hostname: "{{ inventory_hostname_short }}"
+#    domain_admin_user: "{{ users.domainadmin_user }}@{{ system.tld }}"
+#    domain_admin_password: "{{ users.domain_password }}"
+#    state: domain
+#  register: domain_state
+
+#- name: Join Active Directory with manual reboot in later task
+#  microsoft.ad.membership:
+#    workgroup_name: "{{ system.tld }}"
+#    hostname: "{{ inventory_hostname_short }}"
+#    domain_admin_user: "{{ users.domainadmin_user }}@{{ system.tld }}"
+#    domain_admin_password: "{{ users.domain_password }}"
+#    state: domain
+#  register: domain_state
+
+#- name: reboot host after joining Domain
+#  ansible.windows.win_reboot:
+#  when: domain_state.reboot_required
+    
+# TODO There is known bug in Ansible 2.8 and Python 2.7, test this again when we update   
+#- win_reboot:
+#  when: domain_state.reboot_required 
+#  connect_timeout: 60
+#  vars:
+#    ansible_user: "{{ hostvars[ inventory_hostname ].users.domainadmin_user }}"
+#    ansible_password: "{{ hostvars[ inventory_hostname ].users.domain_password }}"

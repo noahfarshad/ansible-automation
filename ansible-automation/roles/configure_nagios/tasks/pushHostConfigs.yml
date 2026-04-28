@@ -1,0 +1,117 @@
+---
+- name: install package RPM's
+  ansible.builtin.yum:
+    name: "{{item.baseURL}}"
+    state: present
+    disable_gpg_check: yes
+  become: true
+  loop: "{{nagiosRPMlist}}"
+- name: Copy Nagios Checks to Host
+  ansible.builtin.copy:
+    src: files/checks.tar.gz
+    dest: /tmp
+    owner: root
+    ansible.builtin.group: root
+    mode: 0755
+  become: true
+- name: unarchive checks
+  ansible.builtin.unarchive:
+    src: /tmp/checks.tar.gz
+    dest: /usr/lib64/nagios
+    remote_src: yes
+  become: true
+- name: create /etc/nagios directory
+  ansible.builtin.file:
+    path: /etc/nagios
+    state: directory
+  become: true
+- name: Move nrpe.cfg template to target host
+  ansible.builtin.template:
+    src: files/nrpe.cfg
+    dest: /etc/nagios
+    owner: root
+    ansible.builtin.group: root
+    mode: '0644'
+  become: true
+- name: Move /etc/nrpe.d base config file to target host
+  ansible.builtin.template:
+    src: files/base.cfg
+    dest: /etc/nrpe.d
+    owner: root
+    ansible.builtin.group: root
+    mode: '0644'
+  become: true
+- name: Move nagios sudoers file to target host
+  ansible.builtin.template:
+    src: files/nagios-nrpe
+    dest: /etc/sudoers.d
+    owner: root
+    ansible.builtin.group: root
+    mode: '0440'
+  become: true
+- name: enable sudo settings
+  ansible.builtin.command: "setsebool nagios_run_sudo on"
+  become: true
+  changed_when: false
+- name: enable nagios checks
+  ansible.builtin.command: "restorecon /usr/lib64/nagios/plugins/*"
+  become: true
+  changed_when: false
+- name: Move firewall settings modification template to target host
+  ansible.builtin.template:
+    src: files/nrpe.xml
+    dest: /etc/firewalld/services/
+    owner: root
+    ansible.builtin.group: root
+    mode: '0644'
+  become: true
+- name: Restart firewalld
+  ansible.builtin.service:
+    name: firewalld
+    state: restarted
+  become: true
+- name: Move Nagios profile script to target host
+  ansible.builtin.template:
+    src: files/nagios.sh
+    dest: /etc/profile.d
+    owner: root
+    ansible.builtin.group: root
+    mode: '0644'
+  become: true
+- name: Move kumpsend file to target host
+  ansible.builtin.template:
+    src: files/kumpsend
+    dest: /usr/local/bin
+    owner: root
+    ansible.builtin.group: root
+    mode: '0755'
+  become: true
+- name: Copy send_nrdp.sh script
+  ansible.builtin.copy:
+    src: files/send_nrdp.sh
+    dest: /usr/local/bin/send_nrdp.sh
+    owner: root
+    ansible.builtin.group: root
+    mode: 0755
+  become: true
+- name: Copy send_nrdp.py script
+  ansible.builtin.copy:
+    src: files/send_nrdp.py
+    dest: /usr/local/bin/send_nrdp.py
+    owner: root
+    ansible.builtin.group: root
+    mode: 0755
+  become: true
+- name : add NRPE service to firewalld
+  ansible.builtin.command: "firewall-cmd --add-service=nrpe --permanent"
+  become: true
+- name: reload firewalld
+  ansible.builtin.command: "firewall-cmd --reload"
+  become: true
+  # TODO: review changed_when for: firewall-cmd --reload
+- name: enable and start nrpe service
+  ansible.builtin.systemd:
+    name: nrpe
+    enabled: yes
+    state: started
+  become: true

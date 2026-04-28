@@ -1,0 +1,10 @@
+- name: Apply PAM limits if necessary
+  become: true
+  pam_limits:
+    dest: "{{ pam_limits_target }}"
+    domain: "{{ item.domain }}"
+    limit_type: "{{ item.limit_type }}"
+    limit_item: "{{ item.limit_item }}"
+    value: "{{ item.value }}"
+  loop: "{{ pam_group_limits }}"
+  when: pam_group_limits is defined

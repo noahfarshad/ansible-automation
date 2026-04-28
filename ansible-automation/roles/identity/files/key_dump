@@ -1,0 +1,143 @@
+Keystore type: jks
+Keystore provider: SUN
+
+Your keystore contains 3 entries
+
+Alias name: gcca
+Creation date: Mar 4, 2019
+Entry type: trustedCertEntry
+
+Owner: CN=GCCA, OU=STRATCOM, OU=PKI, OU=DoD, O=U.S. Government, C=US
+Issuer: CN=GCCA, OU=STRATCOM, OU=PKI, OU=DoD, O=U.S. Government, C=US
+Serial number: a2506e1
+Valid from: Mon Mar 04 20:15:04 GMT 2019 until: Thu Mar 01 20:15:04 GMT 2029
+Certificate fingerprints:
+	 MD5:  01:8B:C9:34:4B:66:C0:F7:84:CE:4C:55:4D:43:72:4F
+	 SHA1: 87:6E:B5:26:ED:84:63:4D:53:56:75:3D:66:CC:FB:02:63:1F:90:2C
+	 SHA256: 36:28:74:12:AC:98:58:34:FC:C0:F1:6E:5E:2C:0B:A0:89:68:44:A4:E8:63:D4:5A:49:6D:89:80:9C:E2:04:44
+Signature algorithm name: SHA256withRSA
+Subject Public Key Algorithm: 2048-bit RSA key
+Version: 3
+
+Extensions: 
+
+#1: ObjectId: 2.5.29.14 Criticality=false
+SubjectKeyIdentifier [
+KeyIdentifier [
+0000: 8D 09 03 FF 2E 3D F9 69   EE 2F 6C CB C2 94 DF 0A  .....=.i./l.....
+0010: 56 FE DA 72                                        V..r
+]
+]
+
+
+
+*******************************************
+*******************************************
+
+
+Alias name: extsvcs
+Creation date: Mar 4, 2019
+Entry type: trustedCertEntry
+
+Owner: CN=test, O=example, L=Stratcom, ST=Ne, C=US
+Issuer: CN=localhost, O=example, L=Stratcom, ST=Ne, C=US
+Serial number: e0b011e13bbabdc9
+Valid from: Sat Jan 19 19:53:41 GMT 2019 until: Sun Jan 19 19:53:41 GMT 2020
+Certificate fingerprints:
+	 MD5:  84:23:86:52:F5:3C:E4:46:B6:4D:1A:16:7F:E0:65:97
+	 SHA1: BA:7F:C5:EA:45:55:37:C2:F7:06:9D:9F:D4:60:F7:BE:08:60:E1:E2
+	 SHA256: AA:5C:D7:3A:93:4B:DB:D3:EF:AB:5A:85:53:E5:9B:43:0D:8C:F0:EC:A8:DD:2A:61:BF:CB:0C:1E:BC:E5:FA:54
+Signature algorithm name: SHA1withRSA
+Subject Public Key Algorithm: 2048-bit RSA key
+Version: 3
+
+Extensions: 
+
+#1: ObjectId: 2.5.29.19 Criticality=false
+BasicConstraints:[
+  CA:false
+  PathLen: undefined
+]
+
+#2: ObjectId: 2.5.29.31 Criticality=false
+CRLDistributionPoints [
+  [DistributionPoint:
+     [URIName: http://localhost/ca.crl]
+]]
+
+#3: ObjectId: 2.5.29.37 Criticality=false
+ExtendedKeyUsages [
+  clientAuth
+]
+
+#4: ObjectId: 2.5.29.15 Criticality=false
+KeyUsage [
+  DigitalSignature
+  Key_Encipherment
+  Data_Encipherment
+]
+
+#5: ObjectId: 2.16.840.1.113730.1.1 Criticality=false
+NetscapeCertType [
+   SSL client
+]
+
+
+
+*******************************************
+*******************************************
+
+
+Alias name: gapsca.local
+Creation date: Mar 4, 2019
+Entry type: trustedCertEntry
+
+Owner: CN=EXAMPLE-CA, DC=gaps, DC=cie, DC=ng, DC=local
+Issuer: CN=EXAMPLE-CA, DC=gaps, DC=cie, DC=ng, DC=local
+Serial number: 356c03d11867baaa4c827afa0b5f169e
+Valid from: Wed Sep 17 20:47:09 GMT 2014 until: Tue Sep 17 20:57:08 GMT 2024
+Certificate fingerprints:
+	 MD5:  69:37:68:E7:7B:55:9A:61:4B:25:8D:BA:06:CA:B4:1B
+	 SHA1: 1C:77:63:A9:24:19:84:2C:60:35:DE:47:92:DC:8D:71:0A:79:37:EC
+	 SHA256: 03:36:DE:57:AD:67:2F:C6:47:5C:87:5A:ED:E4:A0:87:CF:ED:59:BB:CD:C4:C3:C2:C1:4D:0F:EC:AE:DC:52:60
+Signature algorithm name: SHA1withRSA
+Subject Public Key Algorithm: 2048-bit RSA key
+Version: 3
+
+Extensions: 
+
+#1: ObjectId: 1.3.6.1.4.1.311.20.2 Criticality=false
+0000: 1E 04 00 43 00 41                                  ...C.A
+
+
+#2: ObjectId: 1.3.6.1.4.1.311.21.1 Criticality=false
+0000: 02 01 00                                           ...
+
+
+#3: ObjectId: 2.5.29.19 Criticality=true
+BasicConstraints:[
+  CA:true
+  PathLen:2147483647
+]
+
+#4: ObjectId: 2.5.29.15 Criticality=true
+KeyUsage [
+  DigitalSignature
+  Key_CertSign
+  Crl_Sign
+]
+
+#5: ObjectId: 2.5.29.14 Criticality=false
+SubjectKeyIdentifier [
+KeyIdentifier [
+0000: 6E 89 0B B7 1C FD 9E 9C   16 38 7B 45 C7 1C 1F 16  n........8.E....
+0010: 4B 11 65 1D                                        K.e.
+]
+]
+
+
+
+*******************************************
+*******************************************
+
+

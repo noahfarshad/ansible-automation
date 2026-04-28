@@ -1,0 +1,15 @@
+---
+# defaults file for import_tenant_GPOs
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# domain_ou: ""
+# pre_ifc: ""
+# system_name: ""
+# tenant1: ""
+# tenant1_common_gpos: ""
+# tenant1_dc_gpos: ""
+# tenant1_domain_gpos: ""
+# tenant1_vdi_gpos: ""
+# tenant1_workstations_gpos: ""

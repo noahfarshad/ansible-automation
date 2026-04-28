@@ -1,0 +1,41 @@
+#set variable timestamp to grab date and time of ansible
+- name: get timestamp
+  ansible.builtin.command: date +%Y%m%d-%H-%M-%S
+  register: timestamp
+
+#grab only the date and time to be set 
+  changed_when: false
+- name: Set variables for time
+  ansible.builtin.set_fact:
+    currdate: "{{ timestamp.stdout[0:14] }}"
+
+# copy running config to start up with date
+# wait for the copy to bootflash complete 
+- name: Copy running config to bootflash
+  nxos_command:
+    commands: 
+    - conf t
+    - copy run bootflash:{{currdate}}-{{cfg_name}}-{{site}}-{{ifc_current}}-CFGbackup.txt
+    ansible.builtin.wait_for:
+    - result[1] contains complete
+
+#changes the RUNNING config with the config called out in replace_src.
+#if the new configs fails, troubleshoot and if still fails then reload the switch. this will reboot the switch back to startup
+#NOTE: this does not change start up config. This could be useful to test out a config before adding it to start up
+- name: replace running config with newly release config
+  cisco.nxos.nxos_config:
+    #replace_src: TORSWITCH02_TEST.txt
+    replace_src: '{{ cfg_name }}-{{ site }}-{{ ifc_next }}.txt'
+    ansible.builtin.replace: config
+
+#spits out the differencew between startup and running config to the cli
+- name: diffing startup and running config for {{ name }}
+  cisco.nxos.nxos_config:
+    diff_against: startup
+  diff: true
+
+
+
+
+
+

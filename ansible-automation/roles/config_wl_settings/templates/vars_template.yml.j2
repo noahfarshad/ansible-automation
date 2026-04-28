@@ -1,0 +1,52 @@
+---
+
+# Domain Name
+WebLogic_Domain: {{WebLogic_Domain}}
+
+#Admin Server Properties
+Admin_Server: {{Admin_Server}}
+Admin_Server_HTTP_Port: {{Admin_Server_HTTP_Port}}
+Admin_Server_HTTPS_Port: {{Admin_Server_HTTPS_Port}}
+Admin_Username: {{Admin_Username}}
+
+Admin_Protocol: {{Admin_Protocol}}
+
+gc2_wlst_path: {{gc2_wlst_path}}
+
+os_user: {{os_user}}
+os_group: {{os_group}}
+gc2_remote_dir: {{gc2_remote_dir}}
+
+ansible_os_user: {{ansible_os_user}}
+ansible_os_group: {{ansible_os_group}}
+
+
+
+# Important Note.  In order to connect to the Admin Server you need SSL encrypted certificate (config) and Key files.
+#  In the example environment those files are created by role: installers/create_wlst_credentials.  And this role assumes
+#  those files are created and exist in the specified directory.
+# 
+#  The files that are created are:
+#     /home/apps/app_admin/gc2/wlConfig.secure
+#     /home/apps/app_admin/gc2/wlKey.secure
+# 
+#  If this role is used on another project; project specific config and key files will have to be created
+#  and used.
+
+admin_server_encrypted_config_file: {{admin_server_encrypted_config_file}}
+admin_server_encrypted_key_file: {{admin_server_encrypted_key_file}}
+
+pickle_file_name: {{pickle_file_name}}
+
+#wl_config_settings is a dictionary/list, loop through all items
+wl_config_settings:
+{% for wl_config in wl_config_settings %}
+- name: {{ wl_config.name }}
+  IsModifiable: {{ wl_config.IsModifiable }}
+  sectionName: {{ wl_config.sectionName }}
+  settingPath: {{ wl_config.settingPath }}
+  settingName: {{ wl_config.settingName }}
+  settingValue: {{ wl_config.settingValue }}
+
+{% endfor %}
+

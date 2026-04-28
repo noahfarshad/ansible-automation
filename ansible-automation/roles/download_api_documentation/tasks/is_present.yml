@@ -1,0 +1,32 @@
+---
+# tasks file for download_api_documentation — present
+
+# Variables are inherited from command line arguments on package_example.yml
+
+# Create Staging directory if it does not exist
+- name: Create string staging directory if it does not exist.
+  ansible.builtin.file: path="{{staging}}" state=directory mode=0755
+
+#Download swagger files
+- name: Download {{version}} API documentation artifacts from nexus to staging
+  ansible.builtin.get_url:
+    url: "http://{{nexus_host}}/{{nexus_public}}/{{example_group}}/{{item.1}}/{{version}}/{{item.1}}-{{version}}{{item.0.classifier}}.{{item.0.ext}}"
+    dest: "{{staging}}"
+  with_subelements:
+    - "{{api_documentation}}"
+    - files
+
+#Collect swagger files and compress into a single file
+- name: Compress and collect all swagger files into a single file
+  ansible.builtin.shell: "cd {{staging}} && zip swaggerDocumentation-{{version}}.zip *swaggerDocumentation.zip"
+
+#Remove the unneeded dps swagger files after they've been collected
+  # TODO: review changed_when for: cd {{staging}} && zip swaggerDocumentation-{{version}}.zip *
+- name: Remove the single swagger zip files after compiling them
+  ansible.builtin.file:
+    path: "{{staging}}{{item.1}}-{{version}}{{item.0.classifier}}.{{item.0.ext}}"
+    state: absent
+  with_subelements:
+    - "{{api_documentation}}"
+    - files
+  when: "'{{item.0.classifier}}' == '-swaggerDocumentation'"

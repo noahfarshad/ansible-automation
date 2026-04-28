@@ -1,0 +1,4 @@
+User_Alias   SDO_TEAM = +un_sys-sdo-p
+Cmnd_Alias   ACCT_MENU = /sa/ldap/SDO/menu
+Host_Alias   SDO_MWPROD = afw-mw-01p,afw-mw-02p,afw-mw-03p,afw-mw-04p,afw-mw-05p
+SDO_TEAM     SDO_MWPROD = LOG_OUTPUT: LOG_INPUT: ACCT_MENU

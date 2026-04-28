@@ -1,0 +1,41 @@
+---
+- name: Create Solaris VM
+  delegate_to: localhost
+  block:
+  - name: Collect Current Timestamp 
+    ansible.builtin.shell: "{{ date_command_format }}"
+    register: tstamp
+    changed_when: false
+  
+  - name: Create vmware_guest List
+    ansible.builtin.set_fact:
+      vmware_guest_dict:
+        annotation: "{{ vm_annotation_msg }}"
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+        username: "{{ users.vcenter_admin_user }}"
+        password: "{{ users.vcenter_admin_password }}"
+        validate_certs: False
+        name: "{{ inventory_hostname }}"
+        ansible.builtin.template: "{{ parameters.template }}"
+        datacenter: "{{ vmware.datacenter }}"
+        folder: "{{ parameters.folder_name }}"
+        cluster: "{{ vmware.system_cluster }}"
+        hardware: "{{ hardware | default(omit) }}"
+        networks:
+        - name: "{{ network_name }}"
+          start_connected: True
+        state: poweredon
+
+  - name: Dynamically Add esxi_hostname for Deploying to Specific ESXi Host
+    ansible.builtin.set_fact:
+      vmware_guest_dict_custom: "{{ vmware_guest_dict|combine({'esxi_hostname' : esxi_hostname }) }}"
+    when: "esxi_hostname is defined and esxi_hostname"
+
+  - name: Dynamically Add Cluster to Dict
+    ansible.builtin.set_fact:
+      vmware_guest_dict_custom: "{{ vmware_guest_dict|combine({'cluster' : vmware.system_cluster }) }}"
+    when: "( esxi_hostname is defined and not esxi_hostname) or (esxi_hostname is undefined)"
+
+  - name: Create Solaris VM
+    vmware_guest:
+      "{{ vmware_guest_dict_custom }}"

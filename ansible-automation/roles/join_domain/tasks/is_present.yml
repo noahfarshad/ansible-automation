@@ -1,0 +1,122 @@
+---
+# tasks file for join_domain
+- block:
+    - name: Wait for system to become reachable
+      ansible.builtin.wait_for_connection:
+        delay: 5
+        timeout: 120
+      ignore_errors: true 
+
+    - name: Join host to Domain
+      vars:
+      microsoft.ad.membership:
+        dns_domain_name: "{{domain}}"
+        ansible.builtin.hostname: "{{short_hostname}}"
+        domain_admin_user: "{{domainadmin_user}}@{{domain}}"
+        domain_admin_password: "{{domain_password}}"
+        domain_ou_path: "{{domain_ou_path}}"
+        state: domain
+        ansible.builtin.reboot: true
+      register: first_result  
+      ignore_errors: true  
+
+    # - name: Join host to Domain 2nd time
+    #   vars:
+    #     # ansible_winrm_transport: "ntlm"
+    #     # ansible_winrm_server_cert_validation: "ignore"
+    #     # ansible_connection: "winrm"
+    #     # ansible_winrm_user: "{{local_account_admin}}"
+    #     # ansible_password: "{{local_account_password}}"
+    #     # ansible_become_pass: "{{local_account_password}}"
+    #   microsoft.ad.membership:
+    #     dns_domain_name: "{{domain}}"
+    #     hostname: "{{short_hostname}}"
+    #     domain_admin_user: "{{domainadmin_user}}@{{domain}}"
+    #     domain_admin_password: "{{domain_password}}"
+    #     domain_ou_path: "{{domain_ou_path}}"
+    #     state: domain
+    #     reboot: true
+    #   ignore_errors: true
+
+    # - name: Join host to Domain 3rd time :(
+    #   vars:
+    #     # ansible_winrm_transport: "ntlm"
+    #     # ansible_winrm_server_cert_validation: "ignore"
+    #     # ansible_connection: "winrm"
+    #     # ansible_winrm_user: "{{local_account_admin}}"
+    #     # ansible_password: "{{local_account_password}}"
+    #     # ansible_become_pass: "{{local_account_password}}"
+    #   microsoft.ad.membership:
+    #     dns_domain_name: "{{domain}}"
+    #     hostname: "{{short_hostname}}"
+    #     domain_admin_user: "{{domainadmin_user}}@{{domain}}"
+    #     domain_admin_password: "{{domain_password}}"
+    #     domain_ou_path: "{{domain_ou_path}}"
+    #     state: domain
+    #     reboot: true
+    #   ignore_errors: true
+
+    # - name: Join host to Domain 4th time :(
+    #   vars:
+    #     # ansible_winrm_transport: "ntlm"
+    #     # ansible_winrm_server_cert_validation: "ignore"
+    #     # ansible_connection: "winrm"
+    #     # ansible_winrm_user: "{{local_account_admin}}"
+    #     # ansible_password: "{{local_account_password}}"
+    #     # ansible_become_pass: "{{local_account_password}}"
+    #   microsoft.ad.membership:
+    #     dns_domain_name: "{{domain}}"
+    #     hostname: "{{short_hostname}}"
+    #     domain_admin_user: "{{domainadmin_user}}@{{domain}}"
+    #     domain_admin_password: "{{domain_password}}"
+    #     domain_ou_path: "{{domain_ou_path}}"
+    #     state: domain
+    #     reboot: true
+    #   ignore_errors: true
+
+    # - name: Join host to Domain 5th time :(
+    #   vars:
+    #     # ansible_winrm_transport: "ntlm"
+    #     # ansible_winrm_server_cert_validation: "ignore"
+    #     # ansible_connection: "winrm"
+    #     # ansible_winrm_user: "{{local_account_admin}}"
+    #     # ansible_password: "{{local_account_password}}"
+    #     # ansible_become_pass: "{{local_account_password}}"
+    #   microsoft.ad.membership:
+    #     dns_domain_name: "{{domain}}"
+    #     hostname: "{{short_hostname}}"
+    #     domain_admin_user: "{{domainadmin_user}}@{{domain}}"
+    #     domain_admin_password: "{{domain_password}}"
+    #     domain_ou_path: "{{domain_ou_path}}"
+    #     state: domain
+    #     reboot: true
+    #   ignore_errors: true
+
+    # - name: Join host to Domain 6th time :(
+    #   vars:
+    #     ansible_winrm_transport: "ntlm"
+    #     ansible_winrm_server_cert_validation: "ignore"
+    #     ansible_connection: "winrm"
+    #     ansible_winrm_user: "{{local_account_admin}}"
+    #     ansible_password: "{{local_account_password}}"
+    #     ansible_become_pass: "{{local_account_password}}"
+    #   microsoft.ad.membership:
+    #     dns_domain_name: "{{domain}}"
+    #     hostname: "{{short_hostname}}"
+    #     domain_admin_user: "{{domainadmin_user}}@{{domain}}"
+    #     domain_admin_password: "{{domain_password}}"
+    #     domain_ou_path: "{{domain_ou_path}}"
+    #     state: domain
+    #     reboot: true
+    #   ignore_errors: true    
+
+    # - name: Wait for system to become reachable over WinRM
+    #   vars:
+    #     ansible_winrm_user: "{{domainadmin_user}}"
+    #     ansible_winrm_transport: "kerberos"
+    #     ansible_winrm_server_cert_validation: "ignore"
+    #     ansible_connection: "winrm"   
+    #   ansible.builtin.wait_for_connection:
+    #     delay: 5
+    #     timeout: 120
+  become: true

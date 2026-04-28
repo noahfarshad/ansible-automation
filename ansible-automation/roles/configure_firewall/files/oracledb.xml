@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>oracledb</short>
+  <description>For oracle database communications.</description>
+  <port protocol="tcp" port="1521"/>
+  <port protocol="tcp" port="40000-65535"/>
+</service>

@@ -1,0 +1,8 @@
+---
+# defaults file for download_apache_config
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# apache_scm: ""
+# staging: ""

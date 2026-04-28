@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "rest_api": {
+      "enabled": false
+    }
+  }
+}

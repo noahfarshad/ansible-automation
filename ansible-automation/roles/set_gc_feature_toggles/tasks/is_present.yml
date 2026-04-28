@@ -1,0 +1,11 @@
+---
+# tasks file for set_gc_feature_toggles — present
+
+- name: Update the feature toggles
+  become: true
+  ansible.builtin.lineinfile:
+    path: "{{target_properties}}"
+    regexp: ".{{item}}."
+    line: "    <fts:feature fts:name=\"{{item}}\" fts:value=\"{{toggle_state}}\">"
+  loop:
+    - "{{feature_toggles}}"

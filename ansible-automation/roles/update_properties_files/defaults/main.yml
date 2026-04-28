@@ -1,0 +1,3 @@
+sub_domain: trans
+server_identity_regexp: "{{ sub_domain }}.{{ source }}.{{ local_domain }}"
+server_identity: "{{ sub_domain }}.{{ system }}.{{ local_domain }}"

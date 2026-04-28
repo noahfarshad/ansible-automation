@@ -1,0 +1,159 @@
+---
+# tasks file for configure_winrm
+# this role defaualts to using the users.domainadmin_user user with users.domain_password host vars
+# to perform the file copy and run the script
+# to override these you can set vmcopy_user and vmcopy_pass
+- block:
+    - name: Wait for system to become reachable over WinRM
+      vars:
+        ansible_winrm_transport: "ntlm"
+        ansible_winrm_server_cert_validation: "ignore"
+        ansible_connection: "winrm"
+        ansible_winrm_user: "{{local_account_admin}}"
+        ansible_password: "{{local_account_password}}"
+        ansible_become_pass: "{{local_account_password}}"
+      ansible.builtin.wait_for_connection:
+        delay: 5
+        timeout: 120
+        
+    - name: Initial Windows VM configs
+      delegate_to: localhost
+      block:
+      - name: Get Current Timestamp
+        ansible.builtin.shell: "{{ date_command_format }}"
+        register: tstamp
+        changed_when: false
+
+      - name: Create vmware_guest List
+        ansible.builtin.set_fact:
+          vmware_guest_dict_custom_dict:
+            annotation: "{{ vm_annotation_msg }}"
+            ansible.builtin.hostname: "{{ vcenter_hostname }}"
+            username: "{{ vsphere_account }}"
+            password: "{{ vsphere_password }}"
+            validate_certs: false
+            name: "{{ inventory_hostname }}"
+            ansible.builtin.template: "{{ template_name }}"
+            datacenter: "{{ vsphere_datacenter }}"
+            folder: "{{ vsphere_folder }}"
+            datastore: "{{ vsphere_datastore }}"       
+            hardware: "{{ hardware | default(omit) }}"
+            customization:
+              autologon: "true"
+              autologoncount: 10
+              ansible.builtin.hostname: "{{ inventory_hostname_short }}"
+              dns_servers: "{{ dns_servers }}"
+              password: "{{ domain_password }}"
+              ansible.builtin.timezone: "{{ parameters.windows_timezone_code | default(omit)}}" 
+            wait_for_ip_address: True
+            wait_for_customization: True
+            state: poweredon
+
+      - name: Dynamically Add esxi_hostname for Deploying to Specific ESXi Host
+        ansible.builtin.set_fact:
+          vmware_guest_dict_custom: "{{ vmware_guest_dict_custom_dict|combine({'esxi_hostname' : esxi_hostname }) }}"
+        when: "esxi_hostname is defined and esxi_hostname"
+
+      - name: Dynamically Add Cluster to Dict
+        ansible.builtin.set_fact:
+          vmware_guest_dict_custom: "{{ vmware_guest_dict_custom_dict|combine({'cluster' : vsphere_cluster }) }}"
+        when: "(esxi_hostname is defined and not esxi_hostname) or (esxi_hostname is undefined)"
+
+
+      - name: Windows VMware Deploy (this is a depreciated task, will be removed in future revision)
+        community.vmware.vmware_guest:
+          "{{ vmware_guest_dict_custom }}"
+        register: deploy_vm_results
+
+      - name: Wait for Confirmation of vmwareGuestTools Running
+        community.vmware.vmware_guest_info:
+          ansible.builtin.hostname: "{{ vcenter_hostname }}"
+          username: "{{ vsphere_account }}"
+          password: "{{ vsphere_password }}"
+          datacenter: "{{ vsphere_datacenter }}"
+          validate_certs: no
+          name: "{{ inventory_hostname }}"
+        register: facts
+        delay: 60
+        retries: 5 
+        until: facts.instance.guest_tools_status == "guestToolsRunning"
+
+      - name: Remove Host Record from Active Directory 
+        microsoft.ad.computer:
+          name: "{{ inventory_hostname_short }}"
+          dns_hostname: "{{ inventory_hostname }}"
+          domain_username: "{{ domainadmin_user }}"
+          domain_password: "{{ domain_password }}"
+          state: absent
+        delegate_to: "dcserver01.{{ domain }}"
+        when:
+        - deploy_vm_results.changed
+        - 'inventory_hostname_short is not search("dcserver*")'
+        tags: [ active_directory_remove ]
+
+    - name: Copy WinRm Script to VM
+      vars:
+        src_file: "ConfigureRemotingForAnsible.ps1"
+        dst_path: "C:\\Windows\\"
+      delegate_to: localhost
+      block:
+      - name: Create temp folder
+        community.vmware.vmware_guest_file_operation:
+          ansible.builtin.hostname: "{{ vcenter_hostname }}"
+          username: "{{ vsphere_account }}"
+          password: "{{ vsphere_password }}"
+          datacenter: "{{ vsphere_datacenter }}"
+          validate_certs: false
+          vm_id: "{{ inventory_hostname }}"
+          vm_username: "{{ local_account_admin }}"
+          vm_password: "{{ local_account_password }}"
+          directory:
+            operation: "mktemp"
+            prefix: "C"
+            suffix: "Ansible"
+        register: result
+        delegate_to: localhost
+        ignore_errors: true 
+
+      - name: copy file to vm
+        vmware_guest_file_operation:
+          ansible.builtin.hostname: "{{ vcenter_hostname }}"
+          username: "{{ vsphere_account }}"
+          password: "{{ vsphere_password }}"
+          datacenter: "{{ vsphere_datacenter }}"
+          validate_certs: false
+          vm_id: "{{ inventory_hostname }}"
+          vm_username: "{{ local_account_admin }}"
+          vm_password: "{{ local_account_password }}"
+          ansible.builtin.copy:
+              src: "../scripts/{{ src_file }}"
+              dest: "{{ result.dir }}\\{{ src_file }}"
+              overwrite: True
+        ignore_errors: true 
+
+      - name: Run ConfigureRemotingForAnsible
+        register: shell_command_output
+        ignore_errors: true
+        community.vmware.vmware_vm_shell: 
+          datacenter: "{{ vsphere_datacenter }}"
+          folder: "{{ folder_name | default(omit) }}"
+          ansible.builtin.hostname: "{{ vcenter_hostname }}"
+          password: "{{ vsphere_password }}"
+          username: "{{ vsphere_account }}"
+          validate_certs: false
+          vm_id: "{{ inventory_hostname }}"
+          vm_username: "{{ local_account_admin }}"
+          vm_password: "{{ local_account_password }}"
+          vm_shell: 'C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe'
+          vm_shell_args: "powershell.exe -ExecutionPolicy Unrestricted -File {{ result.dir }}\\{{ src_file }} -CertValidityDays 1825 -ForceNewSSLCert -SkipNetworkProfileCheck >> {{ result.dir }}ansible_log.txt"
+          wait_for_process: true
+          timeout: 300
+        delay: 60   
+        retries: 5
+        until: shell_command_output.failed == False 
+     
+    - name: wait for connection
+      ansible.builtin.wait_for_connection:
+        timeout: 120
+      delegate_to: "{{ inventory_hostname }}"
+  become: true

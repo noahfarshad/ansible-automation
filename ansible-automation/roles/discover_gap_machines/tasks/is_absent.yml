@@ -1,0 +1,9 @@
+---
+# tasks file for discover_gap_machines — absent
+#
+# This role's operation is environment-specific or one-off and has no
+# clean automated inverse. Define teardown manually if needed.
+
+- name: "discover_gap_machines — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: "Role 'discover_gap_machines' has no automated inverse. Define teardown manually if required."

@@ -1,0 +1,55 @@
+- name: Deploy Redhat VM
+  delegate_to: localhost
+  tags: [ deploy_rhel ]
+  block: 
+  - name: Collect Current Timestamp
+    ansible.builtin.shell: "{{ date_command_format }}"
+    register: tstamp
+    changed_when: false
+
+  - name: Create vmware_guest_dict_custom List
+    ansible.builtin.set_fact:
+      vmware_guest_dict_custom_dict:
+        annotation: "{{ vm_annotation_msg }}"
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+        username: "{{ users.vcenter_admin_user }}"
+        password: "{{ users.vcenter_admin_password }}"
+        validate_certs: False
+        name: "{{ inventory_hostname }}"
+        ansible.builtin.template: "{{ parameters.template  }}"
+        datacenter: "{{ vmware.datacenter }}"
+        folder: "{{ parameters.folder_name | default(omit) }}"
+        datastore: "{{ datastore | default(vmware.datastore_cluster) }}"       
+        networks: "{{ networking.interfaces | default(omit)}}"
+#        hardware: "{{ hardware | default(omit) }}"
+        customization:
+          dns_servers: "{{ networking.dns | default(omit) }}"
+          ansible.builtin.hostname: "{{ inventory_hostname_short }}"
+        wait_for_ip_address: True
+        wait_for_customization: True
+        state: poweredon
+
+  - name: Dynamically Add esxi_hostname for Deploying to Specific ESXi Host 
+    ansible.builtin.set_fact:
+      vmware_guest_dict_custom: "{{ vmware_guest_dict_custom_dict|combine({'esxi_hostname' : esxi_hostname }) }}"
+    when: "esxi_hostname is defined and esxi_hostname"
+
+  - name: Dynamically Add Cluster to Dict       
+    ansible.builtin.set_fact:
+      vmware_guest_dict_custom: "{{ vmware_guest_dict_custom_dict|combine({'cluster' : vmware.system_cluster }) }}"
+    when: "(esxi_hostname is defined and not esxi_hostname) or (esxi_hostname is undefined)"
+
+  - name: Create Redhat VM
+    vmware_guest:
+      "{{ vmware_guest_dict_custom }}"
+    register: vm_deploy_result
+
+  - name: If VM was deployed, remove from known_hosts for new record
+    known_hosts:
+      name: "{{ inventory_hostname }}"
+      path: "/root/.ssh/known_hosts"
+      state: absent
+    when: vm_deploy_result.changed 
+
+
+

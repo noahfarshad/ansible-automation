@@ -1,0 +1,4 @@
+test_image:
+  - name: node-ff
+    tag: 1.0.0
+base_repo_url: 10.10.10.89:5000

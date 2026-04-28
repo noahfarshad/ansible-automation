@@ -1,0 +1,9 @@
+---
+# tasks file for remove_known_hosts — absent
+#
+# Removing known_hosts entries is a one-way operation. The known_hosts
+# entries will be re-added the next time the host is contacted via SSH.
+
+- name: remove_known_hosts — absent is a no-op
+  ansible.builtin.debug:
+    msg: "Removing known_hosts entries is a one-way operation; SSH will re-add."

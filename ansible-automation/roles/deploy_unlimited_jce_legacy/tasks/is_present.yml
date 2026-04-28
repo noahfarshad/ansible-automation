@@ -1,0 +1,44 @@
+---
+# tasks file for deploy_unlimited_jce_legacy — present
+
+# Deploys US_export_policy.jar for legacy Java 1.7
+
+- name: Copy OAM JCE files
+  become: true
+  become_user: app_admin
+  ansible.builtin.copy:
+    src: "{{item}}"
+    dest: "{{java_oam_jre_security_directory}}"
+    owner: "app_admin"
+    ansible.builtin.group: "app_admin"
+    mode: "0600"
+  when: "'vm2' in inventory_hostname"
+  loop:
+    "{{jce_list}}"
+
+
+- name: Copy JCE files for Legacy
+  become: true
+  become_user: app_admin
+  ansible.builtin.copy:
+    src: "{{item}}"
+    dest: "{{java_legacy_jre_security_directory}}"
+    owner: "app_admin"
+    ansible.builtin.group: "app_admin"
+    mode: "0600"
+  loop:
+    "{{jce_list}}"
+
+
+- name: Copy JCE files for Legacy vm4i
+  become: true
+  become_user: app_admin
+  ansible.builtin.copy:
+    src: "{{item}}"
+    dest: "{{java_legacy_vm4i_jre_security_directory}}"
+    owner: "app_admin"
+    ansible.builtin.group: "app_admin"
+    mode: "0600"
+  when: "'vm4i' in inventory_hostname"
+  loop:
+    "{{jce_list}}"

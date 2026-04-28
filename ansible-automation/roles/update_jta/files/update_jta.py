@@ -1,0 +1,7 @@
+connect(userConfigFile='/home/apps/app_admin/gc2/wl_Config.secure', userKeyFile='/home/apps/app_admin/gc2/wl_Key.secure', url='t3://vm4:7201')
+edit()
+startEdit()
+cd('JTA/wl_domain')
+cmo.setTimeoutSeconds(120)
+activate()
+exit()

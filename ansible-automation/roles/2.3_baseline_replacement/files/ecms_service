@@ -1,0 +1,91 @@
+#!/bin/sh
+
+# This script is meant to start the Enterprise Classification MicroService (ECMS) instance
+#
+# /etc/init.d/{{ecms_service_name}}
+# Subsystem file for ecms
+#
+# chkconfig: 2345 95 05
+# description: ECMS daemon
+#
+# processname: {{ecms_service_name}}
+# config: /etc/sysconfig/{{ecms_service_name}}
+# pidfile: {{ecms_dir}}/{{ecms_service_name}}.pid
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+# pull in sysconfig settings
+[ -f /etc/sysconfig/{{ecms_service_name}} ] && . /etc/sysconfig/{{ecms_service_name}}
+
+
+SERVICE_NAME={{ecms_service_name}}
+RUN_AS="app_admin"
+PIDFILE={{ecms_dir}}/${SERVICE_NAME}.pid
+LOCKFILE=/var/lock/subsys/${SERVICE_NAME}
+ECMS_HOME={{ecms_dir}}
+SYSTEM_VARS="{{system_properties}}"
+SERVER_CLASSPATH="{{ecms_classpath}}"
+CMD_HEAD="{{java_path}}"
+ADDITIONAL_PARAMS="-server -cp ${SERVER_CLASSPATH} ${SYSTEM_VARS}"
+CMD="${CMD_HEAD} ${ADDITIONAL_PARAMS} {{ecms_application_classname}} server ${ECMS_HOME}/{{service_configuration}}"
+
+start() {
+    echo "Starting $SERVICE_NAME ..."
+    touch ${LOCKFILE}
+
+    if [ -f $PIDFILE ]
+    then
+        echo -n "Process ${SERVICE_NAME} appears to be running ($( cat ${PIDFILE} )): ";echo_warning;echo
+        exit 0
+    fi
+
+    touch ${PIDFILE}
+    chown ${RUN_AS}:${RUN_AS} ${PIDFILE}
+
+    /bin/su - ${RUN_AS} -c "${CMD}" 1> ${ECMS_HOME}/${SERVICE_NAME}.out 2>&1 & echo $! > $PIDFILE
+    # change owner of the files, since we want the log files to be owned by the same user as the executor
+    chown ${RUN_AS}:${RUN_AS} ${ECMS_HOME}/${SERVICE_NAME}.out
+    PID=$(/bin/cat $PIDFILE);
+    echo "$SERVICE_NAME (${PID}) started..."
+    RETVAL=0
+}
+
+stop() {
+    if [ ! -f $PIDFILE ]
+    then
+        echo -n "Process ${SERVICE_NAME} appears to be dead already: ";echo_warning;echo
+        exit 1
+    fi
+    
+    PID=$(/bin/cat $PIDFILE);
+    echo "$SERVICE_NAME (${PID}) stopping ..."
+    kill $PID;
+    echo "$SERVICE_NAME (${PID}) stopped ..."
+    /bin/rm -f $PIDFILE
+    /bin/rm -f ${LOCKFILE}
+    RETVAL=0
+}
+
+case "$1" in
+    start)
+        shift
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        shift
+        start
+        ;;
+    status)
+        /bin/ps -ef | /bin/grep -i ${SERVICE_NAME} | /bin/grep java
+        RETVAL=$?
+        ;;
+    *)
+        echo "Usage: ${0} {start|stop|restart|status}"
+esac
+#exit ${RETVAL}
+        

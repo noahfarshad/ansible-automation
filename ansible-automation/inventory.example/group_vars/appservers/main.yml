@@ -1,0 +1,57 @@
+---
+# group_vars/appservers/main.yml
+#
+# Application tier defaults. The example here assumes a generic JVM-based app
+# server (WebLogic / Tomcat / etc.). Adapt to your app stack.
+
+# ===========================================================================
+# Application user / group
+# ===========================================================================
+app_user:                  appuser
+app_group:                 appgroup
+app_uid:                   2000
+app_gid:                   2000
+
+# ===========================================================================
+# Application install layout
+# ===========================================================================
+app_install_dir:           "{{ install_root }}/myapp"
+app_data_dir:              /var/lib/myapp
+app_log_dir:               /var/log/myapp
+app_config_dir:            /etc/myapp
+
+# ===========================================================================
+# Java (most app servers need a JDK)
+# ===========================================================================
+java_install_directory:    /opt/java
+java_version:              "17"
+
+# ===========================================================================
+# Application listening ports
+# ===========================================================================
+app_http_port:             8080
+app_https_port:            8443
+app_admin_port:            7001        # WebLogic-ish
+
+# ===========================================================================
+# Firewall
+# ===========================================================================
+firewall_open_tcp_ports:
+  - 22
+  - "{{ app_http_port }}"
+  - "{{ app_https_port }}"
+  - "{{ app_admin_port }}"
+
+# ===========================================================================
+# Heap / memory tuning (override per-host)
+# ===========================================================================
+heap_size:                 "4g"
+metaspace_size:            "256m"
+
+# ===========================================================================
+# Splunk forwarder — app logs
+# ===========================================================================
+splunk_forwarder_inputs:
+  - path:        "{{ app_log_dir }}/*.log"
+    index:       "{{ splunk_index }}_app"
+    sourcetype:  myapp

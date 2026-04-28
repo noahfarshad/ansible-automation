@@ -1,0 +1,5 @@
+---
+# tasks file for ping_hosts — present
+
+- name: Ping Hosts
+  ping:

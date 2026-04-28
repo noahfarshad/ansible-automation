@@ -1,0 +1,6 @@
+---
+# Default CA Directory
+target_dir: '/home/apps/app_admin/'
+CA_name: 'GCCA'
+openssl_conf: "{{target_dir}}/{{CA_name}}/openssl.cnf"
+openssl_source_conf: "/etc/pki/tls/openssl.cnf"

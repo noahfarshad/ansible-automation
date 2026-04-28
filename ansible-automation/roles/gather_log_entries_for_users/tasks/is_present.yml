@@ -1,0 +1,43 @@
+---
+# tasks file for gather_log_entries_for_users — present
+
+# Copy the script to server
+  - name: copy py script to server
+
+    become_user: "{{log_owner}}"
+    ansible.builtin.copy:
+      src: parse_log.py
+      dest: ~/parse_log.py
+      mode: 0755
+
+# Run the python log grabber
+  - name: parse log file
+
+    become_user: "{{log_owner}}"
+    ansible.builtin.command: ~/parse_log.py {{target_log}} {{output_log}} {{item}}
+    with_file:
+      - "{{staging}}/vm3/tmp/user_list.lst"
+
+# Fetch the results
+    # TODO: review changed_when for: ~/parse_log.py {{target_log}} {{output_log}} {{item}}
+  - name: fetch the results
+
+    become_user: "{{log_owner}}"
+    ansible.builtin.fetch:
+      src: "{{output_log}}"
+      dest: "{{staging}}"
+
+# Clean up workspace
+  - name: Remove output_log
+
+    become_user: "{{log_owner}}"
+    ansible.builtin.file:
+      dest: "{{output_log}}"
+      state: absent
+
+  - name: Remove py script
+
+    become_user: "{{log_owner}}"
+    ansible.builtin.file:
+      dest: ~/parse_log.py
+      state: absent

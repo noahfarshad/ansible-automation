@@ -1,0 +1,19 @@
+---
+# tasks file for install_acrobatreader
+- name: Uninstall Acrobat Reader
+  ansible.windows.win_package:
+    product_id: '{{ AAReader_OLD_ProductID }}'
+    arguments: /qn /norestart
+    state: absent
+
+- name: Install Adobe Acrobat Reader from san01 share specifying the credentials
+  ansible.windows.win_package:
+    path: "{{artifact_staging}}{{AAReader}}"
+    arguments: /install /passive /norestart
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

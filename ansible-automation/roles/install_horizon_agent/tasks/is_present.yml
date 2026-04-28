@@ -1,0 +1,53 @@
+---
+# tasks file for install_horizon_broker
+# DESCRIPTION:
+# Installs horizon Agent with following options:
+# Horizon Agent IP Version: IPv4
+# Custom Features:
+#   Core Horizon Agent
+#   USB Redirection
+#   Real-Time Audio Video
+#   Instant Clone Agent
+#   Client Drive Redirection
+#   Horizon Monitoring Service Agent
+#   Vmware Audio
+#   Horizon Performance Tracker
+#   VMware Integrated Printing
+#   Help Desk Plugin for Horizon Agent
+#   Storage Drive Redirection
+#   RETURN CODE 1641 Indicates Succesful Install
+# Installs horizon Agent Direct Connection Plugin with following options:
+#   ListenPort: 443
+#   ModifyFireWall: 0
+#   Disable_SSLV3: 1
+
+- name: Install Horizon Agent from SAN
+  ansible.windows.win_package:
+    path: "{{ artifact_staging }}{{ horizonagent }}"
+    arguments: /s /v "/qn ADDLOCAL=Core,USB,RTAV,NGVC,ClientDriveRedirection,V4V,VmwVaudio,PerfTracker,PrintRedir,HelpDesk"
+    state: present
+    expected_return_code: [1641] 
+    creates_service: "VMware Horizon View Agent"
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{ system_name }}\\{{ domainadmin_user }}"
+    ansible_become_password: '{{ domain_password }}'
+
+- name: Wait for Connection
+  ansible.builtin.wait_for_connection:
+    delay: 60
+    timeout: 600
+
+- name: Install Horizon Agent Direct Connect from SAN
+  ansible.windows.win_package:
+    path: "{{ artifact_staging }}{{ horizondirectconnect }}"
+    arguments: /s /v "/qn MODIFYFIREWALL=0"
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{ system_name }}\\{{ domainadmin_user }}"
+    ansible_become_password: '{{ domain_password }}'  

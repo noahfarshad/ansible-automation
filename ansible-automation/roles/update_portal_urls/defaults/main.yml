@@ -1,0 +1,5 @@
+---
+update_portal_urls_file: update_portal_urls.sql
+update_portal_urls_dest: /var/tmp/
+oracle_home: /opt/oracle/app/ora_rmt/product/11.2.0.4i
+portal_url_arguments: 'https://trans.{{system}}.example.coach/portal https://trans.{{system}}.example.coach/portal/server.pt/PTARGS_0 https://trans.{{system}}.example.coach/ptapi/services/QueryInterfaceAPI'

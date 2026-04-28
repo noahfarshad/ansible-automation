@@ -1,0 +1,110 @@
+{"properties": {
+   "basic":    {
+      "connect_timeout": 10,
+      "enabled": true,
+      "listen_on_any": {{item.value.listen_on_any}},
+      "listen_on_hosts": [],
+      "listen_on_traffic_ips": ["{{item.value.groups.group_name}}"],
+      "pool": "{{ item.value.pool.pool_name }}",
+      "port": {{ item.value.vs_port }},
+      "protocol": "{{item.value.vs_protocol}}"
+   },
+   "aptimizer":    {
+      "enabled": false
+   },
+   "connection":    {
+      "keepalive": true,
+      "keepalive_timeout": 10,
+      "max_client_buffer": 65536,
+      "max_server_buffer": 65536,
+      "max_transaction_duration": 0,
+      "timeout": 60
+   },
+   "connection_errors": {"error_file": "Default"},
+   "cookie":    {
+      "domain": "no_rewrite"
+   },
+   "dns":    {
+      "edns_udpsize": 4096,
+      "max_udpsize": 4096,
+      "rrset_order": "fixed",
+      "verbose": false
+   },
+   "ftp":    {
+      "data_source_port": 0,
+      "force_client_secure": true,
+      "port_range_high": 0,
+      "port_range_low": 0,
+      "ssl_data": true
+   },
+   "gzip":    {
+      "compress_level": 3,
+      "enabled": false,
+      "etag_rewrite": "wrap",
+      "max_size": 10000000,
+      "min_size": 1000
+   },
+   "http":    {
+      "chunk_overhead_forwarding": "lazy",
+      "mime_detect": false
+   },
+   "kerberos_protocol_transition": {
+      "enabled": false
+   },
+   "log":    {
+      "client_connection_failures": false,
+      "enabled": false,
+      "filename": "%zeushome%/zxtm/log/%v.log",
+      "format": "%h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-agent}i\"",
+      "save_all": true,
+      "server_connection_failures": false,
+      "session_persistence_verbose": false,
+      "ssl_failures": false
+   },
+   "recent_connections":    {
+      "enabled": true,
+      "save_all": false
+   },
+   "request_tracing":    {
+      "enabled": false,
+      "trace_io": false
+   },
+   "rtsp":    {
+      "streaming_port_range_high": 0,
+      "streaming_port_range_low": 0,
+      "streaming_timeout": 30
+   },
+   "sip":    {
+      "dangerous_requests": "node",
+      "follow_route": true,
+      "max_connection_mem": 65536,
+      "mode": "sip_gateway",
+      "rewrite_uri": false,
+      "streaming_port_range_high": 0,
+      "streaming_port_range_low": 0,
+      "streaming_timeout": 60,
+      "timeout_messages": true,
+      "transaction_timeout": 30
+   },
+   "smtp": {"expect_starttls": true},
+   "syslog":    {
+      "enabled": false,
+      "format": "%h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-agent}i\"",
+      "ip_end_point": "",
+      "msg_len_limit": 1024
+   },
+   "tcp": {"proxy_close": false},
+   "udp":    {
+      "end_point_persistence": true,
+      "port_smp": false,
+      "response_datagrams_expected": 1,
+      "timeout": 7
+   },
+   "web_cache":    {
+      "control_out": "",
+      "enabled": false,
+      "error_page_time": 30,
+      "max_time": 600,
+      "refresh_time": 2
+   }
+}}

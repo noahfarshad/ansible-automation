@@ -1,0 +1,10 @@
+---
+# tasks file for install_package_delta — absent
+#
+# Removes the package(s) installed by is_present.yml.
+
+- name: Remove package(s)
+  ansible.builtin.package:
+    name: "{{ item | default([]) }}"
+    state: absent
+  when: (item | default([])) | length > 0

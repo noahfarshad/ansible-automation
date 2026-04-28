@@ -1,0 +1,3 @@
+---
+# defaults file for deploy_vm
+vsphere_vm_vcenter_hostname: vcenter_hostname

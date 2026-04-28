@@ -1,0 +1,6 @@
+docker_uninstall_list:
+   - docker-ce
+   - docker-ce-cli
+   - containerd.io
+   - container-selinux
+docker_image_install_dir: /var/lib/docker/

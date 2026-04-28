@@ -1,0 +1,9 @@
+domain localdomain
+search localdomain
+nameserver {{dnsmasq_local_ip}}
+{% for ip in hostvars[inventory_hostname].groups['consul_recursor_nameservers'] %}
+nameserver {{ip}}
+{% endfor %}
+{% for searchname in hostvars[inventory_hostname].groups['dns_search_domains'] %}
+search {{searchname}}
+{% endfor %}

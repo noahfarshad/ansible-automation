@@ -1,0 +1,64 @@
+---
+# tasks file for install_nvidia_driver
+  
+  # this task delete the old driver if it exists
+  # when we start using the cyber base OS no longer need this task but leave commented out
+  # - name: Uninstall Old NVIDIA Driver
+  #   ansible.windows.win_powershell:
+  #     script: |
+  #       $us = Get-childItem -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall" -ErrorAction SilentlyContinue | Get-ItemProperty | Where-Object {$_.DisplayName -like "*NVIDIA Graphics Driver*"} | select DisplayName, UninstallString
+  #       $unused, $filePath, $argList = $us.UninstallString -split '"', 3
+  #       $argList += ' -silent -deviceinitiated'
+  #       Start-Process -FilePath "C:\Windows\SysWOW64\RunDll32.EXE" -ArgumentList $argList -Wait
+
+  # # reboot VM post uninstall for install prep
+  # - name: Unconditionally reboot the machine with all defaults
+  #   ansible.windows.win_reboot:
+
+  # - name: Wait Until WinRM is Back Up on Host if Rebooted
+  #   win_service:
+  #     name: 'WinRM'
+  #     start_mode: 'delayed'
+
+  - name: Create Temp Folder for Installer
+    ansible.windows.win_tempfile: 
+      state: directory 
+      suffix: 'nvidia'   
+    register: install_loc 
+  
+  - name: Unzip file
+    community.windows.win_unzip:
+      src: "{{artifact_staging}}{{nvidiaStaging}}"
+      dest: "{{install_loc.path}}"
+      recurse: yes
+    become: true
+    become_method: runas
+    become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+    vars:
+      ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+      ansible_become_password: '{{domain_password}}'
+
+  - name: Install New NVIDIA Driver from a network share specifying the credentials
+    ansible.windows.win_package:
+      path: "{{install_loc.path}}\\setup.exe"
+      arguments: /install /passive /norestart
+      state: present
+    become: true
+    become_method: runas
+    become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+    vars:
+      ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+      ansible_become_password: '{{domain_password}}'
+
+  - name: Copy vGPU license file
+    ansible.windows.win_copy:
+      src: "{{nvidiaLicense}}"
+      dest: "C:\\Program Files\\NVIDIA Corporation\\vGPU Licensing\\ClientConfigToken\\"
+
+  - name: Unconditionally reboot the machine with all defaults
+    ansible.windows.win_reboot:
+
+  - name: Wait Until WinRM is Back Up on Host if Rebooted
+    ansible.windows.win_service:
+      name: 'WinRM'
+      start_mode: 'delayed'

@@ -1,0 +1,5 @@
+- name: Remove resolv configuration file
+  become: true
+  ansible.builtin.file:
+    path: "{{ resolv_template_target }}"
+    state: absent

@@ -1,0 +1,17 @@
+---
+# tasks file for download_config — present
+
+# Check if the wl staging directory exists, and make it available for later use.
+- name: Check for Weblogic Staging directory
+  ansible.builtin.stat: path="{{staging}}/weblogic"
+  register: stage_wl_dir
+
+
+# Create Staging directory if it does not exist
+- name: Create string staging directory if it does not exist.
+  ansible.builtin.file: path="{{staging}}" state=directory mode=0755
+  when: not stage_wl_dir.stat.exists
+
+#Download repository if it's missing
+- ansible.builtin.include_tasks: cloneRepo.yml
+  when: not stage_wl_dir.stat.exists

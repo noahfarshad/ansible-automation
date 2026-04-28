@@ -1,0 +1,51 @@
+---
+- name: "Checking if Application Administration (wlsappadm) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsappadm
+  register: wlsappadm_status
+  tags:
+    - admin
+    - vcie-admin
+    - vcie
+
+- name: "Restarting the main Administration server for the application (wlsappadm)"
+  become: true
+  ansible.builtin.service: name=wlsappadm state=restarted
+  when: wlsappadm_status.stat.exists
+  tags:
+    - admin
+    - vcie-admin
+    - vcie
+
+- name: "Checking if Oracle Service Bus (OSB) Administration (wlsosbadm) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsosbadm
+  register: wlsosbadm_status
+  tags:
+    - admin
+    - osb-admin
+    - osb
+
+- name: "Restarting the Oracle Service Bus (OSB) Administration server (wlsosbadm)"
+  become: true
+  ansible.builtin.service: name=wlsosbadm state=restarted
+  when: wlsosbadm_status.stat.exists
+  tags:
+    - admin
+    - osb-admin
+    - osb
+
+- name: "Checking if Web Center Interaction (Portal) Administration (wlsportadm) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsportadm
+  register: wlsportadm_status
+  tags:
+    - admin
+    - portal-admin
+    - portal
+
+- name: "Restarting the Web Center Interaction (Portal) Administration server (wlsportadm)"
+  become: true
+  ansible.builtin.service: name=wlsportadm state=restarted
+  when: wlsportadm_status.stat.exists
+  tags:
+    - admin
+    - portal-admin
+    - portal

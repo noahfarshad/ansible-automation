@@ -1,0 +1,6 @@
+---
+# tasks file for update_etc_hosts — present
+
+- name: "Replacing Host Files"
+  become: true
+  ansible.builtin.template: src=etc_host_template dest=/etc/hosts owner=root group=root mode=0644

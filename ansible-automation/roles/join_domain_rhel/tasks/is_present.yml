@@ -1,0 +1,68 @@
+---
+
+- block:
+    - name: check AD Status
+
+      ansible.builtin.shell:
+        cmd: realm list
+      register: AD_response
+
+
+      # TODO: review changed_when for: cmd: realm list
+    - name: Join system to domain
+
+      ansible.builtin.shell: /bin/bash -c "echo {{ domain_password }} | realm join --user={{ domainadmin_user }} --computer-ou={{ domain_ou_path }} {{ system_name }}.local"
+      register: join_output
+      ignore_errors: yes
+
+
+      # TODO: review changed_when for: /bin/bash -c "echo {{ domain_password }} | realm join --user
+    - name: Display success message
+      ansible.builtin.debug:
+        msg: "Join successful!"
+      when: join_output.rc == 0
+
+    - name: Display error message
+      ansible.builtin.debug:
+        msg: "Join failed or already joined"
+      when: join_output.rc != 0
+
+    - name: Edit SSSD configuration file
+
+      block:
+        - name: Modify access_provider line
+          ansible.builtin.lineinfile:
+            path: /etc/sssd/sssd.conf
+            regexp: '^access_provider'
+            line: 'access_provider = simple'
+            state: present
+
+        - name: Add simple_allow_groups line
+          ansible.builtin.lineinfile:
+            path: /etc/sssd/sssd.conf
+            regexp: '^simple_allow_groups'
+            line: 'simple_allow_groups = Domain Admins, Linux'
+            state: present
+
+        - name: Add use_fully_qualified_names line
+          ansible.builtin.lineinfile:
+            path: /etc/sssd/sssd.conf
+            regexp: '^use_fully_qualified_names'
+            line: 'use_fully_qualified_names = False'
+            state: present
+
+        - name: Add ad_gpo_access_control line to SSSD config
+          ansible.builtin.lineinfile:
+            path: /etc/sssd/sssd.conf
+            regexp: '^ad_gpo_access_control'
+            line: 'ad_gpo_access_control = permissive'
+            state: present
+
+    - name: Restart the SSSD Service
+      block:
+        - name: Restart SSSD service
+
+          ansible.builtin.service:
+            name: sssd
+            state: restarted
+  become: true

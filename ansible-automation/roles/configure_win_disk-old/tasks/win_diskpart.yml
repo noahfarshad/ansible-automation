@@ -1,0 +1,45 @@
+- name: Partition and Format Disk
+  vars:
+    disk: "{{ virtual_disk.disk_partition }}"
+  block:
+  
+  - name: "Check Disk Initialization for Windows OS above 7" 
+    when:
+      - hostvars[ inventory_hostname ].ansible_distribution_version is version('6.2', '>=') 
+    block:
+    - name: Check if Disk has been initialized
+      ansible.windows.win_shell: 'get-disk | where number -eq "{{ disk.disk_number }}" | where partitionstyle -eq "raw"'
+      changed_when: false
+      register: disk_init_check
+
+    - name: initialize disk
+      ansible.windows.win_shell: "Initialize-Disk -Number {{ disk.disk_number }}"
+      when: disk_init_check.stdout
+
+  - name: Stat Drive
+    ansible.windows.win_stat:
+      path:  "{{ disk.letter }}:"
+    register: win_drive_results
+
+  - name: Create DiskPart Format Script
+    ansible.windows.win_template:
+      src: ../templates/diskpart_format.j2
+      dest:  "C:\\Windows\\Temp\\diskpart_format_{{ disk.volume_number }}_{{ disk.disk_number }}.txt"
+    when: win_drive_results.stat.exists == False #IF Drive Letter doesn't exist, create one
+ 
+  - name: Run DiskPart Format Scrip
+    ansible.windows.win_command: "diskpart.exe /s diskpart_format_{{ disk.volume_number }}_{{ disk.disk_number }}.txt"
+    args:
+      chdir: C:\Windows\Temp\
+    when: win_drive_results.stat.exists == False #IF Drive Letter doesn't exist, create one
+
+  - name: Create Diskpart Extend Script
+    ansible.windows.win_template:
+      src: ../templates/diskpart_extend.j2
+      dest:  "C:\\Windows\\Temp\\diskpart_extend_{{ disk.volume_number }}.txt"
+    
+  - name: Run Diskpart Extend Script
+    ansible.windows.win_command: "diskpart.exe /s diskpart_extend_{{ disk.volume_number }}.txt"
+    args:
+      chdir: C:\Windows\Temp\
+   

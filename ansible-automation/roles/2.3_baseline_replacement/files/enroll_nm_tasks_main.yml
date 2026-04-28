@@ -1,0 +1,34 @@
+---
+
+# Node Managers are used for communicating between Managed Servers and the Weblogic Admin Console.  Enrolling
+# Node Managers makes them known to the Admin Console.  All Node Managers must be enrolled with the
+# Admin Console prior to starting any of the Node Managers; otherwise problems with occur.  Victor what problems??
+#
+# This roll Enrolls the node managers on the managed servers.
+
+- name: "Create {{ script_dir }} if it doesn't exist"
+  become: true
+  become_user: '{{os_user}}'
+  file: 
+    path: "{{script_dir}}"
+    owner: "{{os_user}}"
+    group: "{{os_user}}" 
+    state: directory
+    mode: 0700
+
+# Build wlst script
+- name: Create WLST script for enrolling NMs
+  become: true
+  become_user: '{{os_user}}'
+  template: src=enrollnm.py dest={{script_dir}}/enrollnm.py owner={{os_user}} group={{os_user}} mode={{enrollnm_file_perms}}
+
+# Enroll Node Managers on Managed Servers
+- name: Enroll Node Managers on Managed Servers
+  become: true
+  become_user: '{{os_user}}'
+  shell: "CONFIG_JVM_ARGS=\"-Djava.security.egd=file:/dev/./urandom\" {{mw_home}}/oracle_common/common/bin/wlst.sh {{script_dir}}/enrollnm.py {{wl_gc2_admin_password}}"
+
+- name: Remove all files
+  become: true
+  become_user: '{{os_user}}'
+  file: path="{{script_dir}}/enrollnm.p" state=absent

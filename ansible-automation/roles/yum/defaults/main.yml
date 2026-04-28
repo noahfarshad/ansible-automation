@@ -1,0 +1,12 @@
+yum_repos_directory: /etc/yum.repos.d
+yum_repo_file: rhel7.repo
+
+# Reporting
+yum_local_report_directory: "/tmp/{{ system }}/yum"
+yum_local_report_file: "{{ inventory_hostname }}_installed_packages_report-{{ ansible_date_time.date }}.csv"
+yum_template_local_report_file: "rhel7_template_installed_packages_report-{{ ansible_date_time.date }}.csv"
+yum_local_report_debug: False
+yum_local_report_template: report_template
+yum_template_local_report_template: template_report_template
+yum_local_report_header: "Name:,Version:,Release"
+yum_template_info_script: "get_template_info.py"

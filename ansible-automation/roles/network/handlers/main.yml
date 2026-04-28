@@ -1,0 +1,6 @@
+---
+- name: Restart Network
+  become: true
+  ansible.builtin.systemd:
+    name: network
+    state: restarted

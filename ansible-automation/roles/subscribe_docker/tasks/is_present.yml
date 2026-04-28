@@ -1,0 +1,7 @@
+---
+# Adds a repo allowing one to install docker packages via yum
+- name: register host to satellite
+  become: true
+  ansible.builtin.command: "yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo"
+  tags: subscribe_docker
+  # TODO: review changed_when for: yum-config-manager --add-repo https://download.docker.com/li

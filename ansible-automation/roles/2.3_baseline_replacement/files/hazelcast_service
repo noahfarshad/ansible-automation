@@ -1,0 +1,99 @@
+#!/bin/sh
+
+# This script is meant to start the hazelcast console server instance
+#
+# /etc/init.d/hazelcast
+# Subsystem file for Hazelcast server
+#
+# chkconfig: 2345 95 05
+# description: Hazelcast Server daemon
+#
+# processname: hazelcast
+# config: /etc/sysconfig/hazelcast
+# pidfile: {{hazelcast_directory}}/hazelcast.pid
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+# pull in sysconfig settings
+[ -f /etc/sysconfig/hazelcast ] && . /etc/sysconfig/hazelcast
+
+JAVA_PATH={{java_install_directory}}/jre/bin/
+HAZELCAST_HOME={{hazelcast_directory}}
+SERVICE_NAME=hazelcast
+HZ_LOG={{hazelcast_directory}}/${SERVICE_NAME}.log
+CORE_PATH={{hazelcast_directory}}
+CONFIG_FILE={{hazelcast_directory}}/hazelcast.xml
+CMD_HEAD="${JAVA_PATH}/java -server -cp {{server_classpath}} -Dhazelcast.config=${CONFIG_FILE}"
+
+{{jmx_ip}}
+{{additional_params}}
+{{cmd}}
+
+RUN_AS="app_admin"
+PIDFILE={{hazelcast_directory}}/${SERVICE_NAME}.pid
+LOCKFILE=/var/lock/subsys/${SERVICE_NAME}
+
+
+start() {
+	echo "Starting $SERVICE_NAME ..."
+	touch ${LOCKFILE}
+	touch ${PIDFILE}
+	chown ${RUN_AS}:${RUN_AS} ${PIDFILE}
+	status -p ${PIDFILE} ${SERVICE_NAME} >> /dev/null
+	RETVAL=$?
+
+	if [ ${RETVAL} -eq 0 ]
+	then
+		echo -n "Process ${SERVICE_NAME} appears to be running ($( cat ${PIDFILE} )): ";echo_warning;echo
+		exit 0
+	fi
+	
+    /bin/su - ${RUN_AS} -c "${CMD}" 1> ${HAZELCAST_HOME}/hazelcast.log 2>&1 & echo $! > $PIDFILE
+    # change owner of the files, since we want the log files to be owned by the same user as the executor
+    chown ${RUN_AS}:${RUN_AS} ${HAZELCAST_HOME}/hazelcast.log
+    PID=$(/bin/cat $PIDFILE);
+    echo "$SERVICE_NAME (${PID}) started..."
+	RETVAL=0
+}
+
+stop() {
+	status -p ${PIDFILE} ${BASE_NAME} >> /dev/null
+	RETVAL=$?
+
+	if [ ${RETVAL} -ne 0 ]
+	then
+		echo -n "Process ${BASE_NAME} appears to be dead already: ";echo_warning;echo
+		exit 1
+	fi
+	
+    PID=$(/bin/cat $PIDFILE);
+    echo "$SERVICE_NAME (${PID}) stoping ..."
+    kill $PID;
+    echo "$SERVICE_NAME (${PID}) stopped ..."
+    /bin/rm -f $PIDFILE
+	/bin/rm -f ${LOCKFILE}
+	RETVAL=0
+}
+
+case "$1" in
+	start)
+		shift
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		shift
+		start
+		;;
+	status)
+		status -p ${PIDFILE} ${SERVICE_NAME}
+		RETVAL=$?
+		;;
+	*)
+		echo "Usage: ${0} {start|stop|restart|status}"
+esac
+#exit ${RETVAL}

@@ -1,0 +1,11 @@
+---
+# tasks file for configure_external_ips — absent
+
+- name: Remove external IP groups
+  stingray:
+    type: TrafficIPGroup
+    state: absent
+    name: '{{ item.name }}'
+    stingray_password: '{{ stingray_password }}'
+    stingray_username: '{{ stingray_username }}'
+  loop: '{{ external_ips }}'

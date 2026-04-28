@@ -1,0 +1,23 @@
+# Deploy a guest from a template
+- block:
+    - name: Create resource pool
+      vmware_resource_pool:
+        ansible.builtin.hostname: "{{ vsphere_host }}"
+        username: "{{ vsphere_user }}"
+        password: "{{ vsphere_pass }}"
+        validate_certs: no
+        datacenter: "{{ vsphere_datacenter }}"
+        cluster: "{{ vsphere_cluster }}"
+        resource_pool: "{{ string_resource_pool }}"
+        mem_shares: "{{ vapp_mem_shares }}"
+        mem_limit: "{{ vapp_mem_limit }}"
+        mem_reservation: "{{ vapp_mem_reservation }}"
+        mem_expandable_reservations: "{{ vapp_mem_expandable }}"
+        cpu_shares: "{{ vapp_cpu_shares }}"
+        cpu_limit: "{{ vapp_cpu_limit }}"
+        cpu_reservation: "{{ vapp_cpu_reservation }}"
+        cpu_expandable_reservations: "{{ vapp_cpu_expandable }}"
+        state: present
+      delegate_to: localhost
+      run_once: true
+  become: true

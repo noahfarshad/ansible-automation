@@ -1,0 +1,129 @@
+---
+- name: Create Working directory
+  become: true
+  file:
+    path: "{{ecms_dir}}"
+    state: directory
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  tags:
+    - ecms.install  
+    - ecms
+
+- name: Copy Service Configuration files
+  become: true
+  become_user: app_admin
+  template:
+    src: "{{shared_config_path}}/string/{{item}}"
+    dest: "{{ecms_dir}}/{{item}}"
+  loop:
+    - "{{service_configuration}}"
+    - "{{ogm_properties_file}}"
+  tags:
+    - ecms.install
+    - ecms
+
+- name: Copy service jar
+  become: true
+  become_user: app_admin
+  copy:
+    src: "{{staging}}/{{item}}"
+    dest: "{{ecms_dir}}/{{item}}"
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  loop:
+    - "{{service_artifact}}"
+  tags:
+    - ecms.install
+    - ecms
+   
+- name: Create lib directory
+  become: true
+  file:
+    path: "{{ecms_dir}}/lib"
+    state: directory
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  tags:
+    - ecms.install 
+    - ecms 
+   
+- name: Create security directory
+  become: true
+  file:
+    path: "{{ecms_dir}}/security"
+    state: directory
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  tags:
+    - ecms.install  
+    - ecms 
+
+- name: Copy java.security file
+  become: true
+  become_user: app_admin
+  template:
+    src: "{{ecms_java_security_file}}"
+    dest: "{{security_dir}}/java.security"
+  tags:
+    - ecms.install
+    - ecms
+    
+- name: Copy Service Caching dependencies
+  become: true
+  become_user: app_admin
+  copy:
+    src: "{{staging}}/{{item}}"
+    dest: "{{ecms_dir}}/lib/{{item}}"
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  loop:
+    "{{ecms_dependencies}}"
+  tags:
+    - ecms.install
+    - ecms
+    
+- name: Encrypt Password
+  become: true
+  become_user: app_admin
+  shell: "{{java_path}} -cp {{ecms_classpath}} {{encrypt_properties}} {{ecms_encryption_classname}} {{app_db_user_db_password}}"
+  register: encrypt_contents
+  tags:
+    - ecms.install
+    - ecms
+  
+- name: Update the ogm.properties file with the encrypted password
+  become: true
+  become_user: app_admin
+  lineinfile:
+    path: "{{ecms_dir}}/{{ogm_properties_file}}"
+    regexp: "^password="
+    line: "password={{encrypt_contents.stdout_lines | last}}"
+  tags:
+    - ecms.install
+    - ecms
+    
+- name: Copy the startup script to /etc/init.d
+  become: true
+  template: 
+    src: "{{item}}"
+    dest: "/etc/init.d/{{item}}"
+    mode: 0755
+  loop:
+    - "{{ecms_service_name}}"
+  tags:
+    - ecms.install
+    - ecms
+
+- name: "Start the ECMS instance"
+  become: true
+  command: "/etc/init.d/{{ecms_service_name}} restart"
+  tags:
+    - ecms.install
+    - ecms.start
+    - ecms

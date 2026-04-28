@@ -1,0 +1,83 @@
+---
+# tasks file for deploy_docker_test_image — present
+
+# Copy image and test files to swarm
+- name: Remove the test files directory on remote
+
+  ansible.builtin.file:
+    path: "{{ptor_dir}}"
+    state: absent
+    mode: 0755
+
+- name: Create directory for test files on remote
+
+  ansible.builtin.file:
+    path: "{{ptor_dir}}"
+    state: directory
+    mode: 0755
+
+- name: Copy test files to remote target
+
+  ansible.builtin.copy:
+    src: "{{ptor_local_dir}}{{test_tar}}"
+    dest: "{{ptor_dir}}"
+
+- name: Extract test files
+
+  ansible.builtin.unarchive:
+    src: "{{ptor_dir}}{{test_tar}}"
+    dest: "{{ptor_dir}}"
+    remote_src: yes
+    exclude: target/
+    extra_opts: --skip-old-files
+
+- name: Remove the test tar on remote
+
+  ansible.builtin.file:
+    path: "{{ptor_dir}}{{test_tar}}"
+    state: absent
+    mode: 0755
+
+- name: Remove the image file
+
+  ansible.builtin.file:
+    path: "{{image_dir}}"
+    state: absent
+    mode: 0755
+
+- name: Create the pest image directory
+
+  ansible.builtin.file:
+    path: "{{image_dir}}"
+    state: directory
+    mode: 0755
+    
+- name: Copy pest image tar file to target
+
+  ansible.builtin.copy:
+    src: "{{staging}}/{{item.name | regex_replace('/','_')}}_{{item.tag}}.tar"
+    dest: "{{image_dir}}"
+  loop:
+    - "{{test_image}}"
+    
+- name: Load pest image into local docker repo
+
+  ansible.builtin.shell: "docker load -i {{image_dir}}/{{item.name | regex_replace('/','_')}}_{{item.tag}}.tar"
+  loop:
+    - "{{test_image}}"
+
+
+  # TODO: review changed_when for: docker load -i {{image_dir}}/{{item.name | regex_replace('/'
+- name: Copy the image hash file to the target
+
+  ansible.builtin.copy:
+    src: "{{staging}}/{{item.name | regex_replace('/','_')}}_{{item.tag}}.txt"
+    dest: "{{image_dir}}"
+  loop:
+    - "{{test_image}}"
+    
+- ansible.builtin.include_tasks: check_image.yml
+  loop:
+    - "{{test_image}}"
+    
+- ansible.builtin.include_tasks: start_pest_container.yml

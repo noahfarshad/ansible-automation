@@ -1,0 +1,71 @@
+# ansible/roles/common/load_neo4j_store/tasks/main.yml
+
+# called by playbook restore_neo4j_store.yml
+
+# this role calls tasks to stop the neo4j service,
+# download neo4j dump from nexus, invoke neo4j load command, 
+# and start the neo4j service
+---
+- name: stop neo4j service
+  become: true
+  systemd:
+    name: neo4j
+    state: stopped
+  environment:
+    JAVA_HOME: "{{JAVA_HOME}}"
+  tags:
+  - load_neo4j_store
+
+- name: remove existing .dump directory/file
+  become: true
+  file:
+    path: "{{backup_dir}}"
+    state: absent
+  tags:
+  - load_neo4j_store
+
+- name: create neo4j backup directory
+  become: true
+  file:
+    path: "{{backup_dir}}"
+    state: directory
+    owner: "{{user}}"
+    group: "{{user}}"
+    mode: 0744
+  tags:
+  - load_neo4j_store
+
+- name: Download neo4j dump from nexus
+  become: true
+  become_user: "{{user}}"
+  get_url:
+    url: "http://{{nexus_host_qualified}}/repository/{{ nexus_gold_repository }}/{{ group }}/database/{{version}}/{{db_name_version}}"
+    dest: "{{backup_dir}}"
+    mode: 0744
+  tags:
+  - load_neo4j_store
+
+- name: rename dump to remove version
+  become: true
+  command: mv {{backup_dir}}/{{db_name_version}} {{backup_dir}}/{{db_name_dump}}
+  tags:
+  - load_neo4j_store
+
+- name: invoke load command
+  become: true
+  become_user: "{{user}}"
+  command: "{{neo4j_command_admin}} load --from={{backup_dir}}/{{db_name_dump}} --database={{db_name}} --force"
+  environment:
+    JAVA_HOME: "{{JAVA_HOME}}"
+  tags:
+  - load_neo4j_store
+
+- name: start neo4j service
+  become: true
+  systemd:
+    name: neo4j
+    state: started
+  environment:
+    JAVA_HOME: "{{JAVA_HOME}}"
+  tags:
+  - load_neo4j_store

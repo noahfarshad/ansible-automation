@@ -1,0 +1,65 @@
+---
+# tasks file for install_zookeeper — present
+
+- include_role:
+    name: installers/binary_installer
+  vars:
+    binary_name: "{{zookeeper_name}}"
+    binary_version: "{{zookeeper_version}}"
+    binary_archive: "{{zookeeper_archive}}"
+    binary_config_dir: "{{zookeeper_config_dir}}"
+    remove_first_dir: true
+
+- name: Create config directory
+  ansible.builtin.file:
+    path: "{{zookeeper_config_dir}}"
+    state: directory
+    owner: "{{app_user}}"
+    ansible.builtin.group: "{{app_group}}"
+    mode: 0755
+
+- name: Create myid file
+  become: true
+  become_user: "{{app_user}}"
+  ansible.builtin.template:
+    mode: 0755
+    src: "myid.j2"
+    dest: "{{zookeeper_data_dir}}/myid"
+
+- name: Create {{zookeeper_name}} configuration file
+  become: true
+  become_user: "{{app_user}}"
+  ansible.builtin.template:
+    mode: 0755
+    src: "zoo.cfg.j2"
+    dest: "{{zookeeper_config_dir}}/{{zookeeper_config_file}}"
+
+- name: Create {{zookeeper_name}} Java max heap configuration file
+  become: true
+  become_user: "{{app_user}}"
+  ansible.builtin.template:
+    mode: 0755
+    src: "java.env.j2"
+    dest: "{{zookeeper_config_dir}}/java.env"
+
+- include_role:
+    name: service_management/create_linux_service
+  vars:
+    service_name: "{{zookeeper_name}}"
+    service_dir: "{{zookeeper_dir}}"
+    service_startup_cmd: "{{zookeeper_startup_cmd}}"
+
+# Stop service, wait for port to stop and .pid to be absent, start service, wait for port to start and .pid to be present
+- include_role:
+     name: service_management/restart_linux_service_java_app_with_port
+  vars:
+     service_name: "{{zookeeper_name}}"
+     pid_location: "{{zookeeper_dir}}/{{service_name}}.pid"
+     port_number: "{{zookeeper_port_number}}"
+     service_java_home: "{{zookeeper_java_home}}"
+
+- include_role:
+     name: service_management/register_with_consul
+  vars:
+     service_name: "{{zookeeper_name}}"
+     port_number: "{{zookeeper_port_number}}"

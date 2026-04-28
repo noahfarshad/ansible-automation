@@ -1,0 +1,7 @@
+---
+# There are multiple roles that have this default var.
+enclave: SIPR
+cypher_file_dir: /opt/neo4j/cypher
+cypher_archive: "ecms-{{version}}.tar.gz"
+cypher_shell_path: "{{neo4j_dir}}/{{neo4j_package}}/bin/cypher-shell"
+neo4j_username: neo4j

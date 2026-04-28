@@ -1,0 +1,19 @@
+---
+# tasks file for download_artifacts — present
+
+# These tasks download the necessary artifacts i
+- name: Create string staging directory if it does not exist.
+  ansible.builtin.file: path="{{staging}}" state=directory mode=0755
+
+- name: Download JSF war
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/repository/gapsPublic/{{jsf_group}}/jsf/{{jsf_version}}/jsf-{{jsf_version}}.war
+    dest: "{{staging}}"
+
+- name: Download Regular Artifacts
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}&g={{example_group}}&a={{item.1}}&v={{version}}&e={{item.0.ext}}&c={{item.0.classifier}}
+    dest: "{{staging}}"
+  with_subelements:
+    - "{{artifacts}}"
+    - files

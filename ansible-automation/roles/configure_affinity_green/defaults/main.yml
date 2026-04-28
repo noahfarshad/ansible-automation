@@ -1,0 +1,13 @@
+---
+# defaults file for configure_affinity_green
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# host_group_1: ""
+# host_group_2: ""
+# vcenter_hostname: ""
+# vcenter_password: ""
+# vsphere_account: ""
+# vsphere_cluster: ""
+# vsphere_datacenter: ""

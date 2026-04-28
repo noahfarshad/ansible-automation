@@ -1,0 +1,21 @@
+# This sudo config file allows members of the MSC team to perform certain actions
+# as root
+
+# User Aliases
+User_Alias 	RETINA_USER = 		+un_scanner
+User_Alias 	COS_92 = 		+un_92COS
+
+
+# Note: no Host_Aliases are defined here, since this will be controlled by wherever this file is deployed from satellite server
+# (meaning it will work on localhost, wherever this file exists)
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+# Commands that installers may run
+RETINA_USER	ALL = LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+COS_92		ALL = LOG_OUTPUT: LOG_INPUT: ALL
+
+

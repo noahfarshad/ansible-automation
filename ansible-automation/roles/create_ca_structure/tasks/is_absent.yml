@@ -1,0 +1,9 @@
+---
+# tasks file for create_ca_structure — absent
+#
+# TODO: list the config files this role pushes and remove them with
+# ansible.builtin.file: state=absent. Auto-generated stub.
+
+- name: TODO — remove the config files this role pushes
+  ansible.builtin.debug:
+    msg: "is_absent.yml not implemented for create_ca_structure"

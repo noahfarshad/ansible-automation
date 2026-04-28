@@ -1,0 +1,5 @@
+---
+# tasks file for gold_data_import_dl_dmp_archive — present
+
+- ansible.builtin.include_tasks: reset_transfer_dir.yml
+- ansible.builtin.include_tasks: dl_direct_get_url.yml

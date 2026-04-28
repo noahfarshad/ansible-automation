@@ -1,0 +1,8 @@
+---
+
+# This task starts up the Weblogic Server
+
+
+- name: "Start the GC2 Weblogic instance"
+  become: true
+  command: "/etc/init.d/{{gc2_weblogic_service}} start" 

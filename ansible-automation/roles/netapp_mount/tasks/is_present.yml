@@ -1,0 +1,20 @@
+---
+- name: Create Local Directories for Mount Points
+  become: true
+  ansible.builtin.file:
+    path: "{{item.directory}}"
+    state: directory
+    mode: '0755'
+  loop: "{{mount_directories}}"
+  when: mount_directories is defined
+  tags: netapp_mount
+
+- name: add fstab
+  become: true
+  ansible.posix.mount:
+    src: '{{ item.mount }}'
+    path: '{{item.directory}}'
+    state: mounted
+    fstype: nfs
+    boot: true
+  loop: "{{mount_directories}}"

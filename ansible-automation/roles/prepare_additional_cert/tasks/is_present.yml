@@ -1,0 +1,11 @@
+---
+# tasks file for prepare_additional_cert — present
+
+# send additional cert to target CA for import to trusted certs
+  - name: Providing cert to target CA
+    become: true
+    become_user: app_admin
+    ansible.builtin.copy:
+      src: "{{cert_src}}{{cert_to_transfer}}"
+      dest: "{{target_dir}}/{{CA_name}}/certs/{{cert_to_transfer}}"
+

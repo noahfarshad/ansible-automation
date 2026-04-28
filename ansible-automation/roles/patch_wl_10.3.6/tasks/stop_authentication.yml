@@ -1,0 +1,75 @@
+---
+#Ansible play to stop authentication services
+- name: "Checking if Oracle Fusion Middleware Control (ora_fmwc) service exists"
+  ansible.builtin.stat: path=/etc/init.d/ora_fmwc
+  register: ora_fmwc_status
+
+- name: "Stopping Oracle Fusion Middleware Control (ora_fmwc) Services"
+  become: true
+  ansible.builtin.service: name=ora_fmwc  state=stopped
+  when: ora_fmwc_status.stat.exists
+
+
+- name: "Checking if Oracle Directory Services Manager (ora_odsm) service exists"
+  ansible.builtin.stat: path=/etc/init.d/ora_odsm
+  register: ora_odsm_status
+
+
+- name: "Stopping Oracle Directory Services Manager (ora_odsm) Services"
+  become: true
+  ansible.builtin.service: name=ora_odsm state=stopped
+  when: ora_odsm_status.stat.exists
+
+- name: "Checking if Oracle Internet Directory (ora_oid) service exists"
+  ansible.builtin.stat: path=/etc/init.d/ora_oid
+  register: ora_oid_status
+
+- name: "Stopping Oracle Directory Services Manager (ora_oid) Services"
+  become: true
+  ansible.builtin.service: name=ora_oid state=stopped
+  when: ora_oid_status.stat.exists
+
+- name: "Checking if Oracle Fusion Middleware Control for Oracle Identity and Access Management (ora_fmwc_oiam) service exists"
+  ansible.builtin.stat: path=/etc/init.d/ora_fmwc_oiam
+  register: ora_fmwc_oiam_status
+
+- name: "Stopping Oracle Fusion Middleware Control for Oracle Identity and Access Management (ora_fmwc_oiam) Services"
+  become: true
+  ansible.builtin.service: name=ora_fmwc_oiam state=stopped
+  when: ora_fmwc_oiam_status.stat.exists
+
+- name: "Checking if Oracle Authentication Manager 1 (ora_oam1) service exists"
+  ansible.builtin.stat: path=/etc/init.d/ora_oam1
+  register: ora_oam1_status
+
+- name: "Stopping Oracle Authentication Manager 1 (ora_oam1) Services"
+  become: true
+  ansible.builtin.service: name=ora_oam1 state=stopped
+  when: ora_oam1_status.stat.exists
+
+- name: "Checking if Oracle Identity Manager 1 (ora_oim1) service exists"
+  ansible.builtin.stat: path=/etc/init.d/ora_oim1
+  register: ora_oim1_status
+
+- name: "Stopping Oracle Identity Manager 1 (ora_oim1) Services"
+  become: true
+  ansible.builtin.service: name=ora_oim1 state=stopped
+  when: ora_oim1_status.stat.exists
+
+- name: "Checking if Oracle Service Orientated Architecture 1 (ora_soa1) service exists"
+  ansible.builtin.stat: path=/etc/init.d/ora_soa1
+  register: ora_soa1_status
+
+- name: "Stopping Oracle Service Orientated Architecture 1 (ora_soa1) Services"
+  become: true
+  ansible.builtin.service: name=ora_soa1 state=stopped
+  when: ora_soa1_status.stat.exists
+
+- name: "Checking if Lightweight Directory Access Protocal (aluildap) service exists"
+  ansible.builtin.stat: path=/etc/init.d/aluildap
+  register: aluildap_status
+
+- name: "Stopping Lightweight Directory Access Protocal (aluildap) Services"
+  become: true
+  ansible.builtin.service: name=aluildap state=stopped
+  when: aluildap_status.stat.exists

@@ -1,0 +1,7 @@
+---
+# defaults file for ipa_group
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# ipa_admin_password: ""

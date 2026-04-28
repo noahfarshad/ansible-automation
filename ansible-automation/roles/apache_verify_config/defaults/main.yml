@@ -1,0 +1,5 @@
+---
+# defaults file for apache_verify_config
+#
+# This role's `is_present.yml` uses Jinja escaping `{{ '{{' }}` to render a
+# literal `{{` inside a docker exec string. No user-facing variables.

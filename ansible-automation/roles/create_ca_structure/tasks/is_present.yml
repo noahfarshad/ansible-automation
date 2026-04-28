@@ -1,0 +1,71 @@
+---
+# tasks file for create_ca_structure — present
+
+# Create CA structure
+  - name: Create CA Directory Structure
+
+    become_user: app_admin
+    ansible.builtin.file:
+      path: '{{target_dir}}/{{CA_name}}/{{item.dir}}'
+      state: directory
+      mode: '{{item.mode}}'
+    loop:
+      - { dir: '', mode: '0777'}
+      - { dir: 'certs', mode: '0755' }
+      - { dir: 'csr', mode: '0770' }
+      - { dir: 'newcerts', mode: '0755' }
+      - { dir: 'private', mode: '0700' }
+    tags:
+      - structure
+
+# Set-up openssl.cnf
+  - name: Copy openssl.cnf
+
+    become_user: app_admin
+    ansible.builtin.command: cp {{openssl_source_conf}} {{openssl_conf}}
+    args:
+      creates: '{{openssl_conf}}'
+    tags:
+      -create_ca_structure
+
+  - name: Update openssl.cnf
+
+    become_user: app_admin
+    ansible.builtin.replace:
+      dest: '{{target_dir}}/{{CA_name}}/openssl.cnf'
+      regexp: '/etc/pki/CA'
+      ansible.builtin.replace: '{{target_dir}}/{{CA_name}}'
+    tags:
+      -create_ca_structure
+
+# Set-up counters
+  - name: Set-up serial
+
+    become_user: app_admin
+    ansible.builtin.copy:
+      content: "{{ 99999999 |random(start=10000000, step=1) }}"
+      dest: '{{target_dir}}/{{CA_name}}/serial'
+      force: no
+    tags:
+      -create_ca_structure
+
+  - name: Set-up crlnumber
+
+    become_user: app_admin
+    ansible.builtin.copy:
+      src: 'counter'
+      dest: '{{target_dir}}/{{CA_name}}/crlnumber'
+      force: no
+    tags:
+      -create_ca_structure
+
+# Create index.txt
+  - name: Create index.txt
+
+    become_user: app_admin
+    ansible.builtin.copy:
+      content: ""
+      dest: '{{target_dir}}/{{CA_name}}/index.txt'
+      force: no
+    tags:
+      -create_ca_structure

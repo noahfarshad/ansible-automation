@@ -1,0 +1,9 @@
+---
+# tasks file for leave_swarm — present
+
+- name: Leave the Docker swarm
+  become: true
+  ansible.builtin.command: "docker swarm leave --force"
+  ignore_errors: yes
+    
+  # TODO: review changed_when for: docker swarm leave --force

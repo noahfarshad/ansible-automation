@@ -1,0 +1,55 @@
+---
+# tasks file for vgpu_profile — present
+
+- block:
+    - name: GATHER INFO
+      vmware_vm_info:
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+        username: "{{ users.vcenter_admin_user }}"
+        password: "{{ users.vcenter_admin_password }}"
+        validate_certs: no
+        vm_name: "{{ inventory_hostname }}"
+      delegate_to: localhost
+      register: vm_info
+
+    - set_fact: 
+        esxi_hn: "{{ vm_info.virtual_machines[0].esxi_hostname }}"
+
+    - name: CHECK IF CORRECT HOST
+      ansible.builtin.fail:
+        msg: "Please migrate this machine to {{ esxi_hostname }}"
+      when: esxi_hn != esxi_hostname
+
+    - name: POWER OFF BEFORE ADDING vGPU
+      vmware_guest:
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+        username: "{{ users.vcenter_admin_user }}"
+        password: "{{ users.vcenter_admin_password }}"
+        validate_certs: no
+        name: "{{ inventory_hostname }}"
+        state: poweredoff
+      delegate_to: localhost
+
+    - name: ADD vGPU PROFILE
+      vmware_guest_vgpu:
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+        username: "{{ users.vcenter_admin_user }}"
+        password: "{{ users.vcenter_admin_password }}"
+        datacenter: "{{ vmware.datacenter }}"
+        validate_certs: no
+        name: "{{ inventory_hostname }}"
+        vgpu: "{{ hardware.shared_pci[0].profile }}"
+        state: present
+      delegate_to: localhost
+      when: hardware.shared_pci[0].profile
+
+    - name: POWER BACK ON
+      vmware_guest:
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+        username: "{{ users.vcenter_admin_user }}"
+        password: "{{ users.vcenter_admin_password }}"
+        validate_certs: no
+        name: "{{ inventory_hostname }}"
+        state: poweredon
+      delegate_to: localhost
+  become: true

@@ -1,0 +1,37 @@
+---
+# tasks file for generate_new_cert — present
+
+# Author: Paul Stratman
+#
+# External dependancies:
+# system - provided via command line
+# domain - group_vars/all/ng
+# the vault
+#
+- name: "Creating temp store"
+  ansible.builtin.file:
+    path: "{{ temporary_store }}"
+    state: directory
+
+- name: "Generating a new cert for {{ new_string_cert_url }}"
+  ansible.builtin.command: "{{ keytool_genkey_command }}"
+  register: string_alias_output
+  ignore_errors: yes
+
+  # TODO: review changed_when for: {{ keytool_genkey_command }}
+- name: "Creating a new cert request for {{ new_string_cert_url }}"
+  ansible.builtin.command: "{{ keytool_request_command }}"
+
+  # TODO: review changed_when for: {{ keytool_request_command }}
+- name: "Curling for a signature"
+  ansible.builtin.command: "{{ request_retrieve_script_command }}"
+
+  # TODO: review changed_when for: {{ request_retrieve_script_command }}
+- name: "Importing signed response for {{ new_string_cert_url }}"
+  ansible.builtin.command: "{{ keytool_import_command }}"
+
+  # TODO: review changed_when for: {{ keytool_import_command }}
+- name: "Cleaning up temp directory"
+  ansible.builtin.file:
+    path: "{{ temporary_store }}"
+    state: absent

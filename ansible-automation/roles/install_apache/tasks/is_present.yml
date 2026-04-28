@@ -1,0 +1,50 @@
+---
+# tasks file for install_apache — present
+
+# This task sets up the Apache 2.4 service
+- block:
+    - name: Extract Apache
+
+      ansible.builtin.unarchive:
+        owner: root
+        ansible.builtin.group: midtier
+        mode: 0755
+        src: "{{staging}}/apache-{{apache_version}}.tar.gz"
+        dest: "{{apache_base}}"
+
+    - name: Extract modules
+
+      ansible.builtin.unarchive:
+        owner: root
+        ansible.builtin.group: midtier
+        mode: 0660
+        src: "{{staging}}/apache_modules-{{apache_minor_version}}.tar.gz"
+        dest: "{{apache_dir}}/modules"
+        extra_opts: [--strip-components=1]
+
+    - name: Extract libraries
+
+      ansible.builtin.unarchive:
+        owner: root
+        ansible.builtin.group: midtier
+        mode: 0660
+        src: "{{staging}}/apache_lib-{{apache_minor_version}}.tar.gz"
+        dest: "{{apache_dir}}/lib"
+        extra_opts: [--strip-components=1]
+
+    - name: Create the ssl_mutex log directory
+
+      ansible.builtin.file:
+        path: "{{apache_dir}}/logs/ssl_mutex"
+        state: directory
+        mode: 0755
+
+    - name: Setup Apache 2.4 as bootable service
+
+      ansible.builtin.template:
+        src: apache24
+        dest: /etc/init.d/apache24
+        mode: 0755
+        ansible.builtin.group: root
+        owner: root
+  become: true

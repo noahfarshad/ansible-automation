@@ -1,0 +1,14 @@
+---
+# defaults file for link_delta_IFC_GPOs
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# common_delta_gpos: ""
+# domain_ou: ""
+# ifc: ""
+# length: ""
+# pre_ifc: ""
+# servers_delta_gpos: ""
+# vdi_delta_gpos: ""
+# workstations_delta_gpos: ""

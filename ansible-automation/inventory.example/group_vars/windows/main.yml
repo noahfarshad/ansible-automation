@@ -1,0 +1,68 @@
+---
+# group_vars/windows/main.yml
+#
+# Variables for hosts in the [windows] group.
+
+# ===========================================================================
+# Connection — WinRM over HTTPS
+# ===========================================================================
+ansible_connection:                    winrm
+ansible_port:                          5986
+ansible_winrm_scheme:                  https
+ansible_winrm_transport:               ntlm
+ansible_winrm_server_cert_validation:  ignore
+ansible_user:                          "{{ ad_join_user }}"
+ansible_password:                      "{{ ad_join_password }}"
+
+# ===========================================================================
+# OS expectation
+# ===========================================================================
+expected_os_family:           Windows
+
+# ===========================================================================
+# Active Directory join — set in group_vars/all but readable here for clarity
+# ===========================================================================
+ad_target_ou:                 "{{ ad_default_ou }}"
+
+# ===========================================================================
+# Time
+# ===========================================================================
+windows_timezone:             "Mountain Standard Time"
+windows_ntp_servers:          "{{ ntp_servers }}"
+
+# ===========================================================================
+# Default Windows software
+# Each entry should match a key in your install_<package> role mapping
+# (see playbooks/windows/install_software.yml)
+# ===========================================================================
+windows_install_packages:
+  - 7zip
+  - notepad_plus_plus
+  - firefox
+  - vscode
+  - putty
+  - winscp
+
+# ===========================================================================
+# Windows features (server roles)
+# ===========================================================================
+windows_features:
+  - .NET-Framework-Features
+  - GPMC
+
+# ===========================================================================
+# Splunk forwarder for Windows event logs
+# ===========================================================================
+splunk_forwarder_inputs:
+  - eventlog: System
+    index:    "{{ splunk_index }}_win_system"
+  - eventlog: Security
+    index:    "{{ splunk_index }}_win_security"
+  - eventlog: Application
+    index:    "{{ splunk_index }}_win_app"
+
+# ===========================================================================
+# Windows local admin (used by build_windows_vm.yml for customization spec)
+# ===========================================================================
+windows_local_admin_user:     Administrator
+windows_local_admin_password: "{{ vault_windows_local_admin_password }}"

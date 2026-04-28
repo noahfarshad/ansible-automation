@@ -1,0 +1,26 @@
+---
+# tasks file for install_java
+# - name: Uninstall Java without specifying the path
+#   ansible.windows.win_package:
+#     product_id: Java
+#     arguments: /s
+#     state: absent
+
+- name: Install Java from a network share specifying the credentials
+  ansible.windows.win_package:
+    path: "{{artifact_staging}}{{java}}"
+    arguments: /s
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'
+
+- name: Set Java_home
+  ansible.windows.win_environment:
+    state: present
+    name: JAVA_HOME
+    value: "{{java_install_loc}}{{jdk_package}}.{{java_version_padded}}"
+    level: machine

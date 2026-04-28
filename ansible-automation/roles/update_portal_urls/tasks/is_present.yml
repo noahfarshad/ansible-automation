@@ -1,0 +1,14 @@
+---
+# tasks file for update_portal_urls — present
+
+# fix the portal urls during string clone process
+- name: Copying update_portal_urls.sql to remote location...
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.template: src={{update_portal_urls_file}} dest={{update_portal_urls_dest}} owner=ora_rmt group=ora_rmt mode=0755
+
+- name: Executing update_portal_urls.sql...
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: sh {{update_portal_urls_dest}}{{update_portal_urls_file}} {{portal_url_arguments}}
+  # TODO: review changed_when for: sh {{update_portal_urls_dest}}{{update_portal_urls_file}} {{

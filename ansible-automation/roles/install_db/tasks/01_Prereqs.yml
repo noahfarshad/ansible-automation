@@ -1,0 +1,30 @@
+---
+# ==> Configure Linux
+- name: Install required libraries
+  become: true
+  ansible.builtin.yum: name={{ item }} state=present
+  loop: "{{packages_list}}"
+
+# ==> Disable transparent hugepages
+- name: Copy script
+  become: true
+  ansible.builtin.copy: src=disable_trans_hugepages.sh dest='/var/tmp/disable_trans_hugepages.sh' mode=0755
+
+- name: Disable Transparent Huge Pages
+  become: true
+  ansible.builtin.shell: '/var/tmp/disable_trans_hugepages.sh'
+
+# ==> Configure huge pages
+  # TODO: review changed_when for: /var/tmp/disable_trans_hugepages.sh
+- name: configure kernel for hugepages
+  become: true
+  ansible.builtin.sysctl: name="vm.nr_hugepages" value="{{ hugepages_nr }}" state=present ignoreerrors=yes
+
+- name: Change kernel parameters
+  become: true
+  ansible.builtin.sysctl: name="{{ item.key }}" value="{{ item.value }}" state=present ignoreerrors=yes
+  with_dict: "{{kernel_params}}"
+
+- name: Copy over limits.conf file
+  become: true
+  ansible.builtin.copy: src=limits.conf dest=/etc/security/limits.conf owner=root group=root mode=0644 backup=yes

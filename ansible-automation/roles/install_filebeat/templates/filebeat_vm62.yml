@@ -1,0 +1,10 @@
+- type: log
+  paths:
+    - /opt/apache24/logs/access_log
+    - /opt/apache24/logs/error_log
+    - /opt/apache24/logs/deflate_log
+  tags: ['{{ system }}', '{{ ansible_hostname }}', 'apache']
+  multiline.pattern: '^[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3} '
+  multiline.negate: true
+  multiline.match: after
+

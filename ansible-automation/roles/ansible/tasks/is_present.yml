@@ -1,0 +1,33 @@
+---
+- block:
+    - name: Install versioned packages
+
+      ansible.builtin.yum:
+        name: "{{ ansible_present_packages }}"
+        state: present
+        allow_downgrade: yes
+
+    - name: Install latest packages
+
+      ansible.builtin.yum:
+        name: "{{ ansible_latest_packages }}"
+        state: "{{ ansible_latest_state }}"
+
+    - name: Create secrets file
+
+      ansible.builtin.template:
+        src: secret
+        dest: "{{ ansible_secret_target }}/{{ ansible_secret_file_name }}"
+        owner: root
+        ansible.builtin.group: root
+        mode: 0644
+
+    - name: Create artifact staging location
+
+      ansible.builtin.file:
+        path: "{{ ansible_artifact_staging_path }}"
+        state: directory
+        mode: 0777
+        ansible.builtin.group: "{{ ansible_artifact_staging_owner }}"
+        owner: "{{ ansible_artifact_staging_group }}"
+  become: true

@@ -1,0 +1,139 @@
+---
+# tasks file for import_ldap — present
+
+- block:
+    - name: Get the hash id of the ldap container name.
+
+      ansible.builtin.shell: "docker service ps dagr_ldap -q --no-trunc | head -n1"
+      register: ldap_container_name_hash
+      tags:
+        - ldap
+        
+
+      # TODO: review changed_when for: docker service ps dagr_ldap -q --no-trunc | head -n1
+    - name: Get the container name of the keycloak container based on the hash.
+
+      ansible.builtin.shell: "docker ps -f name={{ldap_container_name_hash.stdout}} --format '{{ '{{' }} .Names {{ '}}' }}'"
+      register: ldap_container
+      tags:
+        - ldap
+        
+
+      changed_when: false
+    - name: Set the ldap docker exec command variable
+      ansible.builtin.set_fact: 
+        ldap_docker_exec: "docker exec {{ldap_container.stdout}}"
+      tags:
+        - ldap
+
+    - name: Creating a folder
+
+      become_user: app_admin
+      ansible.builtin.file:
+        owner: app_admin
+        ansible.builtin.group: app_admin
+        path: "{{ dagr_ldap_ldif_dir }}"
+        state: directory
+        mode: 0755
+
+    - name: "Downloading & extracting {{ dagr_ldap_tar_gz }}"
+
+      become_user: app_admin
+      ansible.builtin.unarchive:
+        owner: app_admin
+        ansible.builtin.group: app_admin
+        src: "http://{{nexus_host_qualified}}/repository/{{nexus_gold_repository}}/{{group}}/database/{{version}}/{{ dagr_ldap_tar_gz }}"
+        dest: "{{ dagr_ldap_ldif_dir }}"
+        remote_src: yes
+
+    - name: Removing all user entries
+
+      ansible.builtin.shell: >-
+         {{ldap_docker_exec}} bash -c 'ldapsearch
+         -D "cn=Directory Manager" -w {{ldap_password}}
+         -L -s one -b "{{users_base_dn}}" | grep dn: | cut -b 5- | ldapdelete -c -x -D "cn=Directory Manager" -w {{ldap_password}}'
+
+      # TODO: review changed_when for: {{ldap_docker_exec}} bash -c 'ldapsearch
+    - name: Verify all users are gone
+
+      ansible.builtin.shell: >-
+         {{ldap_docker_exec}} ldapsearch
+         -D "cn=Directory Manager" -w {{ldap_password}}
+         -L -s one -b "{{users_base_dn}}" | grep dn: | cut -b 5-
+      register: cn_output
+      failed_when: cn_output.stdout != ""
+
+      # TODO: review changed_when for: {{ldap_docker_exec}} ldapsearch
+    - name: Adding user ldif file to DAGR LDAP
+
+      ansible.builtin.shell: >-
+         {{ldap_docker_exec}} ldapadd -c -x -D "cn=Directory Manager" -w {{ldap_password}} -f {{in_container_import_dir}}/exported_users.ldif
+      ignore_errors: true
+
+      # TODO: review changed_when for: {{ldap_docker_exec}} ldapadd -c -x -D "cn=Directory Manager"
+    - name: Removing unique members from each role
+
+      ansible.builtin.shell: >-
+         {{ldap_docker_exec}} bash -c 'ldapsearch
+         -D "cn=Directory Manager" -w '{{ldap_password}}'
+         -L -s one -b "{{roles_base_dn}}" "(&(objectclass=*)(cn={{item}}))" "uniquemember" |
+         sed -e "/dn:/a\changetype: modify\ndelete: uniquemember" |
+         ldapmodify -c -x -D "cn=Directory Manager" -w {{ldap_password}}'
+      ignore_errors: true
+      loop:
+        - "{{user_roles}}"
+
+      # TODO: review changed_when for: {{ldap_docker_exec}} bash -c 'ldapsearch
+    - name: Updating role files to include the add entry
+
+      ansible.builtin.replace: >
+         path="{{ dagr_ldap_ldif_dir }}/{{item | replace(' ','')}}_role.ldif"
+         regexp="^(dn:.+\n)"
+         replace="\1add: uniquemember\n"
+         backup=no
+      loop:
+        - "{{user_roles}}"
+
+    - name: Updating role files to include the changetype
+
+      ansible.builtin.replace: >
+         path="{{ dagr_ldap_ldif_dir }}/{{item | replace(' ','')}}_role.ldif"
+         regexp="^(dn:.+\n)"
+         replace="\1changetype: modify\n"
+         backup=no
+      loop:
+        - "{{user_roles}}"
+
+    - name: Modifying roles by adding in uniqueMember to each user role
+
+      ansible.builtin.shell: >-
+         {{ldap_docker_exec}} ldapmodify -c -x -D "cn=Directory Manager" -w {{ldap_password}}
+         -f {{ in_container_import_dir }}/{{item | replace(' ','')}}_role.ldif
+      ignore_errors: true
+      loop:
+         - "{{user_roles}}"
+
+      # TODO: review changed_when for: {{ldap_docker_exec}} ldapmodify -c -x -D "cn=Directory Manag
+    - name: Removing all group entries
+
+      ansible.builtin.shell: >-
+         {{ldap_docker_exec}} bash -c 'ldapsearch
+         -D "cn=Directory Manager" -w {{ldap_password}}
+         -L -s one -b "{{groups_base_dn}}" | grep dn: | cut -b 5- | ldapdelete -c -x -D "cn=Directory Manager" -w {{ldap_password}}'
+      ignore_errors: true
+
+      # TODO: review changed_when for: {{ldap_docker_exec}} bash -c 'ldapsearch
+    - name: Adding groups
+
+      ansible.builtin.shell: >-
+         {{ldap_docker_exec}} ldapadd -c -x -D "cn=Directory Manager" -w {{ldap_password}} -f {{in_container_import_dir}}/exported_groups.ldif
+      ignore_errors: true
+
+      # TODO: review changed_when for: {{ldap_docker_exec}} ldapadd -c -x -D "cn=Directory Manager"
+    - name: Deleting the imported ldif folder
+
+      become_user: app_admin
+      ansible.builtin.file:
+        path: "{{ dagr_ldap_ldif_dir }}"
+        state: absent
+  become: true

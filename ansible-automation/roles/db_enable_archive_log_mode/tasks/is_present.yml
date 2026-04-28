@@ -1,0 +1,165 @@
+---
+# tasks file for db_enable_archive_log_mode — present
+
+#
+#   Places the database in archive log mode
+#
+
+- block:
+    - debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+    - name: Copy over DBA_CIE_ARCHIVE_LOG_MODE_PKG.sql file
+
+      ansible.builtin.copy: src=DBA_CIE_ARCHIVE_LOG_MODE_PKG.sql dest=/tmp/DBA_CIE_ARCHIVE_LOG_MODE_PKG.sql owner="{{oracle_owner}}" group="{{oracle_group}}" mode=0644 backup=yes
+
+    - name: "Install the SYS.DBA_CIE_ARCHIVE_LOG_MODE_PKG package "
+
+      become_user: "{{oracle_owner}}"
+      ansible.builtin.shell: |
+        $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+
+        @/tmp/DBA_CIE_ARCHIVE_LOG_MODE_PKG.sql
+
+        exit;
+        EOF
+      environment:
+         ORACLE_HOME: "{{ORACLE_HOME}}"
+         ORACLE_SID: "{{ORACLE_SID}}"
+         JAVA_HOME: "{{JAVA_HOME}}"
+         PATH: "{{PATH}}"
+
+      # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF
+    - name: "Remove the first sqlplus spool file"
+
+      become_user: "{{oracle_owner}}"
+      ansible.builtin.file: 
+        path: "{{spool_file_name_1}}"
+        state: absent  
+
+    - name: "Remove the second sqlplus spool file"
+
+      become_user: "{{oracle_owner}}"
+      ansible.builtin.file:
+        path: "{{spool_file_name_2}}"
+        state: absent
+
+    - name: "See if the Database is already in archivelog mode "
+
+      become_user: "{{oracle_owner}}"
+      ansible.builtin.shell: | 
+        $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+        set serveroutput on;
+        set linesize 200;
+        spool "{{spool_file_name_1}}"
+
+        -- Checks the archive log mode of the database
+        exec SYS.DBA_CIE_ARCHIVE_LOG_MODE_PKG.GET_ARCHIVE_LOG_MODE;
+
+        exit; 
+        EOF
+      environment:
+         ORACLE_HOME: "{{ORACLE_HOME}}"
+         ORACLE_SID: "{{ORACLE_SID}}"
+         JAVA_HOME: "{{JAVA_HOME}}"
+         PATH: "{{PATH}}"
+      register: command_output
+
+      # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF
+    - name: "Read in the output spool file"
+
+      become_user: "{{oracle_owner}}"
+      ansible.builtin.command: cat "{{spool_file_name_1}}"
+      environment:
+         ORACLE_HOME: "{{ORACLE_HOME}}"
+         ORACLE_SID: "{{ORACLE_SID}}"
+         JAVA_HOME: "{{JAVA_HOME}}"
+         PATH: "{{PATH}}"
+      register: spool_file_output
+
+      changed_when: false
+    - name: "Remove the first sqlplus spool file"
+
+      become_user: "{{oracle_owner}}"
+      ansible.builtin.file:
+        path: "{{spool_file_name_1}}"
+        state: absent
+
+    - name: "Remove the Package file"
+
+      become_user: "{{oracle_owner}}"
+      ansible.builtin.file:
+        path: /tmp/DBA_CIE_ARCHIVE_LOG_MODE_PKG.sql
+        state: absent
+
+    - debug: msg="Spool File Contents.   {{spool_file_output.stdout}}"
+
+    - debug: msg="Database already in archive log mode, no work to do, Playbook Terminating "
+      when: spool_file_output.stdout.find('NOARCHIVELOG') == -1
+
+      
+    - name: "Database already in archive log mode, no work to do, Playbook Terminating "
+      ansible.builtin.meta: end_play
+      when: spool_file_output.stdout.find('NOARCHIVELOG') == -1
+
+    # Create the log archive directory and most importantly make sure WORLD has no permissions
+    - name: Create archive log directory; and most importantly make sure WORLD has no permissions
+
+      ansible.builtin.file:
+        dest: "{{archive_log_dir}}"
+        state: directory
+        owner: "{{oracle_owner}}"
+        ansible.builtin.group: "{{oracle_group}}"
+        mode:  0750
+
+    - name: "Ensure to Clear out the Flash Recovery Area Settings and set log_archive_dest_1 "
+
+      become_user: "{{oracle_owner}}"
+      ansible.builtin.shell: |
+        $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+        set serveroutput on;
+        set linesize 200;
+        spool "{{spool_file_name_2}}"
+
+        -- Clear out the Flash Recovery Parameter Settings
+        exec SYS.DBA_CIE_ARCHIVE_LOG_MODE_PKG.UNSET_FLASH_RECOVEY_AREA;
+
+        -- Ensure log_archive_dest_1 is set, this will be where the archive logs go
+        exec SYS.DBA_CIE_ARCHIVE_LOG_MODE_PKG.SET_ARCHIVE_LOG_DIR (p_Dir_Path=>'"{{archive_log_dir}}"');
+
+        exit;
+        EOF
+      environment:
+         ORACLE_HOME: "{{ORACLE_HOME}}"
+         ORACLE_SID: "{{ORACLE_SID}}"
+         JAVA_HOME: "{{JAVA_HOME}}"
+         PATH: "{{PATH}}"
+      register: command_output
+
+      # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF
+    - name: "Altering Database Log Mode depending on variable"
+
+      become_user: "{{oracle_owner}}" 
+      ansible.builtin.shell: |
+        $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+
+        SHUTDOWN IMMEDIATE
+        STARTUP MOUNT
+        ALTER DATABASE {{archive_log}};
+        ALTER DATABASE OPEN;
+        
+        exit;
+        EOF
+      environment:
+         ORACLE_HOME: "{{ORACLE_HOME}}"
+         ORACLE_SID: "{{ORACLE_SID}}"
+         JAVA_HOME: "{{JAVA_HOME}}"
+         PATH: "{{PATH}}"
+
+      # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF
+    - name: "Remove the second sqlplus spool file"
+
+      become_user: "{{oracle_owner}}"
+      ansible.builtin.file:
+        path: "{{spool_file_name_2}}"
+        state: absent
+  become: true

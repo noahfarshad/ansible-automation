@@ -1,0 +1,11 @@
+---
+# defaults file for install_win_features
+#
+# Pass `parameters.win_features` from the caller.
+parameters:
+  win_features: []
+# Example:
+# parameters:
+#   win_features:
+#     - Web-Server
+#     - Web-Mgmt-Console

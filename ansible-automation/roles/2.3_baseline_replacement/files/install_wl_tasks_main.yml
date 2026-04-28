@@ -1,0 +1,100 @@
+---
+# This task installs the Oracle Weblogic software
+#
+- name: Create temp installation directory if it does not exist
+  become: true
+  file:
+    path: "{{temp_install_dir}}"
+    owner: "{{ os_user }}"
+    group: "{{ os_group }}"
+    state: directory
+
+- name: Copying the artifact configuration
+  become: true
+  become_user: "{{os_user}}"
+  template: src="{{item}}" dest="{{temp_install_dir}}" mode=0755
+  loop:
+    - '{{wl_responseFile}}'
+    - '{{wl_invPtrLoc}}'
+
+- name: Copy the artifacts to remote
+  become: true
+  become_user: "{{os_user}}"
+  copy: src="{{staging}}/{{weblogic_installer}}" dest="{{temp_install_dir}}" mode=0755
+
+# Check for swap space on the vm
+- name: Get swap output
+  become: true
+  shell: "cat /proc/swaps"
+  register: swp_output
+  tags: swap
+
+- name: Check for swap file
+  set_fact: swap_file_check="{{ 'weblogic_installation_swapfile' in swp_output.stdout }}"
+  tags: swap
+
+- name: Create swap file
+  command: dd if=/dev/zero of={{ swap_file_path }} bs=1024 count={{ swap_file_size }}
+           creates="{{ swap_file_path }}"
+  when: not swap_file_check
+  tags: swap
+
+- name: Change swap file permissions
+  file: path="{{swap_file_path}}"
+        owner=root
+        group=root
+        mode=0600
+  when: not swap_file_check
+  tags: swap
+
+- name: Format swap file
+  become: true
+  command: "mkswap {{swap_file_path}}"
+  when: not swap_file_check
+  tags: swap
+
+- name: Turn on created swap file
+  become: true
+  command: "swapon {{swap_file_path}}"
+  when: not swap_file_check
+  tags: swap
+
+- name: Turn on all swap
+  become: true
+  command: swapon -a
+  when: not swap_file_check
+  tags: swap
+
+# Do the install
+- name: Install Weblogic
+  become: true
+  become_user: "{{os_user}}"
+  command: "{{java_loc}} -d64 -jar {{temp_install_dir}}/{{weblogic_installer}} -silent -responseFile {{temp_install_dir}}/ResponseFile.txt -invPtrLoc {{temp_install_dir}}/oraInst.loc ORACLE_HOME={{oracle_middleware_home}}"
+
+# Rick Atz Note.  This code will remain commented out for 6 months - Remove (3/15/2019).   Remove if the problems go away.
+
+# Set it back the way it was
+#- name: Turn off swap
+#  become: true
+#  command: swapoff "{{ swap_file_path }}"
+#  when: not swap_file_check
+
+#- name: Remove swap
+#  become: true
+#  command: rm "{{ swap_file_path }}"
+#  when: not swap_file_check
+
+- name: Clean up installation artifacts
+  become: true
+  become_user: "{{os_user}}"
+  file:
+    path: "{{ temp_install_dir}}"
+    state: absent
+
+- name: Create logs directory in Middleware home
+  become_user: app_admin
+  file:
+    path: "{{ middleware_logs }}"
+    state: directory
+    owner: app_admin
+    group: app_admin

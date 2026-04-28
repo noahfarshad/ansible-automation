@@ -1,0 +1,90 @@
+---
+# tasks file for configure_rhel
+
+- block:
+    - name: Set account to not expire
+
+      ansible.builtin.shell: "chage -M -1 admin"
+      
+
+      changed_when: false
+    - name: Change hostname with hostnamectl 
+
+      ansible.builtin.hostname: 
+        name: "{{ inventory_hostname }}"
+
+    - name: Change hostname in /etc/hosts
+
+      ansible.builtin.replace:
+        path: /etc/hosts
+        regexp: "{{ inventory_hostname  }}" 
+        ansible.builtin.replace: "{{ inventory_hostname }}" 
+
+    - name: Change hostname in /etc/sysconfig/network
+
+      ansible.builtin.replace:
+        path: /etc/sysconfig/network
+        regexp: "{{ inventory_hostname }}" 
+        ansible.builtin.replace: "{{ inventory_hostname }}"
+
+    - name: Restart Network service 
+
+      ansible.builtin.service:
+        name: NetworkManager
+        state: restarted
+        args: eth0
+
+    - name: Resize RHEL Disk
+
+      vars:
+        disk: /dev/sda
+        partition: 2
+        volgroup: vg_rhel
+        logvol: lv_root
+      block:
+      - name: Get info
+        parted: 
+          device: "{{ disk }}"
+          state: info
+        register: diskinfo
+
+      - name: Remove partition 
+        parted: 
+          device: "{{ disk }}"
+          number: "{{ partition }}"
+          state: absent
+
+      - name: Recreate partition
+        parted: 
+          device: "{{ disk }}"
+          number: "{{ partition }}"
+          state: present
+          flags: [ lvm ]
+          part_start: "{{ diskinfo.partitions[1].begin }}KiB"
+
+      - name: Run partx
+        ansible.builtin.shell: "partx -u {{ disk }}"
+
+        changed_when: false
+      - name: Resize primary volume
+        ansible.builtin.shell: "pvresize {{ disk }}{{ partition }}"
+
+        changed_when: false
+      - name: Extend the logical volume to consume all remaining space in the volume group
+        lvol:
+          vg: vg_rhel
+          lv: lv_root
+          size: +100%FREE
+          resizefs: yes      
+     
+      - name: Grow the filesystem
+        ansible.builtin.shell: "resize2fs /dev/{{ volgroup }}/{{ logvol }}"
+        
+        changed_when: false
+    - name: Disable firewalld 
+
+      ansible.builtin.service:
+        name: firewalld
+        state: stopped
+        enabled: no
+  become: true

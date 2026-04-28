@@ -1,0 +1,10 @@
+---
+# tasks file for nfs_client_windows
+- name: Install NFS client for windows
+  ansible.windows.win_optional_feature:
+    include_parent: yes
+    source: C:\Windows\System32\nfsclnt.exe
+    name:
+    - Client-for-NFS
+    state: present
+

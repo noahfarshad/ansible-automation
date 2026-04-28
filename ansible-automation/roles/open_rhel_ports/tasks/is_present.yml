@@ -1,0 +1,19 @@
+---
+# tasks file for open_rhel_ports — present
+
+#- name: Open all ports in host_open_port_list var
+#  become: true
+#  firewalld:
+#    port: "{{ item }}"
+#    state: enabled
+#    zone: public
+#    permanent: yes
+#    immediate: yes
+#  with_items: "{{ host_open_port_list | default(omit) }}"
+#  Switch Back to Correct Ports after further analysis is done
+- name: Disable firewalld 
+  become: true
+  ansible.builtin.service:
+    name: firewalld
+    state: stopped
+    enabled: no

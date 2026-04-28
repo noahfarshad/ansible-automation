@@ -1,0 +1,5 @@
+---
+apache_build_dir: /opt/stage
+apache_target_dir: /opt/apache24
+apache_build_script: apache_build.sh
+artifact_descriptor: apache_24.yml

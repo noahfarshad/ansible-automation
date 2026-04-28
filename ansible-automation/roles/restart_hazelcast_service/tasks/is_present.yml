@@ -1,0 +1,20 @@
+---
+# tasks file for restart_hazelcast_service — present
+
+- name: "Stop the hazelcast server instance"
+  become: true
+  ansible.builtin.service:
+    name: hazelcast
+    state: stopped
+  tags:
+    - hazelcast.stop
+    - hazelcast.restart
+
+- name: "Start the hazelcast server instance"
+  become: true
+  ansible.builtin.service:
+    name: hazelcast
+    state: started
+  tags:
+    - hazelcast.start
+    - hazelcast.restart

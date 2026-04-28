@@ -1,0 +1,10 @@
+---
+- name: Configure Sysctl
+  become: true
+  ansible.builtin.sysctl:
+    name: "{{ item.property }}"
+    value: "{{ item.preferred }}"
+    reload: yes
+    state: present
+  loop: "{{ sysctl_configuration_items }}"
+  when: sysctl_configuration_items is defined

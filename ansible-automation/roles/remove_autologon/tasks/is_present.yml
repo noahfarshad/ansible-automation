@@ -1,0 +1,25 @@
+---
+# tasks file for remove_autologon
+- block:
+    - name: Clone a virtual machine from Windows template and customize
+      community.vmware.vmware_guest:
+        ansible.builtin.hostname: "{{vcenter_hostname}}"
+        username: "{{vsphere_account}}"
+        password: "{{vsphere_password}}"
+        validate_certs: no
+        datacenter: "{{vsphere_datacenter}}"
+        datastore: "{{vsphere_datastore}}"
+        cluster: "{{vsphere_cluster}}"
+        name: "{{inventory_hostname}}"
+        customization:
+          autologon: false
+          ansible.builtin.hostname: "{{ short_hostname }}"
+          dns_servers: "{{ dns_servers }}"
+          autologoncount: 0
+        wait_for_customization: yes  
+      retries: 5     
+      delegate_to: localhost
+    # - name: Remove autologon 
+    #   community.windows.win_auto_logon:
+    #     state: absent
+  become: true

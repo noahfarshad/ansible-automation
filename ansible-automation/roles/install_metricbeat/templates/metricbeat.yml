@@ -1,0 +1,23 @@
+metricbeat.modules:
+
+#------------------------------- System Module -------------------------------
+- module: system
+  metricsets:
+    - filesystem
+    - memory
+
+  enabled: true
+  # Ship every x-seconds
+  period: 2m
+
+  tags: ['{{ system }}', '{{ ansible_hostname }}']
+
+  # Don't report on shared drives
+  filesystem.ignore_types: [nfs, smbfs, autofs, tmpfs, sysfs, sunrpc, none, devpts]
+
+#================================ Outputs =====================================
+
+#----------------------------- Logstash output --------------------------------
+output.logstash:
+  # The Logstash hosts
+  hosts: ["{{elk_ip}}:{{elk_port}}"]

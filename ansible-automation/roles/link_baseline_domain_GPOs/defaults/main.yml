@@ -1,0 +1,11 @@
+---
+# defaults file for link_baseline_domain_GPOs
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# domain_gpos: ""
+# domain_ou: ""
+# ifc: ""
+# length: ""
+# pre_ifc: ""

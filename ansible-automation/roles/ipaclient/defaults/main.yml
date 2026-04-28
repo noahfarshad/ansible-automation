@@ -1,0 +1,14 @@
+---
+# defaults file for ipaclient
+
+ipaclient_domain:    "example.coach"
+ipaclient_realm:     "EXAMPLE.COACH"
+
+ipaclient_servers:
+  - "idm01.example.coach"
+  - "idm02.example.coach"
+  - "idm03.example.coach"
+
+ipaclient_principal: "admin"
+
+# Vault: ipaclient_password

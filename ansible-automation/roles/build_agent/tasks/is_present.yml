@@ -1,0 +1,32 @@
+---
+- block:
+    - name: Install versioned packages
+
+      ansible.builtin.yum:
+        name: "{{ build_agent_present_packages }}"
+        state: present
+        allow_downgrade: yes
+      when: build_agent_present_packages is defined
+
+    - name: Install latest packages
+
+      ansible.builtin.yum:
+        name: "{{ build_agent_latest_packages }}"
+        state: "{{ build_agent_latest_state }}"
+
+    - name: Install latest headless chrome support packages
+
+      ansible.builtin.yum:
+        name: "{{ build_agent_chrome_latest }}"
+        state: "{{ build_agent_chrome_latest_state }}"
+
+    - name: Install versioned global npm packages
+
+      npm:
+        name: "{{ item.name }}"
+        version: "{{ item.version }}"
+        registry: "{{ npm_package_endpoint }}/{{ item.repo }}"
+        state: present
+        global: yes
+      loop: "{{ build_agent_npm_packages }}"
+  become: true

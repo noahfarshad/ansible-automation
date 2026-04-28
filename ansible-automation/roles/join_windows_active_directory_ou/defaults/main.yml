@@ -1,0 +1,10 @@
+---
+# defaults file for join_windows_active_directory_ou
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# system: ""
+# users: ""
+# win_ou: ""
+# win_ou_string: ""

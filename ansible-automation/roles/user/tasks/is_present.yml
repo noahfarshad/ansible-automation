@@ -1,0 +1,109 @@
+
+- block:
+    - name: Add provided users
+
+      no_log: yes
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        uid: "{{ item.uid }}"
+        ansible.builtin.shell: "{{ item.shell }}"
+        ansible.builtin.group: "{{ item.group }}"
+        groups: "{{ item.groups }}"
+        home: "{{ item.home }}"
+        expires: "{{ item.expires }}"
+        password: "{{ item.password }}"
+        create_home: "{{ item.create_home | default(False) }}"
+      loop: "{{ user_list }}"
+      register: provided_results
+      ignore_errors: yes
+      when: user_list is defined
+
+        # TODO: review changed_when for: {{ item.shell }}
+    - name: Report provided users status
+      ansible.builtin.debug:
+        msg: "{{ provided_results | strip_pass }}"
+      failed_when: "provided_results.failed is defined and provided_results.failed"
+      when: provided_results is defined and ( provided_results.results | default([]) ) | length > 0
+
+    - name: Add service users
+
+      no_log: yes
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        uid: "{{ item.uid }}"
+        ansible.builtin.shell: "{{ item.shell }}"
+        groups: "{{ item.groups }}"
+        home: "{{ item.home }}"
+        expires: "{{ item.expires }}"
+        password: "{{ item.password }}"
+        create_home: "{{ item.create_home | default(False) }}"
+      loop: "{{ service_user_list }}"
+      register: service_users_results
+      ignore_errors: yes
+      when: service_user_list is defined
+
+        # TODO: review changed_when for: {{ item.shell }}
+    - name: Report service users status
+      ansible.builtin.debug:
+        msg: "{{ service_users_results | strip_pass }}"
+      failed_when: "service_users_results.failed is defined and service_users_results.failed"
+      when: service_users_results is defined and ( service_users_results.results | default([]) ) | length > 0
+
+    - name: Determine if user_list password expires
+
+      no_log: yes
+      ansible.builtin.shell: chage --list "{{ item.name }}" | grep "Password expires" | cut -d ':' -f 2
+      register: user_list_password_experations
+      changed_when: false
+      loop: "{{ user_list }}"
+      when: user_list is defined and ( item.password_expires | default(True) ) == False
+
+    - name: Determine if service_user_list password expires
+
+      no_log: yes
+      ansible.builtin.shell: chage --list "{{ item.name }}" | grep "Password expires" | cut -d ':' -f 2
+      register: service_user_list_password_experations
+      changed_when: false
+      loop: "{{ service_user_list }}"
+      when: service_user_list is defined and ( item.password_expires | default(True) ) == False
+
+    - name: Set password expiration if applicable for system users
+
+      no_log: yes
+      ansible.builtin.command: "chage -M -1 {{ item.item.name }}"
+      register: user_list_expiration_changed
+      ignore_errors: yes
+      loop: "{{ user_list_password_experations.results }}"
+      when: user_list_password_experations is defined and
+            user_list_password_experations.results is defined and
+            item.item.password_expires is defined and
+            item.item.password_expires == False and 'never' not in item.stdout
+
+      changed_when: false
+    - name: Report provided users expiration changes
+      ansible.builtin.debug:
+        msg: "{{ user_list_expiration_changed | strip_pass }}"
+      failed_when: "user_list_expiration_changed.failed is defined and user_list_expiration_changed.failed"
+      when: user_list_expiration_changed is defined and
+            ( user_list_expiration_changed.results | default([]) ) | length > 0
+
+    - name: Set password expiration if applicable for service users
+
+      no_log: yes
+      ansible.builtin.command: "chage -M -1 {{ item.item.name }}"
+      register: service_user_list_expiration_changed
+      ignore_errors: yes
+      loop: "{{ service_user_list_password_experations.results }}"
+      when: service_user_list_password_experations is defined and
+            service_user_list_password_experations.results is defined and
+            item.item.password_expires is defined and
+            item.item.password_expires == False and 'never' not in item.stdout
+
+      changed_when: false
+    - name: Report service users expiration changes
+      ansible.builtin.debug:
+        msg: "{{ service_user_list_expiration_changed | strip_pass }}"
+      failed_when: "service_user_list_expiration_changed.failed is defined and service_user_list_expiration_changed.failed"
+      when: service_user_list_expiration_changed is defined and
+            ( service_user_list_expiration_changed.results | default([]) ) | length > 0
+  become: true

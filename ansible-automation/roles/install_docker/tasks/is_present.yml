@@ -1,0 +1,40 @@
+---
+# tasks file for install_docker
+- block:
+    - name: Ensure yum-utils is installed
+
+      ansible.builtin.dnf:
+        name:
+          - yum-utils
+        state: present
+
+    - name: Add Docker CE Stable 
+
+      ansible.builtin.yum_repository:
+        name: docker-ce-stable
+        description: docker-ce-stable
+        baseurl: 'https://download.docker.com/linux/centos/$releasever/$basearch/stable'
+        enabled: 1
+        gpgcheck: 1
+        ansible.builtin.file: 'docker-ce'
+        gpgkey: 'https://download.docker.com/linux/centos/gpg'
+
+    - name: Ensure Docker-CE is installed
+
+      ansible.builtin.dnf:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+      ignore_errors: true
+
+    - name: Allowerasing module isn't added in ansible until 2.10, below will verify packages are installed
+
+      ansible.builtin.shell: |
+        dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin --allowerasing -y
+  become: true
+
+      # TODO: review changed_when for: dnf install docker-ce docker-ce-cli containerd.io docker-bui

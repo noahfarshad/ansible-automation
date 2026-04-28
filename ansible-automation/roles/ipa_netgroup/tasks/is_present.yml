@@ -1,0 +1,234 @@
+---
+# tasks file for ipa_netgroup (no modules are listed in ansible documentation for "netgroups, execution done via cmd")
+- name: associate netgroup un_tads-sysadmin with essadmin
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_tads-sysadmin --groups essadmin
+  ignore_errors: true
+
+
+  changed_when: false
+- name: associate netgroup's +un_sems-cm,+un_sems-afwwebs,+un_sems-wdd,+un_tads-cm,+un_tads-afwwebs,+un_tads-wdd with user bolt
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sems-cm --users=bolt
+    ipa netgroup-add-member un_sems-afwwebs --users=bolt
+    ipa netgroup-add-member un_sems-wdd --users=bolt
+    ipa netgroup-add-member un_tads-cm --users=bolt
+    ipa netgroup-add-member un_tads-afwwebs --users=bolt
+    ipa netgroup-add-member un_tads-wdd  --users=bolt
+  ignore_errors: true
+
+
+  changed_when: false
+- name: associate netgroup's with user vw21ows
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_21-ows-t --users=vw21ows
+  ignore_errors: true
+
+
+  changed_when: false
+- name: associate netgroup's +un_21-ows-t,+un_sems-afwwebs,+un_tads-cm,+un_sems-cm,+un_tads-afwwebs,+un_wda4 with user vwadmin
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_wda4 --users=vwadmin
+    ipa netgroup-add-member un_sems-cm --users=vwadmin
+    ipa netgroup-add-member un_sems-afwwebs --users=vwadmin
+    ipa netgroup-add-member un_tads-afwwebs --users=vwadmin
+    ipa netgroup-add-member un_21-ows-t --users=vwadmin
+  ignore_errors: true
+
+
+  changed_when: false
+- name: associate netgroup's un_sems-cm,+un_tads-cm with user cm and cmtest
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_tads-cm --users=cm
+    ipa netgroup-add-member un_sems-cm --users=cm
+    ipa netgroup-add-member un_tads-cm --users=cmtest
+    ipa netgroup-add-member un_sems-cm --users=cmtest
+  ignore_errors: true
+
+
+  changed_when: false
+- name: associate netgroup's +un_sys-cm with user cmgov
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sys-cm --users=cmgov
+  ignore_errors: true  
+
+
+  changed_when: false
+- name: associate netgroup's +un_sys-datarouting-d, +un_sys-datarouting-t with user datasubs 
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sys-datarouting-d --users=datasubs
+    ipa netgroup-add-member un_sys-datarouting-t --users=datasubs
+  ignore_errors: true  
+
+
+  changed_when: false
+- name: associate netgroup's +un_sems-afwwebs,+un_sems-cm,+un_sems-scs,+un_sems-swafs-t,+un_sems-testers,+un_sems-wdd,+un_sys-datarouting-d,+un_sys-datarouting-t,+un_tads-afwwebs,+un_tads-cm,+un_tads-scs,+un_tads-swafs-t,+un_tads-testers,+un_tads-wdd,+un_wda4 with user j2eeadmin 
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sems-afwwebs --users=j2eeadmin
+    ipa netgroup-add-member un_sems-cm --users=j2eeadmin
+    ipa netgroup-add-member un_sems-scs --users=j2eeadmin
+    ipa netgroup-add-member un_sems-swafs-t --users=j2eeadmin
+    ipa netgroup-add-member un_sems-testers --users=j2eeadmin
+    ipa netgroup-add-member un_sems-wdd --users=j2eeadmin
+    ipa netgroup-add-member un_sys-datarouting-d --users=j2eeadmin
+    ipa netgroup-add-member un_sys-datarouting-t --users=j2eeadmin
+    ipa netgroup-add-member un_tads-afwwebs --users=j2eeadmin
+    ipa netgroup-add-member un_tads-cm --users=j2eeadmin
+    ipa netgroup-add-member un_tads-scs --users=j2eeadmin
+    ipa netgroup-add-member un_tads-swafs-t --users=j2eeadmin
+    ipa netgroup-add-member un_tads-testers --users=j2eeadmin
+    ipa netgroup-add-member un_tads-wdd --users=j2eeadmin    
+    ipa netgroup-add-member un_wda4 --users=j2eeadmin    
+  ignore_errors: true  
+
+
+  changed_when: false
+- name: associate netgroup's +un_sems-afwwebs, +un_tads-afwwebs with user leads 
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sems-afwwebs --users=leads
+    ipa netgroup-add-member un_tads-afwwebs --users=leads
+  ignore_errors: true  
+
+
+  changed_when: false
+- name: associate netgroup's +un_sems-afwwebs,+un_tads-afwwebs,+un_wda4,+un_tads-wdd with user mw-a, mw-b, and mw-c 
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sems-afwwebs --users=mw-a
+    ipa netgroup-add-member un_tads-afwwebs --users=mw-a
+    ipa netgroup-add-member un_wda4 --users=mw-a
+    ipa netgroup-add-member un_tads-wdd --users=mw-a
+    ipa netgroup-add-member un_sems-afwwebs --users=mw-b
+    ipa netgroup-add-member un_tads-afwwebs --users=mw-b
+    ipa netgroup-add-member un_wda4 --users=mw-b
+    ipa netgroup-add-member un_tads-wdd --users=mw-b
+    ipa netgroup-add-member un_sems-afwwebs --users=mw-c
+    ipa netgroup-add-member un_tads-afwwebs --users=mw-c
+    ipa netgroup-add-member un_wda4 --users=mw-c
+    ipa netgroup-add-member un_tads-wdd --users=mw-c
+  ignore_errors: true  
+
+
+  changed_when: false
+- name: associate netgroup's +un_sems-afwwebs,+un_tads-wdd,+un_tads-afwwebs,+un_sys-datarouting-t with user process
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sems-afwwebs --users=process
+    ipa netgroup-add-member un_tads-afwwebs --users=process
+    ipa netgroup-add-member un_tads-wdd --users=process
+    ipa netgroup-add-member un_sys-datarouting-t --users=process
+    
+  ignore_errors: true  
+
+
+  changed_when: false
+- name: associate netgroup's +un_sys-sdo-t with user sdo
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sys-sdo-t --users=sdo
+  ignore_errors: true 
+
+
+  changed_when: false
+- name: associate netgroup's +un_sems-cm,+un_sems-wdd,+un_tads-wdd with user tdcftac
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sems-cm --users=tdcftac
+    ipa netgroup-add-member un_sems-wdd --users=tdcftac
+    ipa netgroup-add-member un_tads-wdd --users=tdcftac
+  ignore_errors: true 
+
+
+  changed_when: false
+- name: associate netgroup's +un_sems-scs,+un_tads-scs,+un_sems-pais,+un_tads-pais,+un_sems-wdd,+un_sems-wdd-p,+un_tads-wdd,+un_sems-afwwebs,+un_tads-afwwebs,+un_sems-cm,+un_tads-cm with user weblogic
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sems-scs --users=weblogic
+    ipa netgroup-add-member un_tads-scs --users=weblogic
+    ipa netgroup-add-member un_sems-pais --users=weblogic
+    ipa netgroup-add-member un_tads-pais --users=weblogic
+    ipa netgroup-add-member un_sems-wdd --users=weblogic
+    ipa netgroup-add-member un_sems-wdd-p --users=weblogic
+    ipa netgroup-add-member un_tads-wdd --users=weblogic
+    ipa netgroup-add-member un_sems-afwwebs --users=weblogic
+    ipa netgroup-add-member un_tads-afwwebs --users=weblogic
+    ipa netgroup-add-member un_sems-cm --users=weblogic
+    ipa netgroup-add-member un_tads-cm --users=weblogic
+  ignore_errors: true 
+
+
+  changed_when: false
+- name: associate netgroup's +un_sems-afwwebs,+un_tads-afwwebs,+un_sems-scs,+un_tads-scs with user jenkins
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sems-afwwebs --users=jenkins
+    ipa netgroup-add-member un_tads-afwwebs --users=jenkins
+    ipa netgroup-add-member un_sems-scs --users=jenkins
+    ipa netgroup-add-memberun_tads-scs --users=jenkins
+  ignore_errors: true 
+
+
+  changed_when: false
+- name: associate netgroup's +un_sys-dba with user oracle
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sys-dba --users=oracle
+  ignore_errors: true 
+
+
+  changed_when: false
+- name: associate netgroup's +un_16ws-specm with user specm, and globus
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_16ws-specm --users=specm
+    ipa netgroup-add-member un_16ws-specm --users=globus
+  ignore_errors: true 
+
+
+  changed_when: false
+- name: associate netgroup's  +un_tads-swafs-t, +un_sems-swafs-t with user swafs1 and swafs2
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_tads-swafs-t --users=swafs1
+    ipa netgroup-add-member un_sems-swafs-t --users=swafs1
+    ipa netgroup-add-member un_tads-swafs-t --users=swafs2
+    ipa netgroup-add-member un_sems-swafs-t --users=swafs2
+  ignore_errors: true 
+
+
+  changed_when: false
+- name: associate netgroup's +un_sys-an with user dv 
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    ipa netgroup-add-member un_sys-an --users=dv
+  ignore_errors: true 
+
+  changed_when: false

@@ -1,0 +1,10 @@
+---
+# tasks file for configure_selinux
+- name: verifying SELinux boolean values
+  become: true
+  seboolean:
+    name: "{{item.name}}"
+    state: "{{item.state}}"
+    persistent: "yes"
+  loop: "{{selinux_booleans}}"
+  tags: configure_selinux

@@ -1,0 +1,6 @@
+---
+- name: Get database script archive from Nexus
+  ansible.builtin.get_url:
+    url: http://{{nexus_host_qualified}}/repository/{{ nexus_gold_repository }}/{{ group }}/database/{{ version }}/{{ script_archive }}
+    dest: "{{ staging }}"
+    mode: 0755

@@ -1,0 +1,19 @@
+# Globus sudo settings defined in Globus test build plan
+
+#
+# Don't use sudo aliases - it messes up the Ansible validation command and is largely unneeded with Ansible doing the sudo management
+#  Just list the required sudo command
+#
+#
+# User Aliases
+#User_Alias      GLOBUS_ADMINS = +fn_globus
+#
+# Host Aliases
+#Host_Alias      GLOBUS_NONPROD = wdd-globus-01p
+#
+# Command aliases
+#GLOBUS_ADMINS      GLOBUS_NONPROD=(globus) LOG_OUTPUT: LOG_INPUT: ALL
+
++fn_globus      wdd-globus-01p=(globus) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++fn_globus      wdd-globus-01p=(cmtest) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++fn_globus      wdd-globus-01p=(process) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL

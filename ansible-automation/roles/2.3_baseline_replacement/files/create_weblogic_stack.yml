@@ -1,0 +1,106 @@
+---
+
+# Ensure java8 is on all weblogic, hazelcast, and microservice servers
+- hosts: adminserver:managedservers:hazelcast
+  become: true
+  roles:
+    - installers/install_java8
+    - administration/deploy_unlimited_jce
+
+# install the weblogic product
+- hosts: adminserver:managedservers
+  become: true
+  roles:
+    - installers/disable_noexec
+    - installers/install_wl
+    - installers/enable_noexec
+    - installers/create_wl_domain
+    - installers/remove_java8_compiler
+    - installers/add_nm
+    - installers/configure_wl_startup_scripts
+    - installers/configure_wl_nm_startup_scripts
+    # GC2 Specific Settings
+    - installers/configure_wl_domain_post_install
+
+- hosts: adminserver
+  gather_facts: no
+  become: true
+  roles:
+    - installers/configure_adminserver
+    - installers/start_nm
+    - installers/create_wl_key_and_config_credentials
+    - installers/create_nm_credentials
+    - installers/start_wl_server
+    - installers/create_initial_security_realm
+    - installers/configure_wl_ssl
+    - common/restart_weblogic_service
+
+- hosts: managedservers
+  become: true
+  roles:
+    - installers/enroll_nm
+    - installers/start_nm
+
+- hosts: adminserver
+  gather_facts: no
+  become: true
+  roles:
+    - installers/add_managed_servers
+    # GC2 Specific Settings
+    - installers/add_data_source
+
+# Story will be written to do further research
+#- hosts: adminserver:managedservers
+#  gather_facts: no
+#  become: true
+#  serial: 1
+#  roles:
+#    - installers/install_wl_monitor
+
+- hosts: adminserver:managedservers
+  gather_facts: no
+  become: true
+  roles:
+    - common/restart_weblogic_service
+
+- hosts: adminserver
+  gather_facts: no
+  become: true
+  roles:
+    - common/config_wl_settings
+
+- hosts: adminserver:managedservers
+  gather_facts: no
+  become: true
+  roles:
+    - common/restart_weblogic_service
+
+- hosts: managedservers
+  gather_facts: no
+  become: true
+  roles:
+    - installers/disable_wl_moxy_autodiscover
+
+# task added to check if create_weblogic_stack.yml was run
+- hosts: adminserver
+  become: true
+  tasks:
+    - name: Touch completion file
+      become: true
+      file:
+        path: /tmp/CREATE_WEBLOGIC_STACK_WAS_RUN
+        state: touch
+
+# GC2 Specific Settings
+# Enroll Hazelcast
+- hosts: hazelcast
+  roles:
+    - installers/install_hazelcast_server
+
+# put hazelcast jars on managed server paths
+# The lib dir should be 0750, but this will set it to 0755
+- hosts: managedservers
+  vars:
+  - hazelcast_directory: /u01/domains/wl_domain/lib
+  roles:
+    - installers/install_hazelcast_server

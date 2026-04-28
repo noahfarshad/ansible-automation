@@ -1,0 +1,16 @@
+---
+# tasks file for create_vcenter_folder
+- block:
+    - name: Create a VM folder on given datacenter
+      community.vmware.vcenter_folder:
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        folder_name: "{{ vcenter_folder }}"
+        folder_type: "vm"
+        validate_certs: "false"
+        state: present
+      register: vm_folder_creation_result
+      delegate_to: localhost
+  become: true

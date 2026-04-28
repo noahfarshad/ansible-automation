@@ -1,0 +1,61 @@
+---
+# tasks file for move_computer_to_ou — present
+
+# Expected host_vars
+# win_ou: Top level OU folder the host exists in
+# win_ou_string: Second level OU folder the host exists in
+- block:
+    - name: Create top level ou string
+      ansible.builtin.set_fact:
+        top_level_ou: "OU={{ parameters.win_ou_string }},"
+      when: parameters.win_ou_string is defined and parameters.win_ou_string
+
+    - name: Create second level ou string
+      ansible.builtin.set_fact:
+        second_level_ou: "OU={{ parameters.win_ou }},"
+      when: parameters.win_ou is defined and parameters.win_ou
+
+    - name: combine OU strings
+      ansible.builtin.set_fact:
+        merge_ou: "{{ second_level_ou if second_level_ou is defined and second_level_ou else '' }}{{ top_level_ou }}"
+
+    - name: Add Host to DC Server OU Directory
+      vars:
+        ansible_user: "{{ hostvars[ 'dcserver01' + '.' + system.tld  ].ansible_user }}"
+        ansible_password: "{{ hostvars[ 'dcserver01' + '.' + system.tld  ].ansible_password }}"
+      microsoft.ad.computer:
+        name: "{{ inventory_hostname_short }}"
+        dns_hostname: "{{ inventory_hostname }}"
+        domain_username: "{{ users.domainadmin_user }}"
+        domain_password: "{{ users.domain_password }}"
+        enabled: yes
+        ou: "{{ merge_ou }}DC={{ system.tld.split('.')[0] }},DC={{ system.tld.split('.')[1] }}"
+        state: present
+      delegate_to: "dcserver01.{{ system.tld }}"
+      register: domain_result
+
+    - name: Run gpupdate /force
+      register: shell_command_output
+      vmware_vm_shell:
+        datacenter: "{{ vmware.datacenter }}"
+        folder: "{{ parameters.folder_name }}"
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+        password: "{{ users.vcenter_admin_password }}"
+        username: "{{ users.vcenter_admin_user }}"
+        validate_certs: false
+        vm_id: "{{ inventory_hostname }}"
+        vm_username: "{{ users.domainadmin_user }}"
+        vm_password: "{{ users.domain_password }}"
+        vm_shell: 'C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe'
+        vm_shell_args: "powershell.exe gpupdate /force /logoff"
+        wait_for_process: true
+        timeout: 300
+      delay: 5
+      retries: 5
+      until: shell_command_output.failed == false
+      delegate_to: localhost
+      when: domain_result.changed == True
+
+    - import_tasks: ../../vmware_common/tasks/vmware_reboot.yml
+      when: domain_result.changed == True
+  become: true

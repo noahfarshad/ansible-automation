@@ -1,0 +1,14 @@
+---
+# tasks file for deregister_with_consul — present
+
+#Any playbooks using this role will need to have consul's group_vars available.
+
+- assert:
+    that: "service_name is defined"
+- name: "De-register {{service_name}} with Consul"
+  ansible.builtin.uri:
+    url: "http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:8500/v1/agent/service/deregister/{{service_name}}"
+    method: PUT
+    #So this is the weird part. In order to verify that the URL will resolve, we need to make sure Consul is running.
+    # This doesn't actually remove anything, but will skip this step if the pid file doesn't exist.
+    removes: "{{consul_pid}}"

@@ -1,0 +1,10 @@
+---
+# tasks file for remove_autologon — absent
+#
+# Inverse: re-enable autologon. Requires user/pass parameters.
+
+- name: Cannot auto-restore autologon (requires user/pass)
+  ansible.builtin.debug:
+    msg: >-
+      Re-enabling autologon requires explicit user/password values that
+      cannot be inferred. Configure manually if needed.

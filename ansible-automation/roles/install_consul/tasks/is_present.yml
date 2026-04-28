@@ -1,0 +1,41 @@
+---
+# tasks file for install_consul — present
+
+- block:
+    - name: "Installing binaries on host"
+      include: install_consul.yml
+
+    - name: "Create {{consul_name}} config directory"
+      ansible.builtin.file:
+        path: "{{consul_config_dir}}"
+        state: directory
+        owner: "{{app_user}}"
+        ansible.builtin.group: "{{app_group}}"
+        mode: 0755
+
+    - name: "Setting fact for Consul Server"
+      ansible.builtin.set_fact:
+        is_server: "'consul_servers' in group_names"
+
+    - name: "Configuring host as a Consul Server"
+      include: configure_consul_server.yml
+      become_user: "{{app_user}}"
+      when: is_server
+
+    - name: "Setting fact for Consul Client"
+      ansible.builtin.set_fact:
+        is_client: "'consul_clients' in group_names"
+
+    - name: "Configuring host as a Consul Client"
+      include: configure_consul_client.yml
+      become_user: "{{app_user}}"
+      when: is_client
+
+    - name: "Install the Consul service"
+      include: add_consul_service.yml
+
+    - name: "Restart Consul Service"
+      ansible.builtin.service:
+        name: consul
+        state: restarted
+  become: true

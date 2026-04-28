@@ -1,0 +1,7 @@
+---
+
+binary_extract_dir: "/opt"
+binary_dir: "{{binary_extract_dir}}/{{binary_name}}_{{binary_version}}"
+binary_data_dir: "{{binary_dir}}/data"
+binary_log_dir: "{{binary_dir}}/logs"
+binary_config_dir: "{{binary_dir}}/config"

@@ -1,0 +1,140 @@
+---
+# tasks file for configure_splunk_server — present
+
+- name: Check if Splunk Server Configured
+  ansible.builtin.stat:
+    path: /opt/splunk
+  register: splunk_dir_return_msg
+
+- name: Configure Splunk Server
+  when: not splunk_dir_return_msg.stat.exists
+  become: true
+  block:
+  - name: Create Temp Folder for Installer
+    ansible.builtin.tempfile: 
+      state: directory 
+      suffix: 'splunkserver'
+    register: install_loc
+    
+  - no_log: true
+    ansible.builtin.include_vars:
+      ansible.builtin.file: roles/nexus_setup_server/vars/nexus_vars.yml
+      name: nexus_vars
+      
+  - name: Query Nexus For Installer
+    register: artifact_list
+    delegate_to: localhost
+    custom_nexus_query:
+      nexus_base_url: "{{ nexus_vars.nexus_rest_api }}"
+      nexus_repo_id: "{{ nexus_vars.raw_public_name }}"
+      nexus_search_repo: "{{ infra_ifc_version }}"
+      nexus_search_artifactid: "Splunk"
+
+  - name: Copy Artifact To Host
+    vars:
+      artifact: "{{ artifact_list.status.query_results[0] }}"
+    block:
+    - name: Copy Installer Zip
+      ansible.builtin.get_url:
+        validate_certs: false
+        url: "{{ artifact.downloadUrl }}"
+        dest: "{{ install_loc.path }}/{{ artifact.filename}}"
+        
+    - name: Unzip Installer
+      ansible.builtin.unarchive:
+        src: "{{ install_loc.path }}/{{ artifact.filename}}"
+        dest: "{{ install_loc.path }}"   
+        remote_src: yes
+
+  - name: Untar Splunk to /opt/splunk
+    ansible.builtin.unarchive:
+      src: "{{ install_loc.path }}/Splunk/splunk-9.0.4-de405f4a7979-Linux-x86_64.tgz"
+      dest: /opt/
+      remote_src: yes
+
+  - name: Set Initial User Configuration
+    ansible.builtin.shell: "echo -e '[user_info]\nUSERNAME={{ users.splunk_admin.user }}\nPASSWORD={{ users.splunk_admin.password }}' > /opt/splunk/etc/system/local/user-seed.conf"
+
+    changed_when: false
+  - name: Start Splunk
+    ansible.builtin.shell: /opt/splunk/bin/splunk restart --accept-license --answer-yes --no-prompt;
+
+    # TODO: review changed_when for: /opt/splunk/bin/splunk restart --accept-license --answer-yes
+  - name: Enable Splunk Start on Boot
+    ansible.builtin.shell: /opt/splunk/bin/splunk enable boot-start;
+
+    # TODO: review changed_when for: /opt/splunk/bin/splunk enable boot-start;
+  - name: Enable SSL
+    ansible.builtin.shell: "/opt/splunk/bin/splunk enable web-ssl -auth {{ users.splunk_admin.user }}:{{ users.splunk_admin.password }}"
+
+    # TODO: review changed_when for: /opt/splunk/bin/splunk enable web-ssl -auth {{ users.splunk_
+  - name: Open Firewall Ports
+    firewalld:
+      port: "{{ item }}"
+      permanent: Yes
+      state: enabled
+      immediate: Yes
+      zone: public
+    loop: "{{ splunk_port_list }}"
+
+  - name: Untar Add-Ons Packages
+    ansible.builtin.unarchive:
+      src: "{{ install_loc.path }}/{{ item.src }}"
+      dest: "{{ item.dest }}"
+      remote_src: yes
+    loop: "{{ splunk_package_list }}"
+
+  - name: Make Splunk Add-Ons Configuration Directory
+    ansible.builtin.file:
+      path: /opt/splunk/etc/deployment-apps/Splunk_TA_nix/local/
+      state: directory
+
+  - name: Load Unix Inputs Configuration File
+    ansible.builtin.copy:
+      src: "{{ install_loc.path }}/inputs.conf"
+      dest: /opt/splunk/etc/deployment-apps/Splunk_TA_nix/local/inputs.conf
+      force: yes
+      remote_src: yes
+
+  - name: Load Server Class Configuration File 
+    ansible.builtin.copy:
+      src: "{{ install_loc }}/serverclass.conf"
+      dest: /opt/splunk/etc/system/local/serverclass.conf
+      force: yes
+      remote_src: yes
+
+  - name: Install Splunk Enterprise
+    ansible.builtin.shell: "/opt/splunk/bin/splunk install app {{ install_loc.path }}/splunk-enterprise-security_620.spl"
+    
+    # TODO: review changed_when for: /opt/splunk/bin/splunk install app {{ install_loc.path }}/sp
+  - name: essinstall
+    ansible.builtin.shell: "/opt/splunk/bin/splunk search '| essinstall'"
+
+    # TODO: review changed_when for: /opt/splunk/bin/splunk search '| essinstall
+  - name: Enable Ports for Splunk
+    block: 
+    - name: Listen on Port 9997
+      ansible.builtin.shell: "/opt/splunk/bin/splunk enable listen 9997 -auth {{ users.splunk_admin.user }}:{{ users.splunk_admin.password }}"
+
+      # TODO: review changed_when for: /opt/splunk/bin/splunk enable listen 9997 -auth {{ users.spl
+    - name: Listen on Port 514/TCP
+      ansible.builtin.shell: "/opt/splunk/bin/splunk add tcp 514 -auth {{ users.splunk_admin.user }}:{{ users.splunk_admin.password }}"
+
+      # TODO: review changed_when for: /opt/splunk/bin/splunk add tcp 514 -auth {{ users.splunk_adm
+    - name: Listen on Port 514/UDP
+      ansible.builtin.shell: "/opt/splunk/bin/splunk add udp 514 -auth {{ users.splunk_admin.user }}:{{ users.splunk_admin.password }}"
+
+      # TODO: review changed_when for: /opt/splunk/bin/splunk add udp 514 -auth {{ users.splunk_adm
+    - name: Listen on Port 1514/TCP
+      ansible.builtin.shell: "/opt/splunk/bin/splunk add tcp 1514 -auth {{ users.splunk_admin.user }}:{{ users.splunk_admin.password }}"
+
+      # TODO: review changed_when for: /opt/splunk/bin/splunk add tcp 1514 -auth {{ users.splunk_ad
+  - name: Restart Splunk
+    block:
+    - name: Stop Splunk
+      ansible.builtin.shell: /opt/splunk/bin/splunk stop
+
+      # TODO: review changed_when for: /opt/splunk/bin/splunk stop
+    - name: start splunk
+      ansible.builtin.shell: /opt/splunk/bin/splunk start
+    changed_when: false

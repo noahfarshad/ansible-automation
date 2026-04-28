@@ -1,0 +1,35 @@
+---
+# host_vars/web01.example.coach.yml
+#
+# Per-host overrides for web01. Only set values here that genuinely differ
+# from the group defaults in group_vars/webservers/main.yml.
+
+# ===========================================================================
+# vSphere placement (REQUIRED for build_linux_vm.yml)
+# ===========================================================================
+vsphere_template:           "rhel9-template"
+vsphere_folder:             "/example_dc/vm/Linux/Web"
+vsphere_datastore:          "datastore1"
+vsphere_network:            "VM Network"
+vsphere_cpu:                4
+vsphere_memory_mb:          8192
+vsphere_disk_gb:            80
+
+# ===========================================================================
+# Network — REQUIRED, must be unique per host
+# ===========================================================================
+static_ipv4_address:        10.10.10.11
+static_ipv4_netmask:        255.255.255.0
+static_ipv4_gateway:        10.10.10.1
+
+# ===========================================================================
+# Apache — overrides for this host only
+# ===========================================================================
+# This host is behind a load balancer that does TLS termination, so we serve
+# HTTP on a non-standard port (the LB hits us on 8443):
+apache_listen_port_ssl:     8443
+
+# ===========================================================================
+# Splunk — route this host's logs to a per-host index for testing
+# ===========================================================================
+splunk_index_override:      "{{ splunk_index }}_web01"

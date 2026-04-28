@@ -1,0 +1,9 @@
+---
+# defaults file for Network_CopyrunstartSwitchConfig
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# ifc_next: ""
+# name: ""
+# site: ""

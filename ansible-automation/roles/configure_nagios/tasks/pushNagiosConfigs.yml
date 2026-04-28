@@ -1,0 +1,38 @@
+---
+- name: Clean up old static configs if present
+  throttle: 1
+  ansible.builtin.file:
+    state: absent
+    path: /usr/local/nagios/etc/objects/host/server/linux/static/{{inventory_hostname }}.cfg
+  become: true
+  delegate_to: "{{ nagios_hostname }}"
+- name: Clean up old dynamic configs if present
+  throttle: 1
+  ansible.builtin.file:
+    state: absent
+    path: /usr/local/nagios/etc/objects/host/server/linux/dynamic/{{inventory_hostname }}.cfg
+  become: true
+  delegate_to: "{{ nagios_hostname }}"
+- name: Copy template
+  throttle: 1
+  ansible.builtin.template:
+    src: templates/vanilla.j2
+    dest: /usr/local/nagios/etc/objects/host/server/linux/dynamic/{{ inventory_hostname }}.cfg
+    owner: nagios
+    ansible.builtin.group: nagios
+    mode: 0644
+  become: true
+  delegate_to: "{{ nagios_hostname }}"
+- name: Check Nagios Configs
+  throttle: 1
+  ansible.builtin.command: "service nagios checkconfig"
+  delegate_to: "{{ nagios_hostname }}"
+  become: true
+  changed_when: false
+- name: Reload Nagios
+  throttle: 1
+  ansible.builtin.service:
+    name: nagios
+    state: reloaded
+  become: true
+  delegate_to: "{{ nagios_hostname }}"

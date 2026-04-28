@@ -1,0 +1,252 @@
+---
+# tasks file for ipa_sudocmd
+- name: Ensure sudo command /usr/bin/killall -9 -u vwadmin exists
+  community.general.ipa_sudocmd:
+    name: /usr/bin/killall -9 -u vwadmin
+    description: Allow users to run kill vwadmin processes via sudo
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command start hapee-2.0-lb exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl start hapee-2.0-lb
+    description: Allow users to start hapee-2.0-lb
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command stop hapee-2.0-lb exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl stop hapee-2.0-lb
+    description: Allow users to stop hapee-2.0-lb
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command restart hapee-2.0-lb exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl restart hapee-2.0-lb
+    description: Allow users to restart hapee-2.0-lb
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command status hapee-2.0-lb exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl status hapee-2.0-lb
+    description: Allow users to check status hapee-2.0-lb
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command journalctl hapee-2.0-lb exists
+  community.general.ipa_sudocmd:
+    name: /bin/journalctl -u hapee-2.0-lb
+    description: Allow users to check journalctl of hapee-2.0-lb
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command reload hapee-2.0-lb exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl reload hapee-2.0-lb
+    description: Allow users to reload hapee-2.0-lb
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command start hapee-extras-vrrp exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl start hapee-extras-vrrp
+    description: Allow users to start hapee-extras-vrrp
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command stop hapee-extras-vrrp exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl stop hapee-extras-vrrp
+    description: Allow users to stop hapee-extras-vrrp
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command restart hapee-extras-vrrp exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl restart hapee-extras-vrrp
+    description: Allow users to restart hapee-extras-vrrp
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command status hapee-extras-vrrp exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl status hapee-extras-vrrp
+    description: Allow users to check status hapee-extras-vrrp
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command enable hapee-extras-vrrp exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl enable hapee-extras-vrrp
+    description: Allow users to enable hapee-extras-vrrp
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command start hapee-extras-stktagg exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl start hapee-extras-stktagg
+    description: Allow users to start hapee-extras-stktagg
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command stop hapee-extras-stktagg exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl stop hapee-extras-stktagg
+    description: Allow users to stop hapee-extras-stktagg
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command restart hapee-extras-stktagg exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl restart hapee-extras-stktagg
+    description: Allow users to stop hapee-extras-stktagg
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command restart jws5-tomcat exists
+  community.general.ipa_sudocmd:
+    name: /usr/bin/systemctl restart jws5-tomcat
+    description: Allow users to restart jws5-tomcat
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command start jws5-tomcat exists
+  community.general.ipa_sudocmd:
+    name: /usr/bin/systemctl start jws5-tomcat
+    description: Allow users to start jws5-tomcat
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command stop jws5-tomcat exists
+  community.general.ipa_sudocmd:
+    name: /usr/bin/systemctl stop jws5-tomcat
+    description: Allow users to stop jws5-tomcat
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command status jws5-tomcat exists
+  community.general.ipa_sudocmd:
+    name: /usr/bin/systemctl status jws5-tomcat
+    description: Allow users to check status jws5-tomcat
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command journalctl jws5-tomcat exists
+  community.general.ipa_sudocmd:
+    name: /bin/journalctl -u jws5-tomcat
+    description: Allow users to check journalctl of jws5-tomcat
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command start httpd24-httpd exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl start httpd24-httpd
+    description: Allow users to start httpd24-httpd
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command stop httpd24-httpd exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl stop httpd24-httpd
+    description: Allow users to stop httpd24-httpd
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command restart httpd24-httpd exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl restart httpd24-httpd
+    description: Allow users to restart httpd24-httpd
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command check status httpd24-httpd exists
+  community.general.ipa_sudocmd:
+    name: /bin/systemctl status httpd24-httpd
+    description: Allow users to check status httpd24-httpd
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command check journalctl of httpd24-httpd exists
+  community.general.ipa_sudocmd:
+    name: /bin/journalctl -u httpd24-httpd
+    description: Allow users to check journalctl of httpd24-httpd
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: Ensure sudo command group afwwebs_cmd exists
+  community.general.ipa_sudocmdgroup:
+    name: afwwebs_cmd
+    description: AFWWEBS elevated sudo command group
+    sudocmd:
+    - /usr/bin/killall -9 -u vwadmin
+    - /bin/systemctl start hapee-2.0-lb
+    - /bin/systemctl stop hapee-2.0-lb
+    - /bin/systemctl restart hapee-2.0-lb
+    - /bin/systemctl status hapee-2.0-lb
+    - /bin/journalctl -u hapee-2.0-lb
+    - /bin/systemctl reload hapee-2.0-lb
+    - /bin/systemctl start hapee-extras-vrrp
+    - /bin/systemctl stop hapee-extras-vrrp
+    - /bin/systemctl restart hapee-extras-vrrp
+    - /bin/systemctl status hapee-extras-vrrp
+    - /bin/systemctl enable hapee-extras-vrrp
+    - /bin/systemctl start hapee-extras-stktagg
+    - /bin/systemctl stop hapee-extras-stktagg
+    - /bin/systemctl restart hapee-extras-stktagg
+    - /usr/bin/systemctl restart jws5-tomcat
+    - /usr/bin/systemctl start jws5-tomcat
+    - /usr/bin/systemctl stop jws5-tomcat
+    - /usr/bin/systemctl status jws5-tomcat
+    - /bin/journalctl -u jws5-tomcat
+    - /bin/systemctl start httpd24-httpd
+    - /bin/systemctl stop httpd24-httpd
+    - /bin/systemctl restart httpd24-httpd
+    - /bin/systemctl status httpd24-httpd
+    - /bin/journalctl -u httpd24-httpd
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+
+- name: create sudo rule that allows afwwebs users sudocmd privileges
+  become: true
+  community.general.ipa_sudorule:
+    name: afwwebs_sudo
+    description: Administrators associated with afwwebs will be allowed limited privileges via sudo
+    cmdgroup:
+    - afwwebs_cmd
+    hostgroup: afwwebs-refresh
+    usergroup:
+    - afwwebs
+    runasextusers:
+    - root
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true

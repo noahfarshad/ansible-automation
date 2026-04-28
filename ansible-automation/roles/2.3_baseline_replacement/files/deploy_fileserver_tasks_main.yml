@@ -1,0 +1,62 @@
+---
+#- name: "Copy bash script for starting databases and listener"
+#  become: true
+#  template:
+#    src: ctl_services.sh
+#    dest: /var/shares/cots/midtier_share/admin_scripts
+#    owner: app_admin
+#    group: midtier
+#    mode: 0770
+
+- name: "Create GC2 properties directory"
+  become: true
+  file:
+    path: "{{properties_base_directory}}{{gc2_properties_directory}}"
+    state: directory
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+
+# Does a recursive copy of all files in properties, due to the src ending with a / character.  See ansible docs/copy module for more info.
+- name: "Deploy property files"
+  become: true
+  copy:
+    backup: yes
+    owner: app_admin
+    group: app_admin
+    src: "{{staging}}/properties/"
+    dest: "{{properties_base_directory}}{{gc2_properties_directory}}"
+    mode: 0755
+
+- name: "Update classificationservice.properties to match with enclave"
+  become: true
+  become_user: app_admin
+  template:
+    owner: app_admin
+    group: app_admin
+    src: classificationservice.properties
+    dest: "{{properties_base_directory}}{{gc2_properties_directory}}"
+    mode: 0755
+
+- name: "Create banner.properties file"
+  become: true
+  become_user: app_admin
+  template:
+    owner: app_admin
+    group: app_admin
+    src: banner.properties
+    dest: "{{properties_base_directory}}{{gc2_properties_directory}}"
+    mode: 0755
+  tags:
+    - banner
+  
+# Store the server url with domain so application is able to compare for CSRF
+- name: "Create serveridentity.properties"
+  become: true
+  become_user: app_admin
+  template:
+    owner: app_admin
+    group: app_admin
+    src: serveridentity.properties
+    dest: "{{properties_base_directory}}{{gc2_properties_directory}}"
+    mode: 0755

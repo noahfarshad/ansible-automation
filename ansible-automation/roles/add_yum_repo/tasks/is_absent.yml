@@ -1,0 +1,15 @@
+---
+# tasks file for add_yum_repo — absent
+
+- name: Remove yum repositories
+  ansible.builtin.yum_repository:
+    name: '{{ item.name }}'
+    state: absent
+  loop: '{{ baseline_repos | default([]) }}'
+
+- name: Remove delta repositories
+  ansible.builtin.yum_repository:
+    name: '{{ item.name }}'
+    state: absent
+  loop: '{{ delta_repos | default([]) }}'
+  when: delta_repos is defined

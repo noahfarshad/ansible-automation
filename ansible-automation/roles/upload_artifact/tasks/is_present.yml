@@ -1,0 +1,18 @@
+---
+# tasks file for upload_artifact — present
+
+- name: Upload artifacts to nexus
+  ansible.builtin.command: "curl \
+           -F r={{item.repo}} \
+           -F hasPom=false \
+           -F e={{item.ext}} \
+           -F g={{item.group}} \
+           -F a={{item.artifact}} \
+           -F v={{item.version}} \ 
+           -F p={{item.compression}} \
+           -F file=@{{staging}}/{{item.name}} \
+           -u {{nexus_admin}}:{{nexus_password}} \
+           http://{{nexus_host}}/{{nexus_upload}}" 
+  loop:
+    - "{{upload_artifacts}}"
+  # TODO: review changed_when for: curl \

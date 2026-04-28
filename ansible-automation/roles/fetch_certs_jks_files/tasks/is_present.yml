@@ -1,0 +1,12 @@
+---
+# tasks file for fetch_certs_jks_files — present
+
+  - name: Fetch file
+    become: true
+    become_user: app_admin
+    ansible.builtin.fetch:
+      src: "{{target_dir}}/{{CA_name}}/cert_staging/{{item}}"
+      dest: "{{staging}}/certs/{{item}}"
+      flat: yes
+    loop:
+      '{{fetch_list}}'

@@ -1,0 +1,25 @@
+---
+- name: Create partitions
+  become: true
+  parted:
+    device: "{{ item.device }}"
+    number: "{{ item.number }}"
+    state: present
+  loop: "{{ string_vm_partitions[vm_size] }}"
+
+- name: Create partition filesystems
+  become: true
+  filesystem:
+    fstype: "{{ item.fstype }}"
+    dev: "{{ item.device }}{{ item.number }}"
+  loop: "{{ string_vm_partitions[vm_size] }}"
+
+- name: Create mounts
+  become: true
+  ansible.builtin.mount:
+    path: "{{ item.path }}"
+    src: "{{ item.device }}{{ item.number }}"
+    fstype: "{{ item.fstype }}"
+    opts: "{{ item.opts }}"
+    state: mounted
+  loop: "{{ string_vm_partitions[vm_size] }}"

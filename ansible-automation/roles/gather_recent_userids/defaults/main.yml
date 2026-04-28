@@ -1,0 +1,7 @@
+---
+# need to set the oracle home for vm3
+ORACLE_HOME: '/opt/oracle/app/ora_rmt/product/11.2.0.4i'
+
+# set the oldest recent activity to qualify a user to appear in the report
+# .007 is about 10 minutes; .08 is just under 2 hours
+TIME_RANGE: '.007'

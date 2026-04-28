@@ -1,0 +1,12 @@
+---
+# tasks file for netapp_mount — absent
+#
+# Unmounts and removes fstab entries.
+
+- name: Unmount and remove fstab entries
+  ansible.posix.mount:
+    path: "{{ item.path | default(item.mount_path) }}"
+    state: absent
+  loop: "{{ rhel_mounts | default(mounts | default([])) }}"
+  loop_control:
+    label: "{{ item.path | default(item.mount_path) }}"

@@ -1,0 +1,47 @@
+---
+
+
+#-------------------------------------------------------------------
+#  Weblogic Monitor Input Properties
+#-------------------------------------------------------------------
+#
+
+domain_name: wl_domain
+
+#  These are all non-SSL parameter values
+Admin_Protocol: 't3'
+admin_host: 'vm4'
+admin_server_port: 7201
+
+weblogic_admin: wl_admin_user
+
+pickle_file_name: pickled_vars.p
+
+# ensure to terminate with a /
+config_dir:  "/u01/domains/{{domain_name}}/config/"
+
+# Mail specific settings
+mail_session_name: "MailSession-0"
+mail_target: AdminServer
+jndi_name: mail.Session
+session_username: wl_admin_user
+
+# Diagnostics Directory
+diagnostics_dir: "{{config_dir}}/diagnostics"
+
+# Required files for the Module Health watch
+diagnostics_file_list:
+  - readme.txt
+  - Module-HealthState-1900.xml
+  - Module-Health_State-1134.xml
+
+
+os_user: app_admin
+os_group: app_admin
+
+ansible_os_user: ansible
+ansible_os_group: ansible
+
+remote_dir: /tmp
+
+

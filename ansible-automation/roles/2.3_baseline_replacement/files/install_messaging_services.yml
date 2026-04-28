@@ -1,0 +1,32 @@
+---
+- name: "Install dnsmasq and configure for Consul"
+  hosts: fileserver:database:adminserver:managedservers:hazelcast:dockerMachine
+  gather_facts: yes
+  roles:
+    - role: common/manage_dnsmasq
+      vars:
+        dnsmasq_services_action: install
+        dnsmasq_config_action: add
+        dnsmasq_config_file: dnsmasq_consul.conf
+
+# Temporary task necessary to remove previous iptables configurations for Consul
+# may be eliminated a few sprints after dnsmasq implementation GC-29350
+- name: "Remove old Consul IP tables configuration"
+  hosts: consul_servers:consul_clients
+  roles:
+    - uninstallers/revert_consul_iptables
+
+
+- include: install_consul.yml
+
+- include: install_zookeeper.yml
+
+# ZooKeeper takes a bit to come up after install.  Wait to start Kafka until ZooKeeper is in a good state.
+- name: "Wait for ZooKeeper instances to settle"
+  hosts: localhost
+  tasks:
+    - name: "Waiting 30 seconds"
+      wait_for:
+        timeout: 30
+
+- include: install_kafka.yml

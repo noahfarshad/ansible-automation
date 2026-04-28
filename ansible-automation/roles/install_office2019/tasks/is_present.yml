@@ -1,0 +1,73 @@
+---
+# tasks file for configure_office2019
+- set_fact: 
+    office_2019_path: "/mnt/software/COTS"
+
+# - name: Check if Office 2019 is Installed
+#   ansible.windows.win_powershell:
+#     script: Get-Package | Where-Object {$_.Name -match "Microsoft Office Professional Plus 2019"}
+#   register: office2019_return_msg
+
+# - name: Uninstall Office 2019 if it is Installed
+#   when: 
+#     - "{{ office2019_return_msg.output }} | length > 0"
+#   block:
+#   - name: Verify Service is Up
+#     win_service: 
+#       name: "Windows Font Cache Service"
+#       state: started
+#       start_mode: auto
+
+#   - name: uninstall office19
+#     ansible.windows.win_command: OfficeClickToRun.exe scenario=install scenariosubtype=ARP sourcetype=None productstoremove=ProPlus2019Retail.16_en-us_x-none culture=en-us version.16=16.0 DisplayLevel=False
+#     args:
+#       chdir: 'C:\Program Files\Common Files\microsoft shared\ClickToRun'
+#     register: op
+  
+#   - name: reboot required after uninstall
+#     win_reboot:
+
+#   - name: wait 300 seconds, but only start checking after 40 seconds
+#     ansible.builtin.wait_for_connection:
+#       delay: 40
+#       timeout: 300
+
+- name: Check if Office 2019 is Installed
+  ansible.windows.win_powershell:
+    ansible.builtin.script: Get-Package | Where-Object {$_.Name -match "Microsoft Office Professional Plus 2019"}
+  register: office2019_return_msg
+
+- name: Install Office 2019
+  when: 
+    - "not {{ office2019_return_msg.output }} | length > 0"
+  block:
+
+  - name: Create Temp Folder for Installer
+    ansible.windows.win_tempfile: 
+      state: directory 
+      suffix: 'officeproplus2019'
+    register: install_loc
+
+  - name: Copy Installer to Temp Folder
+    ansible.windows.win_copy:
+      src: "{{ office_2019_path }}/Office_2019.zip"
+      dest: "{{ install_loc.path }}\\"
+
+  - name: Unzip Installer
+    ansible.windows.win_unzip:
+      delete_archive: yes
+      src: "{{ install_loc.path }}\\Office_2019.zip"
+      dest: "{{ install_loc.path }}\\"
+
+  - name: Verify Service is Up
+    ansible.windows.win_service: 
+      name: "Windows Font Cache Service"
+      state: started
+      start_mode: auto
+  
+  - name: Install Office Professional Plus 2019 through PS
+    ansible.windows.win_powershell:
+      ansible.builtin.script: |
+        cd  "{{ install_loc.path }}"
+        .\setup.exe /configure configuration.xml
+  

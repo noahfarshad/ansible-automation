@@ -1,0 +1,64 @@
+---
+- name: Copy over listener .ora files
+  become: true
+  ansible.builtin.template:
+     src: "{{item}}"
+     dest: /opt/oracle/app/ora_rmt/product/12.1.0/network/admin/
+     owner: ora_rmt
+     ansible.builtin.group: ora_rmt
+     mode: 0700
+  loop:
+     - listener.ora
+     - tnsnames.ora
+     - sqlnet.ora
+  environment:
+     ORACLE_HOME: /opt/oracle/app/ora_rmt/product/12.1.0
+
+- name: "Copy database init.d files for legacy and vcieoid databases and listener"
+  become: true
+  ansible.builtin.copy: src={{item}} dest=/etc/init.d/ mode=0755
+  loop:
+    - dbora_vciedb
+    - dbora_vcieoid
+
+- name: "Copy lsnrora init.d script"
+  become: true
+  ansible.builtin.template: src=lsnrora dest=/etc/init.d mode=0755
+
+- name: Test if listener is running
+  ansible.builtin.shell: |
+     if pgrep lsnr
+     then
+        echo "1";
+     else
+        echo "0";
+     fi << EOF
+     << EOF
+  register: yada
+
+  # TODO: review changed_when for: if pgrep lsnr
+- name: stop listener
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: |
+     $ORACLE_HOME/bin/lsnrctl stop
+  environment:
+     ORACLE_HOME: /opt/oracle/app/ora_rmt/product/12.1.0
+  when: yada.stdout != "0"
+
+  # TODO: review changed_when for: $ORACLE_HOME/bin/lsnrctl stop
+- name: start listener
+  become: true
+  ansible.builtin.service: name=lsnrora state=started
+
+- name: "File module delete"
+  become: true
+  ansible.builtin.file: path=/var/tmp/database state=absent
+
+- name: Remove installation files
+  become: true
+  ansible.builtin.file: path=/var/tmp/*.rsp state=absent
+
+- name: Remove installation files
+  become: true
+  ansible.builtin.file: path=/var/tmp/disable_trans_hugepages.sh state=absent

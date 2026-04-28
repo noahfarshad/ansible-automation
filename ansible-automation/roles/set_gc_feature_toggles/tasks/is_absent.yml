@@ -1,0 +1,11 @@
+---
+# tasks file for set_gc_feature_toggles — absent
+#
+# Disables the feature toggles this role enabled. Pass the same toggle list
+# and they will be flipped to their "off" value.
+
+- name: "set_gc_feature_toggles — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      To disable feature toggles, re-run with desired_state=present and
+      explicitly set each toggle to its disabled value in your toggle map.

@@ -1,0 +1,11 @@
+---
+# tasks file for update_heap_size — absent
+#
+# Reverts heap size to a sensible default. Override `heap_size_default`
+# to match your environment's default.
+
+- name: "update_heap_size — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      To revert heap size, re-run with desired_state=present and
+      explicitly set heap_size to your environment default.

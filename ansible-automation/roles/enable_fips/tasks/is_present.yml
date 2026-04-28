@@ -1,0 +1,34 @@
+---
+# tasks file for enable_fips — present
+
+# Enable FIPS
+- block:
+    - name: Install the dracut-fips* packages
+      ansible.builtin.yum:
+        name:
+          - dracut-fips
+          - dracut-fips-aesni
+        state: present  # use {{ enable_fips_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+    - name: Backup existing initramfs
+      ansible.builtin.shell: |
+        mv -v /boot/initramfs-$(uname -r).img /tmp/initramfs-$(uname -r).img.bak
+      # TODO: mv: not idempotent — gate with creates: <dest> or removes: <src>
+      # TODO: review changed_when for: mv -v /boot/initramfs-$(uname -r).img /tmp/initramfs-$(uname
+    - name: Run dracut to rebuild the initramfs
+      ansible.builtin.shell: |
+        /sbin/dracut
+      async: 300
+      poll: 5
+      # TODO: review changed_when for: /sbin/dracut
+    - name: Edit kernel command-line to include the fips=1 argument
+      ansible.builtin.shell: |
+        /sbin/grubby --update-kernel=ALL --args=fips=1
+      # TODO: review changed_when for: /sbin/grubby --update-kernel=ALL --args=fips=1
+    - name: Edit kernel command-line argument when /boot is separate partition
+      ansible.builtin.shell: |
+        uuid=$(/bin/findmnt -no uuid /boot)
+        [[ -n $uuid ]] && /sbin/grubby --update-kernel=$(/sbin/grubby --default-kernel) --args=boot=UUID=${uuid}
+      # TODO: review changed_when for: uuid=$(/bin/findmnt -no uuid /boot)
+    - name: Reboot after enabling FIPS
+      ansible.builtin.reboot:
+  become: true

@@ -1,0 +1,19 @@
+- name: Add host_vars hosts to /etc/hosts
+  become: true
+  ansible.builtin.lineinfile:
+    path: "{{ hosts_file_target }}"
+    regexp: "^{{ hostvars[item]['host_internal_vlan_ip'] }} .*"
+    line: "{{ hostvars[item]['host_internal_vlan_ip'] }}    {{ hostvars[item]['inventory_hostname'] }} {{ hostvars[item]['additional_hosts_aliases'] }}"
+    state: present
+  when: item != "localhost"
+  loop: "{{ hostvars }}"
+
+
+- name: Add additional references to /etc/hosts
+  become: true
+  ansible.builtin.lineinfile:
+    path: "{{ hosts_file_target }}"
+    regexp: "^{{ item['target'] }}.*"
+    line: "{{ item['target'] }}    {{ item['names'] }}"
+    state: present
+  loop: "{{ hosts_file_additional_refs }}"

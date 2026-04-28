@@ -1,0 +1,71 @@
+---
+# tasks file for prepare_centos_dev_vm — present
+
+#Playbook to provision CentOS 7 VM as a development machine
+- block:
+    - name: ensure latest versions of packages are installed
+      ansible.builtin.yum: name=* state=latest
+
+      tags:
+        - skip_ansible_lint
+
+    - name: install needed packages
+      ansible.builtin.yum:
+        name: '{{ item }}'
+        state: present  # use {{ prepare_centos_dev_vm_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+      loop:
+        - cifs-utils
+        - rsync
+
+      tags:
+        - skip_ansible_lint
+
+    - name: copy Ansible passwords file
+      ansible.builtin.copy:
+        src: /etc/ansible/passwords.txt
+        dest: /etc/ansible/passwords.txt
+        ansible.builtin.group: "admin"
+        owner: "admin"
+
+    - name: copy cifs password file
+      ansible.builtin.copy:
+        src: .secret.txt
+        dest: /root/.secret.txt
+        ansible.builtin.group: "admin"
+        owner: "admin"
+
+    - name: replace docker config file
+      ansible.builtin.copy:
+        src: docker
+        dest: /etc/sysconfig/docker
+        force: yes
+
+    - name: Clone ansible repository
+      hg:
+        repo: "{{ansible_scm}}" 
+        dest: '/home/admin/ansible'
+        purge: yes
+        force: yes
+
+    - name: Ensure packages for chrome are installed
+      ansible.builtin.yum:
+        name: "{{ item }}"
+        state: present  # use {{ prepare_centos_dev_vm_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+
+      loop:
+        - libX11
+        - libXcomposite
+        - libXcursor
+        - libXdamage
+        - libXext
+        - libXi
+        - libXtst
+        - cups-libs
+        - libXScrnSaver
+        - libXrandr
+        - alsa-lib
+        - pango
+        - atk
+        - at-spi2-atk
+        - gtk3
+  become: true

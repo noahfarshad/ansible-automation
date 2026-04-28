@@ -1,0 +1,121 @@
+---
+# tasks file for config_wl_settings — present
+
+# Verify the ssl config and key files exists.
+
+- block:
+    - name: Check if Encrypted Config file exists
+
+      become_user: "{{os_user}}"
+      ansible.builtin.stat: path={{admin_server_encrypted_config_file}}
+      register: stat_result
+
+    - debug: msg="Encrypted Config File does not exist, playbook terminating "
+      when: stat_result.stat.exists == False 
+
+    - name: "End Play if specified Encrypted Config file does not exist"
+      ansible.builtin.meta: end_play
+      when: stat_result.stat.exists == False
+
+    - name: Check if Encrypted Key file exists
+
+      become_user: "{{os_user}}"
+      ansible.builtin.stat: path={{admin_server_encrypted_key_file}}
+      register: stat_result
+
+    - debug: msg="Encrypted Key File does not exist, playbook terminating "
+      when: stat_result.stat.exists == False 
+
+    - name: "End Play if specified Encrypted Key file does not exist"
+      ansible.builtin.meta: end_play
+      when: stat_result.stat.exists == False
+
+    - name: Create role vars file directory
+      local_action: file path={{role_path}}/files state=directory mode=0755
+      run_once: true
+
+    - name: Populate role vars file
+      local_action: template src={{role_path}}/templates/vars_template.yml.j2 dest={{role_path}}/files/vars_populated.yml
+      run_once: true
+
+    - name: Pickle role vars
+      local_action: command python {{pickler}} {{role_path}}/files/vars_populated.yml {{role_path}}/files/pickled_vars.p
+      run_once: true
+
+    - name: Change Ownership of local files dir
+
+      local_action: command chown -R  {{ansible_os_user}}:{{ansible_os_group}} {{role_path}}/files
+      run_once: true
+
+    - name: "Copy Over Pickle File"
+
+      become_user: "{{os_user}}"
+      ansible.builtin.copy:
+        src: "{{pickle_file_name}}"
+        dest: "{{gc2_remote_dir}}"
+        owner: "{{os_user}}"
+        ansible.builtin.group: "{{os_group}}"
+        mode: 0600
+
+    - name: "Copy Over Template files"
+
+      become_user: "{{os_user}}"
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "{{gc2_remote_dir}}"
+        owner: "{{os_user}}"
+        ansible.builtin.group: "{{os_group}}"
+        mode: 0600
+      loop:
+        - wlsSettingsChecker.py
+
+    - name: Execute the wlst command
+
+      become_user: '{{os_user}}'
+      ansible.builtin.shell: '{{additional_jvm_args}} {{gc2_wlst_path}} {{gc2_remote_dir}}/wlsSettingsChecker.py '
+
+      # TODO: review changed_when for: {{additional_jvm_args}} {{gc2_wlst_path}} {{gc2_remote_dir}}
+    - name: "Remove wlsSettingsChecker.py"
+
+      become_user: "{{os_user}}"
+      ansible.builtin.file: 
+        path: "{{gc2_remote_dir}}/wlsSettingsChecker.py"
+        state: absent
+
+    - name: "Remove pickle file"
+
+      become_user: "{{os_user}}"
+      ansible.builtin.file: 
+        path: "{{gc2_remote_dir}}/{{pickle_file_name}}"
+        state: absent
+
+    - name: "Remove local files dir"
+
+      local_action: file path={{role_path}}/files state=absent
+      run_once: true
+
+    - name: "Remove local configure_weblogic_settings.out prior to fetch"
+
+      local_action: file path={{gc2_remote_dir}}/configure_weblogic_settings.out state=absent
+      run_once: true
+
+    - name: Fetch file
+
+      become_user: "{{os_user}}"
+      ansible.builtin.fetch:
+        src: "{{gc2_remote_dir}}/configure_weblogic_settings.out"
+        dest: "{{gc2_remote_dir}}/configure_weblogic_settings.out"
+        flat: yes
+
+    - name: Change Ownership of Local configure_weblogic_settings.out
+
+      local_action: command chown  {{ansible_os_user}}:{{ansible_os_group}} {{gc2_remote_dir}}/configure_weblogic_settings.out
+      run_once: true
+
+    - name: "Remove configure_weblogic_settings.out"
+
+      become_user: "{{os_user}}"
+      ansible.builtin.file:
+        path: "{{gc2_remote_dir}}/configure_weblogic_settings.out"
+        state: absent
+  become: true

@@ -1,0 +1,13 @@
+---
+# tasks file for reboot_vm — present
+
+#Tasks file reboots a VM and waits for it to become responsive
+- name: Reboot the VM
+  become: true
+  ansible.builtin.shell: nohup bash -c "sleep 2s && shutdown -r now" &
+
+  # TODO: review changed_when for: nohup bash -c "sleep 2s && shutdown -r now" &
+- name: Wait for the VM to come back up
+  ansible.builtin.wait_for_connection:
+    timeout: 240
+    delay: 20

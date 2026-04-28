@@ -1,0 +1,17 @@
+---
+# tasks file for software_factory_push
+#Only to be done on initial deployment of software-factory or upgrading an existing software-factory
+
+- name: Pushing Packages
+  become: true
+  ansible.builtin.shell: |
+    cd /usr/local/bin
+    software-factory --config {{ string_name }}/{{ sw_factory_yaml }} airgap-package push --concurrency 4 --tempdir /tmp --binaries --eks-anywhere --oci-artifacts --pip-packages --rpms --archive {{ string_name }}/software-factory.tar.gz
+
+  # TODO: review changed_when for: cd /usr/local/bin
+- name: Deploying EKS Template
+  become: true
+  ansible.builtin.shell: |
+    cd /usr/local/bin
+    software-factory --config {{ string_name }}/{{ sw_factory_yaml }} eks-anywhere create template --debug
+  # TODO: review changed_when for: cd /usr/local/bin

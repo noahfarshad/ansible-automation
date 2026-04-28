@@ -1,0 +1,26 @@
+---
+# tasks file for Load Switch Configuration
+
+### STEP 1: In order for the switch to write the new configs###
+### The text file has to be imported to the switch first ###
+
+- name: copy from server to device
+  cisco.nxos.nxos_file_copy:
+    local_file: /mnt/config/{{ ifc_next }}_switchconfigs/{{ name }}-{{ site }}-{{ ifc_next }}.txt
+    remote_file: ./{{ name }}-{{ site }}-{{ ifc_next }}.txt
+
+- name: Load configuration from file for TORSWITCH
+  cisco.nxos.nxos_config:
+    save_when: modified
+    replace_src: "{{ name }}-{{ site }}-{{ ifc_next }}.txt"
+    ansible.builtin.replace: config
+    backup: false
+
+#{{ name }}-{{ site }}-{{ ifc_next }}.txt
+#name from inventories>switches>host_vars
+#site from inventories>switches>group_vars>tor.yml
+#ifc_next from inventories>switches>group_vars>tor.yml 
+#the new configuration file should be saved in san01/config/B4.0.5_switchconfigs as 
+#example torswitch01-MCE11-B4.0.5.txt per switch, make sure the variables are capitalized/spaced as in the group/host_vars
+#save_when: modified is the equivalent to copy running config to start up config 
+#modified means only when a change is made according to our configs will the config be saved to the switch

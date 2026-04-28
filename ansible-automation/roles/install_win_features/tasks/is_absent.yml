@@ -1,0 +1,8 @@
+---
+# tasks file for install_win_features — absent
+
+- name: Remove Windows feature
+  ansible.windows.win_feature:
+    name: "{{ feature_name }}"
+    state: absent
+  when: feature_name is defined

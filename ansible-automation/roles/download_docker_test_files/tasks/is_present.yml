@@ -1,0 +1,9 @@
+---
+# tasks file for download_docker_test_files — present
+
+- name: "Retrieve GC2 source code from fileshare"
+  become: true
+  ansible.builtin.fetch:
+    src: "/var/shares/cots/staging_area/gc2Tests/gc2Tests.tar.gz"
+    dest: "{{staging}}/test_files/gc2Tests.tar.gz"
+    flat: yes

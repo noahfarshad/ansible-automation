@@ -1,0 +1,12 @@
+---
+# defaults file for run_win_scripts
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# patch_ospp: ""
+# script_user_admin: ""
+# script_user_pass: ""
+# system: ""
+# users: ""
+# win_scripts: ""

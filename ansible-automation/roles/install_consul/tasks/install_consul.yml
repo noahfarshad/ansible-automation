@@ -1,0 +1,8 @@
+---
+
+- include_role:
+    name: installers/binary_installer
+  vars:
+    binary_name: "{{consul_name}}"
+    binary_version: "{{consul_version}}"
+    binary_archive: "{{consul_archive}}"

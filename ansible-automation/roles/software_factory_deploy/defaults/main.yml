@@ -1,0 +1,11 @@
+---
+# defaults file for software_factory_deploy
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# eks_crt: ""
+# eks_key: ""
+# eks_wrkload_cluster: ""
+# string_name: ""
+# sw_factory_yaml: ""

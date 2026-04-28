@@ -1,0 +1,19 @@
+---
+# tasks file for download_cli — present
+
+- name: Remove CLI Directory
+  ansible.builtin.file:
+    path="{{cli_location}}"
+    state=absent
+
+- name: Create CLI Download Directory
+  ansible.builtin.file:
+    path="{{cli_location}}"
+    state=directory
+    mode=0755
+
+- name: Download CLI tool
+  ansible.builtin.get_url:
+    url: "{{jenkins_cli_dl}}"
+    dest: "{{ cli_location }}"
+    mode: 0755

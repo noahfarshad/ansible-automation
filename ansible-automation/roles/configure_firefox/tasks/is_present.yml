@@ -1,0 +1,20 @@
+---
+- block: 
+  - name: Copy "firefox.cfg" to Firefox directory
+    ansible.windows.win_copy: 
+      src: \\san01.{{ vsphere_datacenter }}.local\software\Firefox\firefox.cfg
+      dest: C:\Program Files\Mozilla Firefox\
+      remote_src: true
+
+  - name: Copy "autoconfig.js" to Firefox directory
+    ansible.windows.win_copy: 
+      src: \\san01.{{ vsphere_datacenter }}.local\software\Firefox\autoconfig.js
+      dest: C:\Program Files\Mozilla Firefox\defaults\pref\
+      remote_src: true
+
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

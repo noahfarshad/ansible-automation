@@ -1,0 +1,8 @@
+---
+# tasks file for start_host_services — present
+
+- ansible.builtin.include_tasks: start_systemctl_services.yml
+- ansible.builtin.include_tasks: start_systemd_services.yml
+- ansible.builtin.include_tasks: start_system_process.yml
+- ansible.builtin.include_tasks: start_custom_process.yml
+- ansible.builtin.include_tasks: unsupported_content.yml

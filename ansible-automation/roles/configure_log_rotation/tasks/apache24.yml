@@ -1,0 +1,8 @@
+---
+- name: "Copying Apache24 logrotate to /etc/logrotate.d/apache24"
+  become: true
+  ansible.builtin.template: src='apache24' dest='{{ log_rotation_directory }}/apache24' owner=root group=root mode=0644
+  when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm61'
+      or '{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm62'
+      or '{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm7'"
+  notify: Restart Apache24

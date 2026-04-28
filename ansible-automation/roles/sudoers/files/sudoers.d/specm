@@ -1,0 +1,19 @@
+# This sudo config file allows users to perform commands as (specm)
+
+# User Aliases
+User_Alias	SPECM_ADMIN = 	+un_16ws-specm
+
+# These define the possible application accounts
+Runas_Alias	SPECM_APPACCT =	specm	
+
+# These define the possible hosts that users are allowed to run commands on
+Host_Alias	GLOBUS_TEST = 	wdd-globus-01t,wdd-globus-02t,wdd-globus-03t
+Host_Alias	GLOBUS_PROD = 	wdd-globus-01p,wdd-globus-02p,wdd-globus-03p
+Host_Alias	GLOBUS_DEV =	wdd-globus-01d
+
+# This controls who can do what now (the ALL refers to the ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in vi syslog to /var/log/secure.
+# If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command to see the input/output of every command as it was being executed.
+
+# Allow un_16ws-specm netgroup to sudo to their shared account everywhere
+SPECM_ADMIN	GLOBUS_TEST,GLOBUS_PROD,GLOBUS_DEV = (SPECM_APPACCT) LOG_OUTPUT: LOG_INPUT: ALL

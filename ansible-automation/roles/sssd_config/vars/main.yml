@@ -1,0 +1,7 @@
+---
+# vars file for deploy_vm
+#vcenter_hostname: "ess-vcsa-01p.ess-mgmnt.net"
+#vcenter_datacenter: "example_dc"
+#vcenter_validate_certs: false
+#vcenter_username: "ansible_svc@vsphere.local"
+#vcenter_password: "12qwaszx!@QWASZX"

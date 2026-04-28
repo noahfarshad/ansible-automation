@@ -1,0 +1,56 @@
+---
+# tasks file for export_cert — present
+
+# export a cert from the host into the tmp share
+- name: Locate keytool
+  ansible.builtin.shell: "whereis keytool | awk '{print $2}'"
+  register: keytool_loc
+  ignore_errors: yes
+  tags:
+    - certs
+
+  changed_when: false
+- name: Export cert
+  ansible.builtin.shell: "{{keytool_loc.stdout}} -export -alias {{cert_name}} -storepass {{cert_pass}} -keypass {{cert_pass}} -noprompt -keystore {{cert_dir}}/identity.jks -file {{cert_dir}}/{{cert_name}}.{{cert_ext}}"
+  ignore_errors: yes
+  tags:
+    - certs
+
+  # TODO: review changed_when for: {{keytool_loc.stdout}} -export -alias {{cert_name}} -storepa
+- name: Own cert
+  become: true
+  ansible.builtin.file:
+    path: "{{cert_dir}}/{{cert_name}}.{{cert_ext}}"
+    mode: 0777
+  ignore_errors: yes
+  tags:
+    - certs
+
+- name: Get destination permissions
+  local_action:
+    module: file 
+    path: "{{cert_repo}}"
+    state: directory
+    mode: 0777
+  ignore_errors: yes
+  tags:
+    - certs
+
+- name: Copy cert from host
+  become: true
+  remote_user: ansible
+  ansible.builtin.fetch:
+    src: "{{cert_dir}}/{{cert_name}}.{{cert_ext}}"
+    dest: "{{cert_repo}}/{{cert_name}}.{{cert_ext}}"
+    flat: yes
+  ignore_errors: yes
+  tags:
+    - certs
+
+- name: Remove the original cert
+  ansible.builtin.file:
+    path: "{{cert_dir}}/{{cert_name}}.{{cert_ext}}"
+    state: absent
+  ignore_errors: yes
+  tags:
+    - certs

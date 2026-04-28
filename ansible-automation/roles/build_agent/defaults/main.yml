@@ -1,0 +1,35 @@
+---
+build_agent_latest_packages:
+  - apache-maven
+  - mercurial
+  - npm
+
+build_agent_chrome_latest:
+  - libX11
+  - libXcomposite
+  - libXcursor
+  - libXdamage
+  - libXext
+  - libXi
+  - libXtst
+  - cups-libs
+  - libXScrnSaver
+  - libXrandr
+  - alsa-lib
+  - pango
+  - atk
+  - at-spi2-atk
+  - gtk3
+
+build_agent_latest_state: present
+build_agent_chrome_latest_state: present
+
+gap_cie_src_mount_path: /mnt/windows/GAP_CIE
+gap_cie_dest_mount_path: /var/GAP_CIE
+
+npm_package_endpoint: "http://{{ package_provider_hostname }}"
+
+build_agent_npm_packages:
+  - name: yarn
+    version: 1.6.0
+    repo: 'repository/gc2npm5'

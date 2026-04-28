@@ -1,0 +1,11 @@
+---
+# defaults file for configure_vgpu
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# vcenter_hostname: ""
+# vgpu: ""
+# vsphere_account: ""
+# vsphere_datacenter: ""
+# vsphere_password: ""

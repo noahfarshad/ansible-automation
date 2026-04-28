@@ -1,0 +1,14 @@
+#
+# {{ inventory_hostname }}
+#
+
+define host{
+  host_name {{ inventory_hostname }}
+  address {{ ip_public }}
+  use host-support-sysadmin-nonops,host-server-linux
+  
+  hostgroups hostgroup-linux-dev-hosts,hostgroup-linux-splunk-hosts,hostgroup-linux-client-hosts
+  notes_url https://ess-satellite-01d.example.coach/rhn/systems/details/Overview.do?sid=1000013532
+}
+
+# EOF

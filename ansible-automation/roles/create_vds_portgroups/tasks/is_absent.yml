@@ -1,0 +1,16 @@
+---
+# tasks file for create_vds_portgroups — absent
+
+- name: Remove vDS Port Group
+  community.vmware.vmware_dvs_portgroup:
+    hostname: '{{ vcenter_hostname }}'
+    username: '{{ vsphere_account }}'
+    password: '{{ vcenter_password }}'
+    validate_certs: false
+    switch_name: 'DSwitch'
+    portgroup_name: '{{ item.name }}'
+    vlan_id: '{{ item.vlan_id }}'
+    state: absent
+  delegate_to: localhost
+  loop: '{{ vds_portgroups }}'
+  when: vds_portgroups | default([]) | length > 0

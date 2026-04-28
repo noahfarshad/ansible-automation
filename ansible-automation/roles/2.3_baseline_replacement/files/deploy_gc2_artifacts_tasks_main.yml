@@ -1,0 +1,107 @@
+---
+# This task is to deploy artifacts
+
+# We are using rm here instead of absent so that we don't delete hidden files
+
+- name: Clear out the old gc2 directory
+  become: true
+  become_user: app_admin
+  shell: rm -f {{remote_dir}}/gc2/*
+  tags:
+    - deploy
+
+- name: Create the remote gc2 folder
+  become: true
+  become_user: app_admin
+  file:
+    path: "{{remote_dir}}/gc2"
+    recurse: yes
+    state: directory
+  tags:
+    - deploy
+
+- name: Copying the ears and wars to remote location...
+  become: true
+  become_user: app_admin
+  copy: src={{staging}}/{{item.1.name}}-{{version}}.{{item.0.ext}} dest={{remote_dir}}/gc2/ mode=0755
+  with_subelements:
+    - "{{ built_artifacts }}"
+    - files
+  tags:
+    - deploy
+
+- name: Place Python Scripts
+  become: true
+  become_user: app_admin
+  template:
+    src: "{{item}}"
+    dest: "{{domain_home}}/config/{{item}}"
+    owner: app_admin
+    group: app_admin
+    mode: 0600
+  loop:
+    - findNonDeployed_gc2.py
+    - addAppDeployment_gc2.py
+    - updateDepOrder_gc2.py
+    - prettifyConfigXml.py
+  tags:
+    - deploy
+
+- name: Update Artifact Name Versions
+  become: true
+  become_user: app_admin
+  shell: "sed -i 's/{{item.1.name}}-[0-9]\\{2\\}\\.[0-9]\\{2\\}.[0-9]\\{2\\}.[0-9]\\{4\\}/{{item.1.name}}-{{version}}/g' {{domain_home}}/config/config.xml"
+  with_subelements:
+    - "{{ built_artifacts }}"
+    - files
+  tags:
+    - deploy
+
+- name: Find Undeployed Artifacts
+  become: true
+  become_user: app_admin
+  command: python findNonDeployed_gc2.py "{{ built_artifacts }}" chdir="{{domain_home}}/config"
+  register: artifacts_to_deploy
+  tags:
+    - deploy
+
+- name: Print Undeployed Artifacts
+  debug:
+    msg: "{{artifacts_to_deploy.stdout_lines}}"
+  tags:
+    - deploy
+
+- name: Add Undeployed Artifacts
+  become: true
+  become_user: app_admin
+  shell: python addAppDeployment_gc2.py "{{artifacts_to_deploy.stdout}}" "{{version}}" chdir="{{domain_home}}/config"
+  tags:
+    - deploy
+
+- name: Configure Deployment Order for Feature Toggle Service
+  become: true
+  become_user: app_admin
+  shell: python updateDepOrder_gc2.py chdir="{{domain_home}}/config"
+  tags:
+    - deploy
+
+- name: Prettify the config.xml and make separate pretty config.xml.prettified
+  become: true
+  become_user: app_admin
+  shell: python prettifyConfigXml.py chdir="{{domain_home}}/config"
+  tags:
+    - deploy
+
+- name: Remove Python Scrips
+  become: true
+  become_user: app_admin
+  file:
+    path: "{{domain_home}}/config/{{item}}"
+    state: absent
+  loop:
+    - findNonDeployed_gc2.py
+    - addAppDeployment_gc2.py
+    - updateDepOrder_gc2.py
+    - prettifyConfigXml.py
+  tags:
+    - deploy

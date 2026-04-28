@@ -1,0 +1,6 @@
+---
+certRepository:
+- baseURL: dod_cacerts.jks
+- baseURL: dod_ca_combined.pem
+- baseURL: dod_cacerts.jks
+subjectLine: /C=US/ST=NEBRASKA/L=Offutt AFB/O=U.S. Government/OU=ou=USAF,ou=PKI,ou=DOD/CN={{ inventory_hostname }}.{{ domain }}

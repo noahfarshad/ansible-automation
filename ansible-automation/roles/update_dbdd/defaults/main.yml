@@ -1,0 +1,9 @@
+---
+# defaults file for update_dbdd
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+decompressed_directory: "/opt/update_dbdd"
+# fetch_csv_list: ""
+# fetch_qc_list: ""

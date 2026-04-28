@@ -1,0 +1,13 @@
+---
+# tasks file for join_windows_active_directory_ou — present
+
+- name: Add Each Host to DC Server OU Directory
+  microsoft.ad.computer:
+    name: "{{ inventory_hostname }}"
+    dns_hostname: "{{ inventory_hostname }}.{{ system.tld }}"
+    domain_username: "{{ users.domainadmin_user }}"
+    domain_password: "{{ users.domain_password }}"
+    enabled: yes
+    ou: "OU={{ win_ou }},OU={{ win_ou_string }},DC={{ system.tld.split('.')[0] }},DC={{ system.tld.split('.')[1] }}"
+    state: present
+  delegate_to: DCSERVER01

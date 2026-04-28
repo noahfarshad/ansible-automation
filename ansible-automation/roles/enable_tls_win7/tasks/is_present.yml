@@ -1,0 +1,42 @@
+---
+# tasks file for enable_tls_win7 — present
+
+- name: Check if TLS 1.2 is Enabled
+  ansible.builtin.shell:
+    cmd: "echo 'Q' | openssl s_client -connect {{ inventory_hostname }}:5986 | awk '/Protocol/ {print $3}'"
+  register: tls_status
+  changed_when: false
+  delegate_to: localhost
+
+- name: Enable TLS
+  when: tls_status.stdout not in ["TLSv1.2"]
+  block:
+  - set_fact: 
+      install_loc: "C:\\Ansible"
+
+  - name: Create Temp Folder for Script
+    ansible.windows.win_file: 
+      state: directory 
+      path: "{{ install_loc }}"
+
+  - name: Copy Script to Temp Folder
+    ansible.windows.win_copy: 
+      src: "enableTLS.ps1"
+      dest: "{{ install_loc }}\\"
+
+  - set_fact: 
+      script_path: "{{ install_loc }}\\enableTLS.ps1"
+
+  - name: Run Script 
+    ansible.windows.win_shell: .\enableTLS.ps1
+    args:
+      chdir: "{{ install_loc }}"
+
+  - name: Wait for Reboot
+    ansible.builtin.wait_for_connection:
+      delay: 15
+
+  - name: Remove Script
+    ansible.windows.win_file: 
+      state: absent 
+      path: "{{ script_path }}"    

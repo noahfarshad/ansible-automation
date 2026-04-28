@@ -1,0 +1,19 @@
+---
+# tasks file for configure_bp_data
+- name: Create directory structure for BP if it doesn't exist
+  become: true
+  run_once: yes
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_connection: "winrm"
+    ansible_winrm_server_cert_validation: "ignore"
+    ansible_winrm_transport: "kerberos"
+    ansible_user: "{{domainadmin_user}}"
+    ansible_password: "{{domain_password}}"  
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'
+  ansible.windows.win_file:
+    path: \\san01\data\BP\{{ string_name }}
+    state: directory
+  delegate_to: "{{dcserver}}"

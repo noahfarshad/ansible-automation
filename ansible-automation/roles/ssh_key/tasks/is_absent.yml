@@ -1,0 +1,15 @@
+- name: Remove authorized key
+  become: true
+  become_user: app_admin
+  ansible.builtin.authorized_key:
+    ansible.builtin.user: app_admin
+    state: absent
+    key: "{{ lookup('file', 'id_rsa.pub') }}"
+
+- name: Remove SSH RSA Keys
+  become: true
+  become_user: app_admin
+  ansible.builtin.file:
+    path: "{{ ssh_key_location }}{{ item }}"
+    state: absent
+  loop: "{{ ssh_key_files }}"

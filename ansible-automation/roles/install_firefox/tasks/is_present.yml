@@ -1,0 +1,32 @@
+---
+# tasks file for install_firefox
+- name: Uninstall Firefox with PowerShell script
+  ansible.windows.win_shell: |
+    if (Test-Path "${env:ProgramFiles(x86)}\Mozilla Firefox\uninstall\helper.exe") {
+        echo "Uninstalling 32 Bit Firefox"
+        Start-Process -FilePath "${env:ProgramFiles(x86)}\Mozilla Firefox\uninstall\helper.exe" -ArgumentList '/S' -Verbose -Wait
+    }
+    if (Test-Path "${env:ProgramFiles}\Mozilla Firefox\uninstall\helper.exe") {
+        echo "Uninstalling 64 Bit Firefox"
+        Start-Process -FilePath "${env:ProgramFiles}\Mozilla Firefox\uninstall\helper.exe" -ArgumentList '/S' -Verbose -Wait
+    }
+  register: result
+  changed_when: result.stdout
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'
+
+- name: Install Firefox from a network share specifying the credentials
+  ansible.windows.win_package:
+    path: "{{artifact_staging}}{{firefox}}"
+    arguments: INSTALL_MAINTENANCE_SERVICE=false /quiet
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

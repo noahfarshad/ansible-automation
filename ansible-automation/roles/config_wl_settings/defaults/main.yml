@@ -1,0 +1,644 @@
+---
+
+# Domain Name
+WebLogic_Domain: wl_domain
+
+#Admin Server Properties
+Admin_Server: wl-admin.example.coach
+Admin_Server_HTTP_Port: 7201
+Admin_Server_HTTPS_Port: 7202
+Admin_Username: wl_admin_user
+
+Admin_Protocol: t3s
+
+gc2_wlst_path: "{{mw_home}}/oracle_common/common/bin/wlst.sh"
+
+additional_jvm_args: ''
+
+os_user: app_admin
+os_group: app_admin
+gc2_remote_dir: /tmp
+
+ansible_os_user: ansible
+ansible_os_group: ansible
+
+
+
+# Important Note.  In order to connect to the Admin Server you need SSL encrypted certificate (config) and Key files.
+#  In the example environment those files are created by role: installers/create_wlst_credentials.  And this role assumes
+#  those files are created and exist in the specified directory.
+# 
+#  The files that are created are:
+#     /home/apps/app_admin/gc2/wlConfig.secure
+#     /home/apps/app_admin/gc2/wlKey.secure
+# 
+#  If this role is used on another project; project specific config and key files will have to be created
+#  and used.
+
+admin_server_encrypted_config_file: /home/apps/app_admin/gc2/wlConfig.secure
+admin_server_encrypted_key_file: /home/apps/app_admin/gc2/wlKey.secure
+
+pickle_file_name: pickled_vars.p
+
+wl_config_settings:
+
+#  Admin Console SSL Configuration
+
+- name: AdminKeystoreName 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /Servers/AdminServer 
+  settingName: KeyStores 
+  settingValue: CustomIdentityAndJavaStandardTrust 
+
+- name: AdminCustomIdentityKeyStoreFileName 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /Servers/AdminServer 
+  settingName: CustomIdentityKeyStoreFileName 
+  settingValue: /opt/identity/identity.jks 
+
+- name: AdminSSLCustomIdentityKeyStoreType 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /Servers/AdminServer 
+  settingName: CustomIdentityKeyStoreType 
+  settingValue: JKS 
+
+- name: AdminSSLListenAddress 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /Servers/AdminServer 
+  settingName: ListenAddress 
+  settingValue: wl-admin.example.coach 
+
+- name: AdminSSLListenPort 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /Servers/AdminServer/SSL/AdminServer 
+  settingName: ListenPort 
+  settingValue: 7202 
+
+- name: AdminSSLEnabled 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /Servers/AdminServer/SSL/AdminServer 
+  settingName: Enabled 
+  settingValue: true 
+
+- name: AdminSSLTwoWaySSLEnabled 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /Servers/AdminServer/SSL/AdminServer 
+  settingName: TwoWaySSLEnabled 
+  settingValue: true 
+
+- name: AdminSSLServerPrivateKeyAlias 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /Servers/AdminServer/SSL/AdminServer 
+  settingName: ServerPrivateKeyAlias 
+  settingValue: wl-admin.local 
+
+- name: AdminSSLHostnameVerificationIgnored 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /Servers/AdminServer/SSL/AdminServer 
+  settingName: HostnameVerificationIgnored 
+  settingValue: false 
+
+# Basic Security Relam Settings
+- name: SecRealmBasicName 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /SecurityConfiguration/wl_domain 
+  settingName: Name 
+  settingValue: wl_domain 
+
+- name: SecRealmBasicNodeManagerName 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /SecurityConfiguration/wl_domain 
+  settingName: NodeManagerUsername 
+  settingValue: wl_admin_user 
+
+- name: SecRealmBasicType 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /SecurityConfiguration/wl_domain 
+  settingName: Type 
+  settingValue: SecurityConfiguration 
+
+- name: SecRealmBasicRealmName 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Root
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm 
+  settingName: Name 
+  settingValue: myrealm 
+
+# Auditor Settings 
+- name: SecRealmAuditorName 
+  sectionName: SecurityRealm.Auditor
+  IsModifiable: NO 
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/Auditors/DefaultAuditor 
+  settingName: Name 
+  settingValue: DefaultAuditor 
+
+- name: SecRealmAuditorProvider 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Auditor
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/Auditors/DefaultAuditor 
+  settingName: ProviderClassName 
+  settingValue: weblogic.security.providers.audit.DefaultAuditProviderImpl 
+
+- name: SecRealmAuditorVersion 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Auditor
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/Auditors/DefaultAuditor 
+  settingName: Version 
+  settingValue: 1.0 
+
+# Authorizer Settings 
+
+- name: SecRealmAuthorizerName 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Authorizer
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/Authorizers/XACMLAuthorizer 
+  settingName: Name 
+  settingValue: XACMLAuthorizer 
+
+- name: SecRealmAuthorizerProvider 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Authorizer
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/Authorizers/XACMLAuthorizer 
+  settingName: ProviderClassName 
+  settingValue: weblogic.security.providers.xacml.authorization.XACMLAuthorizationProviderImpl 
+
+- name: SecRealmAuthorizerDeployEnabled 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Authorizer
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/Authorizers/XACMLAuthorizer 
+  settingName: PolicyDeploymentEnabled 
+  settingValue: true 
+
+- name: SecRealmAuthorizerVersion 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.Authorizer
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/Authorizers/XACMLAuthorizer 
+  settingName: Version 
+  settingValue: 1.0 
+
+# Role Mapper Settings
+
+- name: SecRealmRoleMapperName 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.RoleMapper
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/RoleMappers/XACMLRoleMapper 
+  settingName: Name 
+  settingValue: XACMLRoleMapper 
+
+- name: SecRealmRoleMapperProvider 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.RoleMapper
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/RoleMappers/XACMLRoleMapper 
+  settingName: ProviderClassName 
+  settingValue: weblogic.security.providers.xacml.authorization.XACMLRoleMapperProviderImpl 
+
+- name: SecRealmRoleMapperDeployEnabled 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.RoleMapper
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/RoleMappers/XACMLRoleMapper 
+  settingName: RoleDeploymentEnabled 
+  settingValue: true 
+
+- name: SecRealmRoleMapperVersion 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.RoleMapper
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/RoleMappers/XACMLRoleMapper 
+  settingName: Version 
+  settingValue: 1.0 
+
+# Lockout Manager Settings
+- name: SecRealmLockMgrName 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.LockoutManager
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/UserLockoutManager/UserLockoutManager 
+  settingName: Name 
+  settingValue: UserLockoutManager 
+
+- name: SecRealmLockMgrEnabled 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.LockoutManager
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/UserLockoutManager/UserLockoutManager 
+  settingName: LockoutEnabled 
+  settingValue: true 
+
+- name: SecRealmLockMgrDuration 
+  IsModifiable: YES 
+  sectionName: SecurityRealm.LockoutManager
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/UserLockoutManager/UserLockoutManager 
+  settingName: LockoutDuration 
+  settingValue: 15 
+
+- name: SecRealmLockMgrResetDuration 
+  IsModifiable: YES
+  sectionName: SecurityRealm.LockoutManager
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/UserLockoutManager/UserLockoutManager 
+  settingName: LockoutResetDuration 
+  settingValue: 15 
+
+- name: SecRealmLockMgrThreshold 
+  IsModifiable: YES
+  sectionName: SecurityRealm.LockoutManager
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/UserLockoutManager/UserLockoutManager 
+  settingName: LockoutThreshold 
+  settingValue: 3 
+
+# Passoword Validator Settings
+- name: SecRealmPwdValName 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.PasswordValidator
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/PasswordValidators/SystemPasswordValidator 
+  settingName: Name 
+  settingValue: SystemPasswordValidator 
+
+- name: SecRealmPwdValProvider 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.PasswordValidator
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/PasswordValidators/SystemPasswordValidator 
+  settingName: ProviderClassName 
+  settingValue: com.bea.security.providers.authentication.passwordvalidator.SystemPasswordValidatorProviderImpl 
+
+- name: SecRealmPwdValMinLower 
+  IsModifiable: YES 
+  sectionName: SecurityRealm.PasswordValidator
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/PasswordValidators/SystemPasswordValidator 
+  settingName: MinLowercaseCharacters 
+  settingValue: 1 
+
+- name: SecRealmPwdValMinNonAlpha 
+  IsModifiable: YES
+  sectionName: SecurityRealm.PasswordValidator
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/PasswordValidators/SystemPasswordValidator 
+  settingName: MinNonAlphanumericCharacters 
+  settingValue: 1 
+
+- name: SecRealmPwdValMinNumeric 
+  IsModifiable: YES
+  sectionName: SecurityRealm.PasswordValidator
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/PasswordValidators/SystemPasswordValidator 
+  settingName: MinNumericCharacters 
+  settingValue: 1 
+
+- name: SecRealmPwdValMinSpecial 
+  IsModifiable: YES
+  sectionName: SecurityRealm.PasswordValidator
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/PasswordValidators/SystemPasswordValidator 
+  settingName: MinNumericOrSpecialCharacters 
+  settingValue: 1 
+
+- name: SecRealmPwdValMinLength 
+  IsModifiable: YES
+  sectionName: SecurityRealm.PasswordValidator
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/PasswordValidators/SystemPasswordValidator 
+  settingName: MinPasswordLength 
+  settingValue: 15 
+
+- name: SecRealmPwdValMinUpper 
+  IsModifiable: YES
+  sectionName: SecurityRealm.PasswordValidator
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/PasswordValidators/SystemPasswordValidator 
+  settingName: MinUppercaseCharacters 
+  settingValue: 1 
+
+- name: SecRealmPwdValVersion 
+  IsModifiable: NO 
+  sectionName: SecurityRealm.PasswordValidator
+  settingPath: /SecurityConfiguration/wl_domain/Realms/myrealm/PasswordValidators/SystemPasswordValidator 
+  settingName: Version 
+  settingValue: 1.0 
+
+# JTA Settings
+
+- name: JTA
+  IsModifiable: YES
+  sectionName: JTA
+  settingPath:  /JTA/wl_domain
+  settingName:  TimeoutSeconds
+  settingValue: 90
+
+# Data Source Settings
+
+- name:   DataSourceName
+  IsModifiable: NO
+  sectionName: DataSource
+  settingPath: /JDBCSystemResources/app_ds/JDBCResource/app_ds
+  settingName: Name
+  settingValue: app_ds
+
+# Notice the space after the string that is intentional because that is how its stored in the bean
+- name:  DataSourceJndiName
+  IsModifiable: NO
+  sectionName: DataSource
+  settingPath: /JDBCSystemResources/app_ds/JDBCResource/app_ds/JDBCDataSourceParams/app_ds
+  settingName: JNDINames
+  settingValue: "array(java.lang.String,['jdbc.app_ds']) "
+
+- name: DataSourceGlobalTransactionsProtocol
+  IsModifiable: NO
+  sectionName: DataSource
+  settingPath: /JDBCSystemResources/app_ds/JDBCResource/app_ds/JDBCDataSourceParams/app_ds
+  settingName: GlobalTransactionsProtocol
+  settingValue: OnePhaseCommit
+
+- name:  DataSourceUrl
+  IsModifiable: NO
+  sectionName: DataSource
+  settingPath: /JDBCSystemResources/app_ds/JDBCResource/app_ds/JDBCDriverParams/app_ds
+  settingName: Url
+  settingValue: jdbc:oracle:thin:@db.example.coach:1521:example
+
+- name:  DataSourceDriver
+  IsModifiable: NO
+  sectionName: DataSource
+  settingPath: /JDBCSystemResources/app_ds/JDBCResource/app_ds/JDBCDriverParams/app_ds
+  settingName: DriverName
+  settingValue: oracle.jdbc.xa.client.OracleXADataSource
+
+- name: DataSourceUseXaDataSourceInterface
+  IsModifiable: NO
+  sectionName: DataSource
+  settingPath: /JDBCSystemResources/app_ds/JDBCResource/app_ds/JDBCDriverParams/app_ds
+  settingName: UseXaDataSourceInterface
+  settingValue: false
+
+- name: DataSourceInitialCapacity
+  IsModifiable: YES
+  sectionName: DataSource
+  settingPath: /JDBCSystemResources/app_ds/JDBCResource/app_ds/JDBCConnectionPoolParams/app_ds
+  settingName: InitialCapacity
+  settingValue: 1
+
+- name: DataSourceMinCapacity
+  IsModifiable: YES
+  sectionName: DataSource
+  settingPath: /JDBCSystemResources/app_ds/JDBCResource/app_ds/JDBCConnectionPoolParams/app_ds
+  settingName: MinCapacity
+  settingValue: 1
+
+- name: DataSourceMaxCapacity
+  IsModifiable: YES
+  sectionName: DataSource
+  settingPath: /JDBCSystemResources/app_ds/JDBCResource/app_ds/JDBCConnectionPoolParams/app_ds
+  settingName: MaxCapacity
+  settingValue: 150
+
+- name: DataSourceDatabaseName
+  IsModifiable: NO
+  sectionName: DataSource
+  settingPath: /JDBCSystemResources/app_ds/JDBCResource/app_ds/JDBCDriverParams/app_ds/Properties/app_ds/Properties/databaseName
+  settingName: Value
+  settingValue: example
+
+- name: DataSourceDatabaseUser
+  IsModifiable: NO
+  sectionName: DataSource
+  settingPath: /JDBCSystemResources/app_ds/JDBCResource/app_ds/JDBCDriverParams/app_ds/Properties/app_ds/Properties/user
+  settingName: Value
+  settingValue: app_db_user
+
+- name: DataSourceTarget
+  IsModifiable: NO
+  sectionName: DataSource
+  settingPath:  /JDBCSystemResources/app_ds/Targets/app_cluster
+  settingName:  Name
+  settingValue: app_cluster
+
+# Server Settings
+
+- name: ServerMS6ListenAddress
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms6
+  settingName: ListenAddress
+  settingValue: wl-app51.example.coach
+
+- name: ServerMS6ListenPort
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms6
+  settingName: ListenPort
+  settingValue: 7201
+
+- name: ServerMS6AdministrationPort
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms6
+  settingName: AdministrationPort
+  settingValue: 9002
+
+- name: ServerMS6SSLListenPort
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms6/SSL/app_ms6
+  settingName: ListenPort
+  settingValue: 7202
+
+- name:  ServerMS6SSLKeystore
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms6
+  settingName: KeyStores
+  settingValue: CustomIdentityAndJavaStandardTrust
+
+- name: ServerMS6SSLCustomIdentityKeyStoreFileName
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms6
+  settingName:  CustomIdentityKeyStoreFileName
+  settingValue: /opt/identity/identity.jks 
+
+- name: ServerMS6SSLCustomIdentityKeyStoreType
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms6
+  settingName: CustomIdentityKeyStoreType
+  settingValue: JKS
+
+- name: ServerMS6PanicAction
+  IsModifiable: YES
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms6/OverloadProtection/app_ms6
+  settingName: PanicAction
+  settingValue: no-action
+
+- name: ServerMS7ListenAddress
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms7
+  settingName: ListenAddress
+  settingValue: wl-app52.example.coach
+
+- name: ServerMS7ListenPort
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms7
+  settingName: ListenPort
+  settingValue: 7201
+
+- name: ServerMS7AdministrationPort
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms7
+  settingName: AdministrationPort
+  settingValue: 9002
+
+- name: ServerMS7SSLListenPort
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms7/SSL/app_ms7
+  settingName: ListenPort
+  settingValue: 7202
+
+- name:  ServerMS7SSLKeystore
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms7
+  settingName: KeyStores
+  settingValue: CustomIdentityAndJavaStandardTrust
+
+- name: ServerMS7SSLCustomIdentityKeyStoreFileName
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms7
+  settingName:  CustomIdentityKeyStoreFileName
+  settingValue: /opt/identity/identity.jks
+
+- name: ServerMS7SSLCustomIdentityKeyStoreType
+  IsModifiable: NO
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms7
+  settingName: CustomIdentityKeyStoreType
+  settingValue: JKS
+
+- name: ServerMS7PanicAction
+  IsModifiable: YES
+  sectionName: ManagedServer.Server
+  settingPath: /Servers/app_ms7/OverloadProtection/app_ms7
+  settingName: PanicAction
+  settingValue: no-action
+
+- name:  ClusterName
+  IsModifiable: NO
+  sectionName: ManagedServer.Cluster
+  settingPath: /Clusters/app_cluster
+  settingName: Name
+  settingValue: app_cluster
+
+- name: ClusterMessagingMode
+  IsModifiable: NO
+  sectionName: ManagedServer.Cluster
+  settingPath: /Clusters/app_cluster
+  settingName: ClusterMessagingMode
+  settingValue: unicast
+
+- name: MachinesVm51Name
+  IsModifiable: NO
+  sectionName: ManagedServer.Machine
+  settingPath: /Machines/vm51
+  settingName: Name
+  settingValue: vm51
+
+- name: MachinesVm51Type
+  IsModifiable: NO
+  sectionName: ManagedServer.Machine
+  settingPath: /Machines/vm51
+  settingName: Type
+  settingValue: UnixMachine
+
+- name:  MachinesVm51NmType
+  IsModifiable: NO
+  sectionName: ManagedServer.Machine
+  settingPath: /Machines/vm51/NodeManager/vm51
+  settingName: NMType
+  settingValue: SSL
+
+- name:  MachinesVm51NodeManagerListenAddress
+  IsModifiable: NO
+  sectionName: ManagedServer.Machine
+  settingPath: /Machines/vm51/NodeManager/vm51
+  settingName: ListenAddress
+  settingValue: wl-app51.example.coach
+
+- name: MachinesVm51NodeManagerListenPort
+  IsModifiable: NO
+  sectionName: ManagedServer.Machine
+  settingPath: /Machines/vm51/NodeManager/vm51
+  settingName: ListenPort
+  settingValue: 5558
+
+- name: MachinesVm52Name
+  IsModifiable: NO
+  sectionName: ManagedServer.Machine
+  settingPath: /Machines/vm52
+  settingName: Name
+  settingValue: vm52
+
+- name: MachinesVm52Type
+  IsModifiable: NO
+  sectionName: ManagedServer.Machine
+  settingPath: /Machines/vm52
+  settingName: Type
+  settingValue: UnixMachine
+
+- name:  MachinesVm52NmType
+  IsModifiable: NO
+  sectionName: ManagedServer.Machine
+  settingPath: /Machines/vm52/NodeManager/vm52
+  settingName: NMType
+  settingValue: SSL
+
+- name:  MachinesVm52NodeManagerListenAddress
+  IsModifiable: NO
+  sectionName: ManagedServer.Machine
+  settingPath: /Machines/vm52/NodeManager/vm52
+  settingName: ListenAddress
+  settingValue: wl-app52.example.coach
+
+- name: MachinesVm52NodeManagerListenPort
+  IsModifiable: NO
+  sectionName: ManagedServer.Machine
+  settingPath: /Machines/vm52/NodeManager/vm52
+  settingName: ListenPort
+  settingValue: 5558
+
+- name: MailSessionName 
+  IsModifiable: NO 
+  sectionName: Monitoring 
+  settingPath: /MailSessions/MailSession-0 
+  settingName: Name 
+  settingValue: MailSession-0 
+
+- name: MailSessionType 
+  IsModifiable: NO 
+  sectionName: Monitoring 
+  settingPath: /MailSessions/MailSession-0 
+  settingName: Type 
+  settingValue: MailSession 
+
+- name: MailJndiName 
+  IsModifiable: NO 
+  sectionName: Monitoring 
+  settingPath: /MailSessions/MailSession-0 
+  settingName: JNDIName 
+  settingValue: mail.Session 
+
+- name: MailSessionUserName 
+  IsModifiable: NO 
+  sectionName: Monitoring 
+  settingPath: /MailSessions/MailSession-0 
+  settingName: SessionUsername 
+  settingValue: wl_admin_user 
+
+
+

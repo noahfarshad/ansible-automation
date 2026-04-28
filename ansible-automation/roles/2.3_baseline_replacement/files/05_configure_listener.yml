@@ -1,0 +1,63 @@
+---
+- name: Copy over listener .ora files
+  become: true
+  template:
+     src: "{{item}}"
+     dest: /opt/oracle/app/ora_rmt/product/12.1.0/network/admin/
+     owner: ora_rmt
+     group: ora_rmt
+     mode: 0700
+  loop:
+     - listener.ora
+     - tnsnames.ora
+     - sqlnet.ora
+  environment:
+     ORACLE_HOME: /opt/oracle/app/ora_rmt/product/12.1.0
+
+- name: "Copy database init.d files for legacy and vcieoid databases and listener"
+  become: true
+  copy: src={{item}} dest=/etc/init.d/ mode=0755
+  loop:
+    - dbora_vciedb
+    - dbora_vcieoid
+
+- name: "Copy lsnrora init.d script"
+  become: true
+  template: src=lsnrora dest=/etc/init.d mode=0755
+
+- name: Test if listener is running
+  shell: |
+     if pgrep lsnr
+     then
+        echo "1";
+     else
+        echo "0";
+     fi << EOF
+     << EOF
+  register: yada
+
+- name: stop listener
+  become: true
+  become_user: ora_rmt
+  shell: |
+     $ORACLE_HOME/bin/lsnrctl stop
+  environment:
+     ORACLE_HOME: /opt/oracle/app/ora_rmt/product/12.1.0
+  when: yada.stdout != "0"
+
+- name: start listener
+  become: true
+  command: "/etc/init.d/lsnrora start"
+
+- name: "File module delete"
+  become: true
+  file: path=/var/tmp/database state=absent
+
+- name: Remove installation files
+  become: true
+  file: path=/var/tmp/*.rsp state=absent
+
+- name: Remove installation files
+  become: true
+  file: path=/var/tmp/disable_trans_hugepages.sh state=absent
+

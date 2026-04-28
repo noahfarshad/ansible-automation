@@ -1,0 +1,4 @@
+---
+weblogic_group: com.oracle.weblogic
+weblogic_install_artifact: weblogic_install
+weblogic_version: "{{weblogic_version}}"

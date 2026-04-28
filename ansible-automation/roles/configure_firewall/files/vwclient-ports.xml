@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>VWClientPorts</short>
+  <description>This allows for Visual Weather client communications.</description>
+  <port protocol="tcp" port="7400-7450"/>
+</service>

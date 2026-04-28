@@ -1,0 +1,8 @@
+- type: log
+  paths:
+    - /opt/zeus/log/*.log
+  tags: ['{{ system }}', '{{ ansible_hostname }}',  'stingray']
+  multiline.pattern: '^\['
+  multiline.negate: true
+  multiline.match: after
+

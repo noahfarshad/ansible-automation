@@ -1,0 +1,7 @@
+---
+
+- name: Restart Splunk Server
+  ansible.builtin.service:
+    name: splunk
+    state: restarted
+  become: true

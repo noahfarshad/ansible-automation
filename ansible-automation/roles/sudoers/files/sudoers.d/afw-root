@@ -1,0 +1,33 @@
+# This sudo config file allows users to perform commands as ROOT!! Very Dangerous, very seldom-used!
+#
+#  As of now, the only reason for this sudo is to let SYSD run a script we developed to set permissions on a specific directory area
+#  while they setup dataflows. See LNX-4529 for background. 
+#
+#  Since these commands will be run as root, it will *require* a password!
+#
+#
+
+# User Aliases
+User_Alias	DATA_MGR =		+un_sys-datarouting-t,+un_sys-datarouting-d
+
+
+# These are the allowed commands, referenced later
+# Cmnd_Alias	SOME_CMD		/bin/bash,/bin/cat
+Cmnd_Alias 	DATA_MGR_CMD = 		/root/bin/setperm_datadir.sh 
+
+# These define the possible application accounts (comma-separated)
+#Runas_Alias 	PROCESS_APPACCT = 		process
+
+# These define the possible hosts that users are allowed to run commands on
+# The EDH_DEV and EDH_TEST variables are already defined elsewhere
+#Host_Alias	VW_TEST =		afw-vwingest-a01t, afw-vwingest-a02t, afw-vwingest-b01t, afw-vwingest-b02t, afw-vwingest-c01t, afw-vwingest-c02t, afw-vwingest-d01t, afw-vwingest-d02t
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+# 	If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+# 	to see the input/output of every command as it was being executed.
+
+
+# Group specific permissions
+DATA_MGR		EDH_DEV,EDH_TEST,AFW_MW_TEST = (root)  LOG_OUTPUT: LOG_INPUT: DATA_MGR_CMD
+

@@ -1,0 +1,43 @@
+---
+# tasks file for configure_firewall
+- name: verifying /usr/lib/firewalld/services/ files
+  become: true
+  ansible.builtin.copy:
+    src: files/{{item.name}}.xml
+    dest: /usr/lib/firewalld/services/
+    owner: root
+    ansible.builtin.group: root
+    mode: 0644
+  loop: "{{fwservice_list}}"
+  when: fwservice_list is defined
+  tags: configure_firewall
+  notify:
+  - restart firewalld
+
+- name: verifying /etc/firewalld/services/ files
+  become: true
+  ansible.builtin.copy:
+    src: files/{{item.name}}.xml
+    dest: /etc/firewalld/services/
+    owner: root
+    ansible.builtin.group: root
+    mode: 0644
+  loop: "{{fwservice_list}}"
+  when: fwservice_list is defined
+  tags: configure_firewall
+  notify:
+  - restart firewalld
+
+- meta: flush_handlers
+
+- name: verifying firewall services
+  become: true
+  firewalld:
+    ansible.builtin.service: "{{item.name}}"
+    permanent: yes
+    immediate: true
+    state: enabled
+    zone: public
+  loop: "{{fwservice_list}}"
+  when: fwservice_list is defined
+  tags: configure_firewall

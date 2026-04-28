@@ -1,0 +1,13 @@
+---
+# tasks file for db_parameters — present
+
+- ansible.builtin.include_tasks: 00_setup.yml
+- ansible.builtin.include_tasks: 01_inspect_parameters.yml
+- name: "Ending Play if READONLY"
+  ansible.builtin.meta: end_play
+  when: read_only_parm == "true"
+
+
+- ansible.builtin.include_tasks: 02_set_parameters.yml
+  when: read_only_parm == "false"
+

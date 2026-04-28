@@ -1,0 +1,8 @@
+- type: log
+  paths:
+    - /u01/oradata/data/example/diag/rdbms/example/example/trace/*.trc
+  tags: ['{{ system }}', '{{ ansible_hostname }}', 'oracle']
+  multiline.pattern: '^\*\*\*'
+  multiline.negate: true
+  multiline.match: after
+

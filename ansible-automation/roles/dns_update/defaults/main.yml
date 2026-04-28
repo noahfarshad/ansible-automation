@@ -1,0 +1,3 @@
+---
+# defaults file for dns_update
+vsphere_vm_vcenter_hostname: vcenter_hostname

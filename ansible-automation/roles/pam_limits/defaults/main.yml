@@ -1,0 +1,1 @@
+pam_limits_target: /etc/security/limits.conf

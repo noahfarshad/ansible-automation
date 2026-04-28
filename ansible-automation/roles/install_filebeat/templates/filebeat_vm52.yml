@@ -1,0 +1,8 @@
+- type: log
+  paths:
+    - /u01/domains/wl_domain/servers/app_ms*/logs/app_ms*.out
+  tags: ['{{ system }}', '{{ ansible_hostname }}', 'weblogic']
+  multiline.pattern: '^\['
+  multiline.negate: true
+  multiline.match: after
+

@@ -1,0 +1,11 @@
+---
+# tasks file for download_documentation — absent
+#
+# This role fetches files FROM target hosts to the controller. There is
+# no remote state to clean up; controller-side files can be deleted manually.
+
+- name: "download_documentation — absent is a no-op (this role only fetches files)"
+  ansible.builtin.debug:
+    msg: >-
+      Role 'download_documentation' fetches files to the controller. No remote state to
+      undo. Controller-side files can be removed manually if needed.

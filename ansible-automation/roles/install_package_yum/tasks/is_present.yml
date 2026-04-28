@@ -1,0 +1,32 @@
+---
+# tasks file for install_package
+- name: Verify if repos are enabled
+  become: true
+  ansible.builtin.rhsm_repository:
+    name: "{{item.name}}"
+    state: enabled
+  loop: "{{repo_list}}"
+  when: repo_list is defined
+  tags: install_package
+
+- name: Verify if packages are present
+  become: true
+  ansible.builtin.yum:
+    name: "{{item.name}}"
+    state: present
+    skip_broken: true
+    use_backend: yum
+    disable_gpg_check: yes
+  loop: "{{package_list}}"
+  when: package_list is defined
+  tags: install_package
+
+- name: Verify if packages are up-to-date
+  become: true
+  ansible.builtin.yum:
+    name: "{{item.name}}"
+    state: "{{ package_upgrade | default(false) | ternary('latest', 'present') }}"
+    use_backend: yum
+  loop: "{{package_list}}"
+  when: package_list is defined
+  tags: install_package

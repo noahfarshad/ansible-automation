@@ -1,0 +1,14 @@
+---
+- name: "Stop the hazelcast server instance"
+  become: true
+  command: "/etc/init.d/hazelcast stop"
+  tags:
+    - hazelcast.stop
+    - hazelcast.restart
+
+- name: "Start the hazelcast server instance"
+  become: true
+  command: "/etc/init.d/hazelcast start"
+  tags:
+    - hazelcast.start
+    - hazelcast.restart

@@ -1,0 +1,12 @@
+---
+# tasks file for sign_machine_certs — present
+
+# Acting as CA, process CSR to create signed certificates
+
+  - name: Sign certs
+    become: true
+    become_user: app_admin
+    ansible.builtin.command: "{{openssl_sign_path}} ca -batch -config {{openssl_conf}} -days 365 -in {{request_dir}}/{{item}}.req -out {{target_dir}}/{{CA_name}}/certs/{{item}}.cer -keyfile {{target_dir}}/{{CA_name}}/{{CA_name}}.key -cert {{target_dir}}/{{CA_name}}/{{CA_name}}.cer -policy policy_anything"
+    loop:
+      "{{alias_items}}"
+    # TODO: review changed_when for: {{openssl_sign_path}} ca -batch -config {{openssl_conf}} -da

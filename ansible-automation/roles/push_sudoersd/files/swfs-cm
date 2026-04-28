@@ -1,0 +1,20 @@
+# This sudo config file allows members of the CM team to perform certain actions
+# as an application account (NOT ROOT!)
+
+# User Aliases
+# CM_TEAM already defined in afw-cmadmin
+# User_Alias 	CM_TEAM = 		+un_sems-cm
+
+# These are the allowed commands, referenced later
+# Cmnd_Alias	CM_CMD =		/bin/env
+
+# These define the possible application accounts (comma-separated)
+Runas_Alias 	SWAFS_APPACCT = 	swafs1,swafs2
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+CM_TEAM		ALL = (SWAFS_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+

@@ -1,0 +1,2 @@
+sat_sshuser ALL = (root) LOG_OUTPUT: LOG_INPUT: NOPASSWD : ALL
+Defaults:sat_sshuser !requiretty

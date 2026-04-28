@@ -1,0 +1,39 @@
+---
+# tasks file for download_installation_binaries — present
+
+# These tasks download the necessary artifacts to install weblogic
+- name: Create string staging directory if it does not exist.
+  ansible.builtin.file: path="{{staging}}" state=directory mode=0755
+
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+- name: Download Weblogic binaries
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}/{{item.0.group}}/{{item.1}}/{{item.0.version}}/{{item.1}}-{{item.0.version}}{{item.0.classifier | default('') }}.{{item.0.ext}}
+    dest: "{{staging}}"
+    timeout: 120
+  with_subelements:
+    - "{{weblogic_binaries}}"
+    - files
+
+- name: Download Messaging binaries
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}/{{item.0.group}}/{{item.1}}/{{item.0.version}}/{{item.1}}-{{item.0.version}}{{item.0.classifier | default('') }}.{{item.0.ext}}
+    dest: "{{staging}}"
+    timeout: 30
+  with_subelements:
+    - "{{messaging_binaries}}"
+    - files
+
+- name: Download Apache binaries
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}/{{item.0.group}}/{{item.1}}/{{item.0.version}}/{{item.1}}-{{item.0.version}}.{{item.0.ext}}
+    dest: "{{staging}}"
+    timeout: 30
+  with_subelements:
+    - "{{apache_binaries}}"
+    - files
+
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+

@@ -1,0 +1,60 @@
+---
+# group_vars/all/vault.yml.example
+#
+# This is a TEMPLATE. To use:
+#   1. Copy to vault.yml (drop the .example suffix):
+#        cp vault.yml.example vault.yml
+#   2. Replace EVERY placeholder with a real value
+#   3. Encrypt the file:
+#        ansible-vault encrypt vault.yml
+#   4. From here on, use:
+#        ansible-vault edit vault.yml
+#      OR run playbooks with --ask-vault-pass / a vault_password_file
+#
+# IMPORTANT
+#   - vault.yml is in .gitignore — never commit unencrypted secrets
+#   - This .example file IS committed; it has placeholders only
+#   - Variable names must start with `vault_` so they're easy to grep
+
+# ===========================================================================
+# vSphere / vCenter credentials (REQUIRED for VM creation playbooks)
+# ===========================================================================
+vault_vsphere_account:    "ansible@vsphere.local"
+vault_vsphere_password:   "REPLACE-WITH-VCENTER-SERVICE-ACCOUNT-PASSWORD"
+
+# ===========================================================================
+# Active Directory bind credentials (REQUIRED for Windows / ipaclient roles)
+# ===========================================================================
+vault_ad_bind_user:       "ad-bind@example.coach"
+vault_ad_bind_password:   "REPLACE-WITH-AD-BIND-PASSWORD"
+
+# Domain admin (for Windows AD ops that require DA rights)
+vault_domain_password:    "REPLACE-WITH-DOMAIN-ADMIN-PASSWORD"
+
+# ===========================================================================
+# IPA admin (REQUIRED only if enable_ipa_client: true)
+# ===========================================================================
+vault_ipa_admin_password: "REPLACE-WITH-IPA-ADMIN-PASSWORD"
+
+# ===========================================================================
+# Local admin password set on Windows VMs at provision time
+# (used by build_windows_vm.yml for the customization spec)
+# ===========================================================================
+vault_windows_local_admin_password: "REPLACE-WITH-COMPLEX-PASSWORD"
+
+# ===========================================================================
+# Repo server credentials (only needed if your repo requires auth)
+# ===========================================================================
+vault_repo_username:      ""
+vault_repo_password:      ""
+
+# ===========================================================================
+# Splunk HEC token (only needed if Splunk inputs use HEC)
+# ===========================================================================
+vault_splunk_hec_token:   ""
+
+# ===========================================================================
+# Database admin passwords (used by configure_dbserver.yml)
+# ===========================================================================
+vault_db_admin_password:  "REPLACE-WITH-DB-ADMIN-PASSWORD"
+vault_db_app_password:    "REPLACE-WITH-DB-APP-USER-PASSWORD"

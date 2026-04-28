@@ -1,0 +1,12 @@
+---
+# tasks file for start_wl_server — present
+
+# This task starts up the Weblogic Server
+
+
+- name: "Start the GC2 Weblogic instance"
+  become: true
+  ansible.builtin.service:
+    name: "{{gc2_weblogic_service}}"
+    state: started
+

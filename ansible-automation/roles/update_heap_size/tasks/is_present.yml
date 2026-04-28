@@ -1,0 +1,10 @@
+---
+# tasks file for update_heap_size — present
+
+#Change the heap size in setDomainEnv from any value to 2G explicitly.
+#This needs to be done this way because our environment doesn't match the
+#Oracle documentation--namely, server start arguments don't work as expected
+- name: Change heap size
+  become: true
+  become_user: app_admin
+  ansible.builtin.replace: dest="{{domain_home}}/bin/setDomainEnv.sh" regexp='-Xmx\d+m' replace='-Xmx2048m'

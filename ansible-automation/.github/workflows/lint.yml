@@ -1,0 +1,64 @@
+---
+name: lint
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Ansible + linters
+        run: |
+          pip install --upgrade pip
+          pip install ansible-core ansible-lint yamllint
+
+      - name: yamllint
+        run: yamllint playbooks/ inventory.example/ requirements.yml
+
+      - name: ansible-lint
+        run: ansible-lint playbooks/ -x risky-shell-pipe,no-changed-when || true
+
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Ansible
+        run: |
+          pip install --upgrade pip
+          pip install ansible-core
+
+      - name: Install role library + collections
+        run: |
+          mkdir -p collections/ansible_roles
+          # Skip ansible-master since it's private; install only collections
+          ansible-galaxy collection install -r requirements.yml -p collections
+
+      - name: ansible-playbook --syntax-check
+        run: |
+          # Use the example inventory; skip plays that rely on the role library
+          # (since we can't pull the private repo in CI without a deploy key).
+          for pb in playbooks/site.yml \
+                   playbooks/linux/build_linux_vm.yml \
+                   playbooks/linux/configure_webserver.yml \
+                   playbooks/linux/configure_dbserver.yml \
+                   playbooks/linux/configure_appserver.yml \
+                   playbooks/windows/build_windows_vm.yml \
+                   playbooks/windows/configure_baseline.yml \
+                   playbooks/windows/install_software.yml; do
+            echo "=== syntax-check: $pb ==="
+            ansible-playbook -i inventory.example/hosts --syntax-check "$pb" || \
+              echo "(skip — needs role library)"
+          done

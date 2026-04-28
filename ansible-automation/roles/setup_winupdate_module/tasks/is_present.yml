@@ -1,0 +1,19 @@
+- block:
+  - name: Rename folder
+    ansible.windows.win_shell: |
+      Rename-Item -Path "C:\Program Files\WindowsPowerShell\Modules\PSWindowsUpdate 2.2.1.5" -NewName "PSWindowsUpdate" -Force
+  
+  - name: Unblock PSWindowsUpdate.Format.ps1xml
+    ansible.windows.win_shell: |
+      Unblock-File -Path "C:\Program Files\WindowsPowerShell\Modules\PSWindowsUpdate\PSWindowsUpdate.Format.ps1xml"
+      
+  - name: Unblock PSWindowsUpdate.psm1
+    ansible.windows.win_shell: |
+      Unblock-File -Path "C:\Program Files\WindowsPowerShell\Modules\PSWindowsUpdate\PSWindowsUpdate.psm1"
+
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

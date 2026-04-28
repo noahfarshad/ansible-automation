@@ -1,0 +1,11 @@
+---
+# tasks file for cleanup_ansible — present
+
+# cleaning up ansible temp folders when ansible does not exit gracefully
+
+- name: Cleaning ansible temp folder...
+  become: true
+  ansible.builtin.shell: 'rm -rf /var/tmp/ansible*'
+  tags:
+    - certs
+  # TODO: review changed_when for: rm -rf /var/tmp/ansible*

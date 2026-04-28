@@ -1,0 +1,26 @@
+# Accept DNS queries only from hosts whose address is on a local subnet.
+#local-service
+
+# Don't poll /etc/resolv.conf for changes.
+no-poll
+
+# Don't read /etc/resolv.conf. Get upstream servers only from the command
+# line or the dnsmasq configuration file (see the "server" directive below).
+no-resolv
+
+# Specify IP address(es) of other DNS servers for queries not handled
+# directly by consul. There is normally one 'server' entry set for every
+# 'nameserver' parameter found in '/etc/resolv.conf'. See dnsmasq(8)'s
+# 'server' configuration option for details.
+{% for ip in hostvars[inventory_hostname].groups['consul_recursor_nameservers'] %}
+server={{ip}}
+{% endfor %}
+
+# Set the size of dnsmasq's cache. The default is 150 names. Setting the
+# cache size to zero disables caching.
+#cache-size=65536
+
+# Enable forward lookup of the 'consul' domain:
+{% for hostname in hostvars[inventory_hostname].groups['consul_servers'] %}
+server=/consul/{{hostvars[hostname]['ansible_default_ipv4']['address']}}#8600
+{% endfor %}

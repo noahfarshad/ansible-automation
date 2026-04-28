@@ -1,0 +1,37 @@
+# install_win_features
+
+**Platform:** Windows
+**Archetype:** `win_feature`
+
+## What this role does
+
+Manages a Windows Server feature.
+
+See `tasks/is_present.yml` for the actual implementation and
+`tasks/is_absent.yml` for the removal logic.
+
+## Lifecycle (desired_state)
+
+| Value     | Behavior                                                        |
+|-----------|-----------------------------------------------------------------|
+| `present` | Run is_present.yml (default)                                   |
+| `absent`  | Run is_absent.yml                                               |
+| `started` | Reserved — uncomment in tasks/main.yml when needed              |
+| `stopped` | Reserved — uncomment in tasks/main.yml when needed              |
+
+## Variables
+
+No user-facing input variables. See `defaults/main.yml`.
+
+## Example
+
+```yaml
+- hosts: windows
+  roles:
+    - role: install_win_features
+      desired_state: present
+```
+
+## License
+
+MIT

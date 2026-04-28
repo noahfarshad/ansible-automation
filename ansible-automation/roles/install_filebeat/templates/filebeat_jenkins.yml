@@ -1,0 +1,19 @@
+- type: log
+  paths:
+    - /var/lib/jenkins/jobs/bole_promote/builds/*[0-9]/log
+  tags: ['jenkins', 'promote']
+  close_inactive: 2h
+  ignore_older: 24h
+  multiline.pattern: '^\['
+  multiline.negate: true
+  multiline.match: after
+
+- type: log
+  paths:
+    - /var/lib/jenkins/jobs/bole/builds/*[0-9]/log
+  tags: ['jenkins', 'build_log']
+  close_inactive: 2h
+  ignore_older: 24h
+  multiline.pattern: '^\['
+  multiline.negate: true
+  multiline.match: after

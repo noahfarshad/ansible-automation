@@ -1,0 +1,70 @@
+---
+# tasks file for install_neo4j — present
+
+- block:
+    - name: Create neo4j directory if it is missing
+
+      ansible.builtin.file:
+        path: "{{neo4j_dir}}"
+        state: directory
+        owner: app_admin
+        ansible.builtin.group: app_admin
+        mode: 0755
+      tags:
+        - neo4j.install
+
+    - name: Extract neo4j tar.gz
+
+      become_user: app_admin
+      ansible.builtin.unarchive: 
+        src: "{{staging}}/{{item}}"
+        dest: "{{neo4j_dir}}"
+        mode: 0755
+      loop:
+        - "{{neo4j_archive}}"
+      tags:
+        - neo4j.install
+
+    - name: Copy the startup script to /etc/init.d
+
+      ansible.builtin.template: 
+        src: "{{item}}"
+        dest: "/etc/init.d/{{item}}"
+        mode: 0755
+      loop:
+        - "{{neo4j_service_name}}"
+        - "{{service_env}}"
+      tags:
+        - neo4j.install
+        
+    - name: Update the neo4j configuration to use the correct listen address
+
+      become_user: app_admin
+      ansible.builtin.lineinfile:
+        path: "{{neo4j_dir}}/{{neo4j_package}}/conf/neo4j.conf"
+        regexp: '^#dbms.connectors.default_listen_address='
+        line: 'dbms.connectors.default_listen_address=0.0.0.0'
+      tags:
+        - neo4j.install
+        
+    - name: Set the initial database password
+
+      become_user: app_admin
+      ansible.builtin.command: "{{neo4j_dir}}/{{neo4j_package}}/bin/neo4j-admin set-initial-password {{app_db_user_db_password}}"
+      ignore_errors: yes
+      environment:
+        JAVA_CMD: "{{java_install_directory}}/bin/java"
+      tags:
+        - neo4j.install
+
+      # TODO: review changed_when for: {{neo4j_dir}}/{{neo4j_package}}/bin/neo4j-admin set-initial-
+    - name: "Start the Neo4j instance"
+
+      ansible.builtin.service:
+        name: "{{neo4j_service_name}}"
+        state: started
+        enabled: yes
+      tags:
+        - neo4j.install
+        - neo4j.start
+  become: true

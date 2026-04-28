@@ -1,0 +1,74 @@
+---
+# tasks file for install_java8 — present
+
+- name: Remove old version of java8
+
+  become_user: "{{java_owner}}"
+  ignore_errors: yes
+  ansible.builtin.file:
+    path: "{{java_install_directory}}"
+    state: absent
+  tags:
+    - java
+
+- name: Create java directory
+
+  become_user: "{{java_owner}}"
+  ansible.builtin.file:
+    path: "{{java_install_directory}}"
+    state: directory
+  tags:
+    - java
+
+- name: Unpack Java on the remote hosts
+
+  become_user: "{{java_owner}}"
+  ansible.builtin.unarchive:
+    src: "{{staging}}/{{java_tarball}}"
+    dest: "{{java_install_directory}}"
+    mode: "{{java_perms}}"
+  tags:
+    - java
+
+- name: Configure java directory to not reference java version
+
+  become_user: "{{java_owner}}"
+  ansible.builtin.shell: "mv {{java_install_directory}}/jdk{{java_version}}/* {{java_install_directory}}"
+  tags:
+    - java
+
+  # TODO: mv: not idempotent — gate with creates: <dest> or removes: <src>
+  # TODO: review changed_when for: mv {{java_install_directory}}/jdk{{java_version}}/* {{java_i
+- name: Remove empty jdk directory
+
+  become_user: "{{java_owner}}"
+  ansible.builtin.file:
+    path: "{{java_install_directory}}/jdk{{java_version}}"
+    state: absent
+  tags:
+    - java
+
+- name: Unpack JCE archive
+
+  become_user: "{{java_owner}}"
+  ansible.builtin.unarchive:
+    src: "{{staging}}/{{jce_zip}}"
+    dest: "{{java_install_directory}}/jre/lib/security"
+    mode: "{{java_perms}}"
+  tags:
+    - java
+
+- name: Backup cacerts file
+
+  become_user: "{{java_owner}}"
+  ansible.builtin.command: "mv /opt/Oracle/java/jre/lib/security/cacerts /opt/Oracle/java/jre/lib/security/cacerts.back"
+
+  # TODO: mv: not idempotent — gate with creates: <dest> or removes: <src>
+  # TODO: review changed_when for: mv /opt/Oracle/java/jre/lib/security/cacerts /opt/Oracle/jav
+- name: Copy domain specific cacerts file to jre/lib/security
+
+  become_user: "{{java_owner}}"
+  ansible.builtin.command: "cp /opt/identity/cacerts /opt/Oracle/java/jre/lib/security/cacerts"
+
+  # TODO: cp: not idempotent — convert to ansible.builtin.copy with src/dest
+  # TODO: review changed_when for: cp /opt/identity/cacerts /opt/Oracle/java/jre/lib/security/c

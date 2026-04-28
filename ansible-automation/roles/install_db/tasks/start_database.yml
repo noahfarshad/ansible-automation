@@ -1,0 +1,7 @@
+---
+
+#Start the database
+- name: Start the database
+  become: true
+  ansible.builtin.service: name={{initd_script_name_example}} state=started enabled=yes
+

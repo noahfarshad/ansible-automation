@@ -1,0 +1,13 @@
+---
+# task file for subscription_manager/tasks/is_present.yml
+- name: register host to satellite
+  become: true
+  redhat_subscription:
+    state: present
+    server_hostname: "ess-satellite-03d.example.coach"
+    activationkey: "RHEL7"
+    org_id: "example_org"
+  notify: upgrade all packages
+  tags: subscription_manager
+
+- meta: flush_handlers

@@ -1,0 +1,10 @@
+---
+# tasks file for enable_noexec — absent
+
+- name: Disable noexec on /tmp
+  ansible.posix.mount:
+    path: /tmp
+    src: /tmp
+    fstype: tmpfs
+    opts: defaults
+    state: present

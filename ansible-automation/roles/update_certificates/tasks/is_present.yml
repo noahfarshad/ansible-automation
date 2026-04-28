@@ -1,0 +1,52 @@
+---
+# tasks file for update_certificates — present
+
+# DEFAULTS
+# cert_b64, priv_key_b64, pem_file
+---
+# Copy certificate to /opt/identity
+- block:
+      - name: Copy certificate to string
+
+        ansible.builtin.copy:
+          src: "{{ staging }}/infravm-internal/certificates/{{ item }}"
+          dest: "{{ cert_dir }}/{{ item }}"
+          owner: app_admin
+          ansible.builtin.group: midtier
+          mode: 0644
+        loop:
+          - "{{ string_cert_list }}"
+
+    # Update app-ssl.conf
+      - name: Update app-ssl.conf
+
+        become_user: app_admin
+        ansible.builtin.replace:
+          dest: /opt/apache24/conf/app-httpd/app-ssl.conf
+          regexp:  "{{ source }}"
+          ansible.builtin.replace:  "{{ system }}"
+
+      - name: Cleanup old PEM
+
+        ansible.builtin.file: 
+          path: "{{ cert_dir }}/{{ pem_file }}"
+          state: absent
+
+      - name: Generate PEM
+
+        assemble:
+          src: "{{ cert_dir }}"
+          dest: "{{ cert_dir }}/{{ pem_file }}"
+          owner: app_admin
+          ansible.builtin.group: midtier
+          mode: 0644
+          regexp: "{{ regexp_expression }}"
+
+    # Add RSA to private key header
+      - name: Append RSA to private key header
+
+        ansible.builtin.replace:
+          path: "{{ cert_dir }}/{{ pem_file }}"
+          regexp: "BEGIN PRIVATE KEY"
+          ansible.builtin.replace: "BEGIN RSA PRIVATE KEY"
+  become: true

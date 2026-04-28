@@ -1,0 +1,9 @@
+---
+# defaults file for configure_vmware_parameters
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# users: ""
+# vm_uuid: ""
+# vmware: ""

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>ingestvw</short>
+  <description>This allows for Visual Weather Ingest specific communications.</description>
+  <port protocol="tcp" port="7399"/>
+  <port protocol="tcp" port="7400"/>
+  <port protocol="tcp" port="7401"/>
+  <port protocol="tcp" port="7402"/>
+  <port protocol="tcp" port="7403"/>
+  <port protocol="tcp" port="7404"/>
+  <port protocol="tcp" port="7405"/>
+  <port protocol="tcp" port="7406"/>
+  <port protocol="tcp" port="7407"/>
+  <port protocol="tcp" port="7408"/>
+  <port protocol="tcp" port="53736"/>
+</service>

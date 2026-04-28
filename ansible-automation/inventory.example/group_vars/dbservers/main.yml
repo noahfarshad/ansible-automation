@@ -1,0 +1,56 @@
+---
+# group_vars/dbservers/main.yml
+#
+# Database tier defaults. Examples below assume PostgreSQL — adapt for your DB.
+
+# ===========================================================================
+# Database engine
+# ===========================================================================
+db_engine:                postgres        # postgres | mysql | oracle
+db_version:               "15"
+
+# ===========================================================================
+# Listen / connection
+# ===========================================================================
+db_listen_address:        "0.0.0.0"       # set to 'localhost' for primary-only
+db_listen_port:            5432
+db_max_connections:        200
+
+# ===========================================================================
+# Credentials — pulled from vault
+# ===========================================================================
+db_admin_user:             postgres
+db_admin_password:         "{{ vault_db_admin_password }}"
+db_app_user:               appuser
+db_app_password:           "{{ vault_db_app_password }}"
+
+# ===========================================================================
+# Storage tuning (override per-host based on RAM)
+# ===========================================================================
+db_shared_buffers:         "2GB"
+db_effective_cache_size:   "6GB"
+db_work_mem:               "16MB"
+db_maintenance_work_mem:   "256MB"
+
+# ===========================================================================
+# Backup
+# ===========================================================================
+db_backup_dir:             "/var/backup/db"
+db_backup_retention_days:  14
+db_backup_cron_hour:       2
+db_backup_cron_minute:     30
+
+# ===========================================================================
+# Firewall — DB port plus SSH
+# ===========================================================================
+firewall_open_tcp_ports:
+  - 22
+  - "{{ db_listen_port }}"
+
+# ===========================================================================
+# Splunk forwarder — tail DB logs
+# ===========================================================================
+splunk_forwarder_inputs:
+  - path:        /var/log/postgresql/postgresql.log
+    index:       "{{ splunk_index }}_db"
+    sourcetype:  postgresql

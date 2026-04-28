@@ -1,0 +1,66 @@
+---
+- block:
+    - name: Copy autofs.conf
+
+      ansible.builtin.copy:
+        src: "files/autofs.conf"
+        dest: "/etc/autofs.conf"
+        mode: "0644"
+      when: autofs_lines is defined
+      tags: autofs
+
+    - name: Copy auto.master
+
+      ansible.builtin.copy:
+        src: "files/auto.master"
+        dest: "/etc/auto.master"
+        mode: "0644"
+      when: autofs_lines is defined
+      tags: autofs
+
+    - name: Copy autofs files
+
+      ansible.builtin.copy:
+        src: "files/{{item.name}}"
+        dest: "/etc/{{item.name}}"
+        mode: "0644"
+      loop: "{{autofs_lines}}"
+      when: autofs_lines is defined
+      tags: autofs
+
+    - name: Create Local Directories for Mount Points
+
+      ansible.builtin.file:
+        path: "{{item.directory}}"
+        state: directory
+        mode: '0755'
+      loop: "{{autofs_lines}}"
+      when: autofs_lines is defined
+      tags: autofs
+
+    - name: Create root known_hosts
+
+      ansible.builtin.shell: "{{item.send}}"
+      loop: "{{autofs_lines}}"
+      when: autofs_lines is defined
+      tags: autofs
+
+
+      # TODO: review changed_when for: {{item.send}}
+    - name: Clean up Create root known_hosts
+
+      ansible.builtin.shell: "{{item.clean}}"
+      loop: "{{autofs_lines}}"
+      when: autofs_lines is defined
+      tags: autofs
+
+
+      # TODO: review changed_when for: {{item.clean}}
+    - name: start autofs service
+
+      ansible.builtin.service:
+        name: autofs
+        state: restarted
+      when: autofs_lines is defined
+      tags: autofs
+  become: true

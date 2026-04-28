@@ -1,0 +1,11 @@
+---
+# vm4, vm81, vm82, vm83 have non-legacy Java 1.8.0 at "/opt/Oracle/java/jre/lib/security"
+# For legacy see deploy_unlimited_jce_legacy
+# vm4i has legacy icews Java 1.7.0 at "/opt/Oracle/java/jre/lib/security"
+# vm2 has legacy Java 1.7.0 at "/opt/Oracle/Middleware_OAM/java/jre/lib/security"
+# All servers have legacy Java 1.7.0 is at "/opt/Oracle/Middleware/java/jre/lib/security"
+
+jce_list:
+  - local_policy.jar
+  - US_export_policy.jar
+java_jre_security_directory: "/opt/Oracle/java/jre/lib/security"

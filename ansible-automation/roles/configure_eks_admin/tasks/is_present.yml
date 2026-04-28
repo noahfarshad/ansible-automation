@@ -1,0 +1,156 @@
+---
+# tasks file for configure_eks_admin
+
+- block:
+    - name: Set account to not expire
+
+      ansible.builtin.shell: "chage -M -1 admin"
+
+
+      changed_when: false
+    - name: Change hostname with hostnamectl 
+
+      ansible.builtin.hostname: 
+        name: "{{ inventory_hostname }}"
+
+    - name: Change hostname in /etc/hosts
+
+      ansible.builtin.replace:
+        path: /etc/hosts
+        regexp: "{{ inventory_hostname  }}" 
+        ansible.builtin.replace: "{{ inventory_hostname }}" 
+
+    - name: Change hostname in /etc/sysconfig/network
+
+      ansible.builtin.replace:
+        path: /etc/sysconfig/network
+        regexp: "{{ inventory_hostname }}" 
+        ansible.builtin.replace: "{{ inventory_hostname }}"
+
+    - name: Restart Network service 
+
+      ansible.builtin.service:
+        name: NetworkManager
+        state: restarted
+        args: eth0
+
+    - name: Update SSHD Config
+
+      ansible.builtin.replace:
+        dest: /etc/ssh/sshd_config
+        regexp: '^ClientAliveInterval 900'
+        ansible.builtin.replace: 'ClientAliveInterval 86400'
+
+    - name: Update SSHD Config
+
+      ansible.builtin.replace:
+        dest: /etc/ssh/sshd_config
+        regexp: '^ClientAliveCountMax 1'
+        ansible.builtin.replace: 'ClientAliveCountMax 120'
+
+    - name: Update Login Config
+
+      ansible.builtin.replace:
+        dest: /etc/systemd/logind.conf
+        regexp: '^StopIdleSessionSec=900'
+        ansible.builtin.replace: 'StopIdleSessionSec=86400'
+
+    - name: Restart systemd service 
+
+      ansible.builtin.service:
+        name: systemd-logind
+        state: restarted
+
+    - name: Update the sizing of the VM
+
+      ansible.builtin.shell: |
+        parted ---pretend-input-tty /dev/sda resizepart 2 100%
+        partx -u /dev/sda;pvresize {{ sda_main }}
+
+        lvextend -L +{{ root_size }} {{ root_map }} -r
+        lvextend -L +{{ home_size }} {{ home_map }} -r
+        lvextend -L +{{ vartmp_size }} {{ vartmp_map }} -r
+        lvextend -L +{{ tmp_size }} {{ tmp_map }} -r
+        lvextend -L +{{ var_size }} {{ var_map }} -r
+
+
+      # TODO: review changed_when for: parted ---pretend-input-tty /dev/sda resizepart 2 100%
+    - name: Adding to sudoers file
+
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers
+        search_string: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin'
+        line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin/'
+
+    - name: Disable fapolicyd
+
+      ansible.builtin.service:
+        name: fapolicyd
+        state: stopped
+
+    - name: Updating Time Server
+
+      ansible.builtin.lineinfile:
+        path: /etc/chrony.conf
+        line: server "{{ time_server }}" iburst prefer
+
+    - name: Restart chronyd service 
+
+      ansible.builtin.service:
+        name: chronyd
+        state: restarted
+
+    - name: Adding Yum repo
+
+      ansible.builtin.shell: |
+        cat << EOF > /etc/yum.repos.d/local.repo
+
+        [AppStream]
+        name={{ vsphere_datacenter }} AppStream Repo
+        baseurl=http://reposerver01.{{ system_name }}.local/rhel-8-for-x86_64-appstream-rpms/
+        enabled=1
+        gpcheck=0
+
+        [BaseOS]
+        name={{ vsphere_datacenter }} BaseOS Repo
+        baseurl=http://reposerver01.{{ system_name }}.local/rhel-8-for-x86_64-baseos-rpms/
+        enabled=1
+        gpcheck=0
+
+        EOF
+
+        dnf --noplugins list
+
+
+      changed_when: false
+    - name: Install python39
+
+      ansible.builtin.package:
+        name: python39
+        state: present
+
+    - name: Install python39-pip
+
+      ansible.builtin.package:
+        name: python39-pip
+        state: present
+
+    - name: Install openscap
+
+      ansible.builtin.package:
+        name: openscap-scanner
+        state: present
+
+    - name: Install openscap-utils
+
+      ansible.builtin.package:
+        name: openscap-utils
+        state: present
+
+    - name: Set Python Alternatives
+
+      ansible.builtin.shell: |
+        alternatives --set python /usr/bin/python3
+        alternatives --set python3 /usr/bin/python3.9
+      changed_when: false
+  become: true

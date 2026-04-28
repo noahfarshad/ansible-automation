@@ -1,0 +1,6 @@
+---
+# defaults file for update_iptables
+#
+# This role assumes a prior task block has set the following stdout-capturing
+# registered facts: CIE_IP, CIEREL_IP, CIESVCS_IP, ETH1, LB_INT_IP.
+# Those come from `is_present.yml` itself (set_fact / register). No user-facing inputs.

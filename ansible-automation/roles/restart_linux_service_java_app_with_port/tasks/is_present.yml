@@ -1,0 +1,68 @@
+---
+# tasks file for restart_linux_service_java_app_with_port — present
+
+# Stop service, wait for port to stop and .pid to be absent, start service, wait for port to start and .pid to be present
+
+# Follows established pattern for binary path and .pid file location,
+# "{{binary_extract_dir}}/{{binary_name}}_{{binary_version}}/{{binary_name}}.pid"
+# Example: /opt/mybinary_1.2.3/mybinary.pid
+# See "installers/install_kafka" and "installers/install_zookeeper" for binary install roles that follow this pattern.
+# This aligns with complementary roles "installers/binary_installer" and "uninstallers/uninstall_binary" and the
+# similar {{service_dir}} utilized by "service_management/create_linux_service"
+# Alternative .pid file and binary directory paths may also be passed in for {{pid_location}} and {{binary_directory}}
+
+- name: "Assert that necessary variables have been provided"
+  ansible.builtin.assert:
+    that:
+      - service_name is defined
+      - pid_location is defined
+      - port_number is defined
+      - service_java_home is defined
+
+- name: Stop {{service_name}} service
+  become: true
+  ansible.builtin.service:
+    name: "{{service_name}}"
+    state: stopped
+  environment:
+     JAVA_HOME: "{{service_java_home}}"
+  register: "{{service_name}}_stop"
+  ignore_errors: true
+  
+- debug:
+    var: "{{service_name}}_stop"
+
+- name: Start {{service_name}} service
+  become: true
+  ansible.builtin.service:
+    name: "{{service_name}}"
+    state: started
+  environment:
+     JAVA_HOME: "{{service_java_home}}"
+  register: "{{service_name}}_start"
+ 
+- debug:
+    var: "{{service_name}}_start"
+
+- name: Waiting for {{service_name}} port {{port_number}} to start
+  ansible.builtin.wait_for:
+    host: "{{inventory_hostname}}"
+    port: "{{port_number}}"
+    timeout: 30
+    state: started
+    # msg Requires Ansible 2.4 or higher, uncomment the line below after upgrade to enable 
+    #msg: "{{service_name}} port {{port_number}} has not yet started"
+  when: ansible_hostname == inventory_hostname
+  register: serviceportstarted
+  ignore_errors: true
+
+- name: Waiting for {{service_name}} .pid file to be present
+  ansible.builtin.wait_for:
+    path:  "{{pid_location}}"
+    timeout: 30
+    state: present
+    # msg Requires Ansible 2.4 or higher, uncomment the line below after upgrade to enable
+    #msg: "The {{service_name}} .pid is not yet present"
+  when: ansible_hostname == inventory_hostname
+  register: servicepidpresent
+  ignore_errors: true

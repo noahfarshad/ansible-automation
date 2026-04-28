@@ -1,0 +1,22 @@
+#wait for the switch to have a connections 
+- name: wait for {{ name }} to come up
+  ansible.builtin.wait_for:
+    port: 22
+    state: started
+    timeout: 600
+    delay: 0
+    host: "{{ ip_public }}"
+
+
+# verify the os version on the switch. if the os does not match the firware_version, give out an error
+- name: verify OS installation
+  nxos_command:
+    commands: [show version | json]
+  register: output
+
+- assert:
+    that:
+      - output['stdout'][0]['kickstart_ver_str'] == firmware_version
+    msg: "OS version does not match compliant version. Upgrade unsuccessful."
+
+  

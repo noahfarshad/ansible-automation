@@ -1,0 +1,4 @@
+---
+# vars file for configure_av_client_win
+SUCCESS: 0
+SUCCESS_REBOOT_INITIATED: 1641

@@ -1,0 +1,80 @@
+---
+# tasks file for dump_neo4j_store — present
+
+# ansible/roles/common/dump_neo4j_store/tasks/main.yml
+
+# called by playbook backup_neo4j_store.yml
+
+# this role calls tasks to stop the neo4j service,
+# remove an existing backup directory, create a backup directory,
+# invoke neo4j dump command, start the neo4j service,
+# and upload neo4j dump to nexus
+---
+- block:
+    - name: stop neo4j service
+
+      become_user: "{{user}}"
+      ansible.builtin.command: "{{neo4j_command}} stop"
+      environment:
+        JAVA_HOME: "{{JAVA_HOME}}"
+      tags:
+      - dump_neo4j_store
+
+    # if the dump file already exists, the ansible script will error out
+      # TODO: review changed_when for: {{neo4j_command}} stop
+    - name: remove existing .dump directory/file
+
+      ansible.builtin.file:
+        path: "{{backup_dir}}"
+        state: absent
+      tags:
+      - dump_neo4j_store
+
+    - name: create neo4j backup directory
+
+      ansible.builtin.file:
+        path: "{{backup_dir}}"
+        state: directory
+        owner: "{{user}}"
+        ansible.builtin.group: "{{user}}"
+        mode: 0744
+      tags:
+      - dump_neo4j_store
+
+    - name: invoke dump command
+
+      become_user: "{{user}}"
+      ansible.builtin.command: "{{neo4j_command_admin}} dump --database={{db_name}} --to={{backup_dir}}"
+      environment:
+        JAVA_HOME: "{{JAVA_HOME}}"
+      tags:
+      - dump_neo4j_store
+
+      # TODO: review changed_when for: {{neo4j_command_admin}} dump --database={{db_name}} --to={{b
+    - name: rename dump to add version
+
+      ansible.builtin.command: mv {{backup_dir}}/{{db_name_dump}} {{backup_dir}}/{{db_name_version}}
+      tags:
+      - dump_neo4j_store
+
+
+      # TODO: mv: not idempotent — gate with creates: <dest> or removes: <src>
+      # TODO: review changed_when for: mv {{backup_dir}}/{{db_name_dump}} {{backup_dir}}/{{db_name_
+    - name: start neo4j service
+
+      become_user: "{{user}}"
+      ansible.builtin.command: "{{neo4j_command}} start"
+      environment:
+        JAVA_HOME: "{{JAVA_HOME}}"
+      tags:
+      - dump_neo4j_store
+
+      # TODO: review changed_when for: {{neo4j_command}} start
+    - name: Upload neo4j dump to nexus
+
+      ansible.builtin.command: "curl -u {{ nexus_admin }}:{{ nexus_password }} --upload-file {{backup_dir}}/{{db_name_version}} http://{{ nexus_host_qualified }}/repository/{{ nexus_gold_repository }}/{{ group }}/database/{{version}}/{{db_name_version}}"
+      tags:
+      - dump_neo4j_store
+  become: true
+
+      # TODO: review changed_when for: curl -u {{ nexus_admin }}:{{ nexus_password }} --upload-file

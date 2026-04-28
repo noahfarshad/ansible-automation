@@ -1,0 +1,25 @@
+---
+# tasks file for install_putty
+# - name: Uninstall Putty without specifying the path
+#   ansible.windows.win_package:
+#     path: "{{putty_install_loc}}{{putty_old}}"
+#     arguments: /qn /norestart
+#     state: absent
+#   become: true
+#   become_method: runas
+#   become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+#   vars:
+#     ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+#     ansible_become_password: '{{domain_password}}'
+#   ignore_errors: yes
+
+- name: Install Putty from a network share specifying the credentials
+  ansible.windows.win_package:
+    path: "{{artifact_staging}}{{putty}}"
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

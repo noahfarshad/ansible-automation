@@ -1,0 +1,37 @@
+# Taken from Globus sudo settings defined in Globus test build plan
+
+#
+# Don't use sudo aliases - it messes up the Ansible validation command and is largely unneeded with Ansible doing the sudo management
+#  Just list the required sudo command
+#
+#
+
++un_sems-afwwebs  ALL=(vwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-afwwebs  ALL=(process) NOPASSWD: /bin/cat
++un_sems-afwwebs  ALL=(process) NOPASSWD: /bin/egrep
++un_sems-afwwebs  ALL=(process) NOPASSWD: /bin/grep
++un_sems-afwwebs  ALL=(process) NOPASSWD: /bin/cut
++un_sems-afwwebs  ALL=(process) NOPASSWD: /usr/bin/less
++un_sems-afwwebs  ALL=(process) NOPASSWD: /usr/bin/more
++un_sems-afwwebs  ALL=(process) NOPASSWD: /usr/bin/tail
++un_sems-afwwebs  ALL=(process) NOPASSWD: /usr/bin/head
++un_sems-afwwebs  ALL=(process) NOPASSWD: /bin/ls
++un_sems-afwwebs  ALL=(process) NOPASSWD: /bin/kill
++un_sems-afwwebs  ALL=(process) NOPASSWD: /opt/apps/ldh/ldh/wpmdsr_ldh.ksh
+
++un_tads-afwwebs  ALL=(vwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-afwwebs  ALL=(process) NOPASSWD: /bin/cat
++un_tads-afwwebs  ALL=(process) NOPASSWD: /bin/egrep
++un_tads-afwwebs  ALL=(process) NOPASSWD: /bin/grep
++un_tads-afwwebs  ALL=(process) NOPASSWD: /bin/cut
++un_tads-afwwebs  ALL=(process) NOPASSWD: /usr/bin/less
++un_tads-afwwebs  ALL=(process) NOPASSWD: /usr/bin/more
++un_tads-afwwebs  ALL=(process) NOPASSWD: /usr/bin/tail
++un_tads-afwwebs  ALL=(process) NOPASSWD: /usr/bin/head
++un_tads-afwwebs  ALL=(process) NOPASSWD: /bin/ls
++un_tads-afwwebs  ALL=(process) NOPASSWD: /bin/kill
++un_tads-afwwebs  ALL=(process) NOPASSWD: /opt/apps/ldh/ldh/wpmdsr_ldh.ksh
+
++fn_afwWebMisc,!+un_sems-testers,!+un_tads-testers  ALL = (vwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
+
+jenkins           ALL=(process) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL

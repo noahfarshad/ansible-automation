@@ -1,0 +1,29 @@
+[centos7]
+name=added from: http://repo.example.coach/centos7/os
+baseurl=http://repo.example.coach/centos7/os
+gpgcheck=0
+enabled=1
+
+[centos7updates]
+name=updates repo
+baseurl=http://repo.example.coach/centos7/updates
+gpgcheck=0
+enabled=1
+
+[centos7extras]
+name=extras repo
+baseurl=http://repo.example.coach/centos7/extras
+gpgcheck=0
+enabled=1
+
+[epel]
+name=epel repo
+baseurl=http://repo.example.coach/epel/
+gpgcheck=0
+enabled=1
+
+[gaps]
+name=gaps repo
+baseurl=http://repo.example.coach/gaps
+gpgcheck=0
+enabled=1

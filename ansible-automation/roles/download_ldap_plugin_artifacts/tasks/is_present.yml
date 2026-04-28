@@ -1,0 +1,18 @@
+---
+# tasks file for download_ldap_plugin_artifacts — present
+
+# These tasks download the necessary artifacts to install weblogic
+- name: Create string staging directory if it does not exist.
+  ansible.builtin.file:
+    path: "{{staging}}"
+    state: directory
+    mode: 0755
+
+- name: Download LDAP plugin files
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}/{{ldap_plugin_group}}/{{item.1}}/{{version}}/{{item.1}}-{{version}}.{{item.0.ext}}
+    dest: "{{staging}}"
+    timeout: 30
+  with_subelements:
+    - "{{ldap_plugin_artifacts}}"
+    - files

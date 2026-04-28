@@ -1,0 +1,254 @@
+---
+# Username and password are vault vars.
+traffic_manager_port: 9070
+restapi_version: 7.0
+traffic_manager_string: localhost
+traffic_manager_temp: /tmp/traffic_manager/
+
+# Traffic IP groups
+# external_rel_ip not included and is currently commented out inside inventory file.
+traffic_ip_groups:
+  system_gateway_group:
+    group_name: System_Gateway_IP
+    ipaddress: "192.168.0.9"
+  external_group:
+    group_name: External_IP
+    ipaddress: "{{external_ip[0]}}"
+  external_gems_group:
+    group_name: External_GEMS_IP
+    ipaddress: "{{external_gems_ip[0]}}"
+  internal_application_group:
+    group_name: Internal_Application_IP
+    ipaddress: "192.168.0.10"
+  external_aoc_group:
+    group_name: External_AOC_IP
+    ipaddress: "{{external_aoc_ip[0]}}"
+
+# Traffic manager pools
+traffic_manager_pools:
+  gc2_pool:
+    pool_name: GAP_CIE_2_Pool
+    pool_nodes:
+      - 192.168.0.151:7201
+      - 192.168.0.152:7201
+  gems_https_pool:
+    pool_name: GEMS_HTTPS_Pool
+    pool_nodes:
+      - 192.168.0.161:7302
+      - 192.168.0.162:7302
+  web_https_admin_pool:
+    pool_name: Web_HTTPS_Admin_Pool
+    pool_nodes:
+      - 192.168.0.161:443
+      - 192.168.0.162:443
+  web_services_pool:
+    pool_name: Web_Services_Pool
+    pool_nodes:
+      - 192.168.0.141:7111
+      - 192.168.0.142:7111
+  gc2_web_services_pool:
+    pool_name: GC2_Web_Services_Pool
+    pool_nodes:
+      - 192.168.0.182:7301
+      - 192.168.0.183:7301
+  web_http_pool:
+    pool_name: Web_HTTP_Pool
+    pool_nodes:
+      - 192.168.0.161:80
+      - 192.168.0.162:80
+  web_https_pool:
+    pool_name: Web_HTTPS_Pool
+    pool_nodes:
+      - 192.168.0.161:443
+      - 192.168.0.162:443
+  application_pool:
+    pool_name: Application_Pool
+    pool_nodes:
+      - 192.168.0.141:7101
+      - 192.168.0.141:7103
+      - 192.168.0.142:7101
+      - 192.168.0.142:7103
+  portal_pool:
+    pool_name: Portal_Pool
+    pool_nodes:
+      - 192.168.0.151:7101
+      - 192.168.0.152:7101
+  rel_web_http_pool:
+    pool_name: REL_Web_HTTP_Pool
+    pool_nodes:
+      - 192.168.0.107:80
+  itrace_pool:
+    pool_name: iTrace_Pool
+    pool_nodes:
+      - 192.168.0.241:7101
+  osb_https_pool:
+    pool_name: OSB_HTTPS_Pool
+    pool_nodes:
+      - 192.168.0.141:7112
+      - 192.168.0.142:7112
+  rel_portal_api_pool:
+    pool_name: REL_Portal_API_Pool
+    pool_nodes:
+      - 192.168.0.107:11905
+  rel_web_https_admin_pool:
+    pool_name: REL_Web_HTTPS_Admin_Pool
+    pool_nodes:
+      - 192.168.0.107:443
+  monitor_workmanager_pool:
+    pool_name: Monitor_WorkManager_Pool
+    pool_nodes:
+      - vm81:7101
+      - vm82:7101
+      - vm83:7101
+  monitor_osb_pool:
+    pool_name: Monitor_OSB_Pool
+    pool_nodes:
+      - vm4:7011
+  monitor_web_http:
+    pool_name: Monitor_Web_HTTP
+    pool_nodes:
+      - vm61:80
+      - vm62:80
+  portal_api_pool:
+    pool_name: Portal_API_Pool
+    pool_nodes:
+      - 192.168.0.151:11905
+      - 192.168.0.152:11905
+  rel_portal_pool:
+    pool_name: REL_Portal_Pool
+    pool_nodes:
+      - 192.168.0.107:7101
+  rel_web_https_pool:
+    pool_name: REL_Web_HTTPS_Pool
+    pool_nodes:
+      - 192.168.0.107:443
+
+# Traffic manager virtual servers
+traffic_manager_virtual_servers:
+  gc2_vs:
+    vs_name: GAP_CIE_2_VS
+    vs_protocol: http
+    vs_port: 10020
+    pool: "{{traffic_manager_pools.gc2_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  gems_vs:
+    vs_name: GEMS_VS
+    vs_protocol: https
+    vs_port: 443
+    pool: "{{traffic_manager_pools.gems_https_pool}}"
+    listen_on_any: "false"
+    groups: "{{traffic_ip_groups.external_gems_group}}"
+  external_https_vs:
+    vs_name: External_HTTPS_VS
+    vs_protocol: https
+    vs_port: 443
+    pool: "{{traffic_manager_pools.web_https_admin_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.external_group}}"
+  web_services_vs:
+    vs_name: Web_Services_VS
+    vs_protocol: http
+    vs_port: 10003
+    pool: "{{traffic_manager_pools.web_services_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  gc2_web_services_vs:
+    vs_name: GC2_Web_Services_VS
+    vs_protocol: http
+    vs_port: 10004
+    pool: "{{traffic_manager_pools.gc2_web_services_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  web_https_vs:
+    vs_name: Web_HTTPS_VS
+    vs_protocol: https
+    vs_port: 443
+    pool: "{{traffic_manager_pools.web_https_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  application_vs:
+    vs_name: Application_VS
+    vs_protocol: http
+    vs_port: 10000
+    pool: "{{traffic_manager_pools.application_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  web_http_vs:
+    vs_name: Web_HTTP_VS
+    vs_protocol: http
+    vs_port: 80
+    pool: "{{traffic_manager_pools.web_http_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  external_web_services_vs:
+    vs_name: External_Web_Services_VS
+    vs_protocol: https
+    vs_port: 443
+    pool: "{{traffic_manager_pools.osb_https_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.external_aoc_group}}"
+  portal_api_vs:
+    vs_name: Portal_API_VS
+    vs_protocol: http
+    vs_port: 11905
+    pool: "{{traffic_manager_pools.portal_api_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  rel_web_https_vs:
+    vs_name: REL_Web_HTTPS_VS
+    vs_protocol: https
+    vs_port: 4443
+    pool: "{{traffic_manager_pools.rel_web_https_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  portal_vs:
+    vs_name: Portal_VS
+    vs_protocol: http
+    vs_port: 10001
+    pool: "{{traffic_manager_pools.portal_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  itrace_vs:
+    vs_name: iTrace_VS
+    vs_protocol: http
+    vs_port: 10010
+    pool: "{{traffic_manager_pools.itrace_pool}}"
+    listen_on_any: true
+    groups:
+      group_name: ""
+  rel_portal_api_vs:
+    vs_name: REL_Portal_API_VS
+    vs_protocol: http
+    vs_port: 11906
+    pool: "{{traffic_manager_pools.rel_portal_api_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  monitor_osb_vs:
+    vs_name: Monitor_OSB_VS
+    vs_protocol: http
+    vs_port: 65529
+    pool: "{{traffic_manager_pools.monitor_osb_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  monitor_workmanager_vs:
+    vs_name: Monitor_WorkManager_VS
+    vs_protocol: http
+    vs_port: 65533
+    pool: "{{traffic_manager_pools.monitor_workmanager_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  rel_web_http_vs:
+    vs_name: REL_Web_HTTP_VS
+    vs_protocol: http
+    vs_port: 8080
+    pool: "{{traffic_manager_pools.rel_web_http_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  rel_portal_vs:
+    vs_name: REL_Portal_VS
+    vs_protocol: http
+    vs_port: 10002
+    pool: "{{traffic_manager_pools.rel_portal_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"

@@ -1,0 +1,3 @@
+---
+# defaults file for vsphere_extend_disk
+vsphere_vm_vcenter_hostname: vcenter_hostname

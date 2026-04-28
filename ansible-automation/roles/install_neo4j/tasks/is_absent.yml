@@ -1,0 +1,11 @@
+---
+# tasks file for install_neo4j — absent
+#
+# Stops and disables the service. Does NOT uninstall the package.
+
+- name: Stop and disable service
+  ansible.builtin.service:
+    name: "{{neo4j_service_name}}"
+    state: stopped
+    enabled: false
+  failed_when: false

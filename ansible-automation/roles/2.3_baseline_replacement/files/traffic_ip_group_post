@@ -1,0 +1,11 @@
+{"properties": {
+   "basic": {
+     "enabled": true,
+     "ip_assignment_mode": "balanced",
+     "ipaddresses": ["{{item.value.ipaddress}}"],
+     "machines":["trafficmanager.localdomain"],
+     "mode": "singlehosted",
+     "note":""
+    }
+  }
+}

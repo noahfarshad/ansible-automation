@@ -1,0 +1,152 @@
+---
+# tasks file for update_scripts_sha256 — present
+
+- name: Update Nodemanager Startup Script
+
+  become_user: app_admin
+  ansible.builtin.lineinfile:
+    dest: '/opt/Oracle/Middleware/wlserver_10.3/server/bin/startNodeManager.sh'
+    insertbefore: 'WL_HOME="\/opt\/Oracle\/Middleware'
+    line: 'JAVA_OPTIONS="${JAVA_OPTIONS} -Dweblogic.security.SSL.enableJSSE=true"'
+  when: ('vm2' == inventory_hostname) or
+        ('vm51' in inventory_hostname) or
+        ('vm52' in inventory_hostname) or
+        ('vm7' in inventory_hostname)
+
+- name: Update Nodemanager OAM Startup Script
+
+  become_user: app_admin
+  ansible.builtin.lineinfile:
+    dest: '/opt/Oracle/Middleware_OAM/wlserver_10.3/server/bin/startNodeManager.sh'
+    insertbefore: 'WL_HOME="\/opt\/Oracle\/Middleware'
+    line: 'JAVA_OPTIONS="${JAVA_OPTIONS} -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm2' in inventory_hostname"
+
+- name: Update Nodemanager OSB Startup Script
+
+  become_user: app_admin
+  ansible.builtin.lineinfile:
+    dest: '/opt/Oracle/Middleware_esb/wlserver_10.3/server/bin/startNodeManager.sh'
+    insertbefore: 'WL_HOME="\/opt\/Oracle\/Middleware'
+    line: 'JAVA_OPTIONS="${JAVA_OPTIONS} -Dweblogic.security.SSL.enableJSSE=true"'
+  when: ('vm4' == inventory_hostname) or
+        ('vm41' in inventory_hostname) or
+        ('vm42' in inventory_hostname)
+
+- name: Update ora_fmwc Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/ora_fmwc'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm2' in inventory_hostname"
+
+- name: Update ora_odsm Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/ora_odsm'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm2' in inventory_hostname"
+
+- name: Update ora_fmwc_oiam Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/ora_fmwc_oiam'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm2' in inventory_hostname"
+
+- name: Update ora_oam1 Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/ora_oam1'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm2' in inventory_hostname"
+
+- name: Update ora_oim1 Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/ora_oim1'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm2' in inventory_hostname"
+
+- name: Update ora_soa1 Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/ora_soa1'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm2' in inventory_hostname"
+
+- name: Update wlsosbadm Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/wlsosbadm'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm4' == inventory_hostname"
+
+- name: Update wlsosbms1 Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/wlsosbms1'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm41' in inventory_hostname"
+
+- name: Update wlsosbms2 Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/wlsosbms2'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm42' in inventory_hostname"
+
+- name: Update wlsportadm Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/wlsportadm'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm51' in inventory_hostname"
+
+- name: Update wlsportms1 Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/wlsportms1'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm51' in inventory_hostname"
+
+- name: Update wlsportms2 Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/wlsportms2'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm52' in inventory_hostname"
+
+- name: Update wlsportrelms1 Startup
+
+  become_user: root
+  ansible.builtin.lineinfile:
+    dest: '/etc/init.d/wlsportrelms1'
+    insertafter: '^JAVA_ARGS="'
+    line: 'JAVA_ARGS="${JAVA_ARGS} -Dweblogic.security.SSL.protocolVersion=TLS1 -Dweblogic.security.SSL.enableJSSE=true"'
+  when: "'vm7' in inventory_hostname"
+

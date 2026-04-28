@@ -1,0 +1,25 @@
+---
+- name: Remove versioned packages
+
+  ansible.builtin.yum:
+    name: "{{ ansible_present_packages }}"
+    state: absent
+
+- name: Remove latest packages
+
+  ansible.builtin.yum:
+    name: "{{ ansible_latest_packages }}"
+    state: absent
+
+- name: Remove secrets file
+
+  ansible.builtin.file:
+    path: "{{ ansible_secret_target }}/{{ ansible_secret_file_name }}"
+    state: absent
+
+- name: Delete artifact staging location
+
+  ansible.builtin.file:
+    path: "{{ ansible_artifact_staging_path }}"
+    state: absent
+    force: yes

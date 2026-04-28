@@ -1,0 +1,8 @@
+---
+
+microservice_dependencies:
+  - name: "userPresence-{{version}}.jar"
+    group: mil/stratcom/app
+    artifact: userPresence
+    version: "{{version}}"
+    extension: jar

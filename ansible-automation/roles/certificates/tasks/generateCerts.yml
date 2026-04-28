@@ -1,0 +1,23 @@
+---
+
+- name: Generate private key
+  become: true
+  openssl_privatekey:
+    path: /etc/pki/tls/private/{{ group_name }}/{{ group_name }}.pem
+    passphrase: "{{ group_name }}"
+    cipher: auto
+
+- name: Generate an OpenSSL Certificate Signing Request
+  become: true
+  openssl_csr:
+    path: /etc/pki/tls/private/{{ group_name }}/{{ group_name }}.csr
+    privatekey_path: /etc/pki/tls/private/{{ group_name }}/{{ group_name }}.pem
+    privatekey_passphrase: "{{ group_name }}"
+    common_name: "{{ inventory_hostname }}"
+    subject_alt_name: "{{ subject_alt_name_full }}"
+- name: Copy CSR to tmp directory
+  ansible.builtin.copy:
+    src: /etc/pki/tls/private/{{ group_name }}/{{ group_name }}.csr
+    dest: /tmp/{{ group_name }}.csr
+    remote_src: yes
+  become: true

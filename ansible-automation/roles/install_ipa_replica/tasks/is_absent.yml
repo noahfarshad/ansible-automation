@@ -1,0 +1,7 @@
+---
+# tasks file for install_ipa_replica — absent
+
+- name: Uninstall IPA replica
+  ansible.builtin.command: ipa-server-install --uninstall --unattended
+  args:
+    removes: /etc/ipa/default.conf

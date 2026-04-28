@@ -1,0 +1,7 @@
+---
+# tasks file for update_what_system — present
+
+- name: "Update What System"
+  become: true
+  become_user: app_admin
+  ansible.builtin.template: src=whatsystem.txt dest=/var/shares/appshare/app/whatsystem.txt owner=app_admin group=midtier mode=0640

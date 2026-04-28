@@ -1,0 +1,30 @@
+#  This sudo config file allows users to perform commands as ROOT!! Very Dangerous, very seldom-used!
+#
+#  This will allow swafs to kill a process for swSuper and swAnalyst
+#
+#  Since these commands will be run as root, it will *require* a password!
+#
+#
+
+# User Aliases
+User_Alias      SPACEWOC_P =	        +un_sems-swafs-p,+un_tads-swafs-p
+
+# These are the allowed commands, referenced later
+# Cmnd_Alias    SOME_CMD                /bin/bash,/bin/cat
+Cmnd_Alias      KILL_SWAFS =            /usr/bin/pkill -9 swSuper,/usr/bin/pkill -9 swAnalyst
+
+# These define the possible application accounts (comma-separated)
+#Runas_Alias    PROCESS_APPACCT =               process
+
+# These define the possible hosts that users are allowed to run commands on
+Host_Alias      SWFS_P =          	swfs-core-a01p,swfs-core-b01p,swfs-gaim-a01p,swfs-gaim-b01p
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure.
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+
+# Group specific permissions
+SPACEWOC_P	SWFS_P = (root) LOG_OUTPUT: LOG_INPUT: KILL_SWAFS
+

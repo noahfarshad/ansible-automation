@@ -1,0 +1,30 @@
+---
+#Ansible play to stop nodemanagers
+- name: "Checking if basic Weblogic Node Manager (wlsnodman) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsnodman
+  register: wlsnodman_status
+  tags:
+    - nodemanagers
+
+- name: "Stopping basic Weblogic Node Manager service (wlsnodman)"
+  become: true
+  ansible.builtin.service: name=wlsnodman  state=stopped
+  when: wlsnodman_status.stat.exists
+  tags:
+    - nodemanagers
+
+
+- name: "Checking if OIAM Weblogic Node Manager (wlsnodman_oiam) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsnodman_oiam
+  register: wlsnodman_oiam_status
+  tags:
+    - nodemanagers
+    - nodemanagers-oiam
+
+- name: "Stopping OIAM Weblogic Node Manager service (wlsnodman_oiam)"
+  become: true
+  ansible.builtin.service: name=wlsnodman_oiam state=stopped
+  when: wlsnodman_oiam_status.stat.exists
+  tags:
+    - nodemanagers
+    - nodemanagers-oiam

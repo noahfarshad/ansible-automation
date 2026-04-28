@@ -1,0 +1,49 @@
+---
+# tasks file for configure_dc — present
+
+  
+ ## There are currently no speciciatly vars used in this role yml
+
+  - name: Domain Install
+    win_domain: 
+      dns_domain_name: "{{ system.tld }}"
+      domain_netbios_name: "{{ system.netbios_name }}"
+      safe_mode_password: "{{ users.workgroup_local_admin.password }}"
+    register: domain_install
+      
+  - name: Reboot DC
+    ansible.builtin.import_role: 
+      name: vmware_common
+    vars:
+      vm_state: rebootguest
+    tags: [ restarted ]
+    when: domain_install is changed
+
+  - name: Wait for reboot
+    ansible.builtin.wait_for_connection:
+      connect_timeout: 20
+      sleep: 5
+      delay: 5
+      timeout: 600 
+    when: domain_install is changed
+
+  - name: Check DC
+    win_domain_controller: 
+      dns_domain_name: "{{ system.tld }}"
+      domain_admin_user: "{{ users.workgroup_local_admin.user }}@{{ system.tld }}"
+      domain_admin_password: "{{ users.workgroup_local_admin.password }}"
+      safe_mode_password: "{{ users.workgroup_local_admin.password }}"
+      state: domain_controller
+    when: '"dcserver01" in inventory_hostname'
+
+  - name: Check DC
+    win_domain_controller: 
+      dns_domain_name: "{{ system.tld }}"
+      domain_admin_user: "{{ users.workgroup_local_admin.user }}@{{ system.tld }}"
+      domain_admin_password: "{{ users.domain_password }}"
+      safe_mode_password: "{{ users.domain_password }}"
+      state: domain_controller
+    when: '"dcserver02" in inventory_hostname'
+
+
+      

@@ -1,0 +1,4 @@
+---
+import_gd_stage_dir: /u02/data_dmp
+dmp_transfer_dir: /var/shares/appshare/gc2globalconfig/dpdump_transfer
+dmp_archive: database-dmp-{{ version }}.tar.gz

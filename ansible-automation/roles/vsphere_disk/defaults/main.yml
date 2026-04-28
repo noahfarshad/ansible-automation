@@ -1,0 +1,3 @@
+---
+# defaults file for deploy_vm
+vsphere_vm_vsphere_hostname: vsphere_hostname

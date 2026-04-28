@@ -1,0 +1,24 @@
+# This sudo config file allows members of the SEMS-CM team to perform certain actions
+# as an application account (NOT ROOT!)
+
+# User Aliases
+# User_Alias CM_TEAM = +un_sems-cm
+
+# These are the allowed commands, referenced later
+Cmnd_Alias VW_CM = /bin/cp, /opt/vwshare/cm/scripts/vwdeploy.sh, /usr/bin/id, /opt/VisualWeather/bin/iplugins, /opt/VisualWeather/bin/iwebservice, /opt/VisualWeather/bin/sharedtables, /opt/VisualWeather/bin/isystem
+
+
+# These define the possible application accounts (comma-separated)
+#Runas_Alias VW_APPACCT = vwadmin, mwadmin
+Runas_Alias VW_APPACCT = vwadmin
+
+# Note: no Host_Aliases are defined here, since this will be controlled by wherever this file is deployed from satellite server
+# (meaning it will work on localhost, wherever this file exists)
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+CM_TEAM	ALL = (VW_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: VW_CM
+

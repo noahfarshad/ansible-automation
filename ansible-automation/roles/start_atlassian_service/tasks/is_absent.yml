@@ -1,0 +1,15 @@
+---
+# tasks file for start_atlassian_service — absent
+#
+# This role orchestrates other roles via include_tasks/import_tasks.
+# Its inverse is the inverse of each included task — which must be
+# implemented by each child role's is_absent.yml.
+#
+# Default behavior: include the same task files but signal absent state
+# downstream. Override if your child roles handle this differently.
+
+- name: "start_atlassian_service — absent is a documented no-op (orchestrator)"
+  ansible.builtin.debug:
+    msg: >-
+      Role 'start_atlassian_service' is an orchestrator. Run desired_state=absent against
+      each child role directly to perform a clean teardown.

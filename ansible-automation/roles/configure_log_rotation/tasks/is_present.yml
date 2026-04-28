@@ -1,0 +1,7 @@
+---
+# tasks file for configure_log_rotation — present
+
+- ansible.builtin.include_tasks: apache24.yml
+- ansible.builtin.include_tasks: vciedb.yml
+- ansible.builtin.include_tasks: vcieoid.yml
+- ansible.builtin.include_tasks: icews.yml

@@ -1,0 +1,11 @@
+---
+# defaults file for upgrade_vmware_tools
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# vcenter_hostname: ""
+# vcenter_password: ""
+# vsphere_account: ""
+# vsphere_datastore: ""
+# vsphere_folder: ""

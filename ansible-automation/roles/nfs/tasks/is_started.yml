@@ -1,0 +1,11 @@
+- name: Start RPCBind
+  become: true
+  ansible.builtin.service:
+    name: rpcbind
+    state: started
+
+- name: Start NFS
+  become: true
+  ansible.builtin.service:
+    name: nfs
+    state: started

@@ -1,0 +1,5 @@
+- name: Start NTP
+  become: true
+  ansible.builtin.systemd:
+    name: "ntpd"
+    state: started

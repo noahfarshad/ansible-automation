@@ -1,0 +1,110 @@
+---
+
+#
+#  Sets up the parameter inspection process by installing the required database table
+#  and PL/SQL package.  The table is created in the schema specified in the vars. 
+#
+#  The package is installed for each script run via CREATE OR REPLACE.
+#  The table is only installed if it does not already exist!
+#
+
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+# Ensure the table create script is in place
+- name: "Copy table create script"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.template: src=DB_PARAM_TABLE_CREATE.sql dest=/tmp mode=0755
+
+# Ensure the package script is in place
+- name: "Copy package script"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.template: src=DBA_CIE_DB_PARAM_PKG.sql dest=/tmp mode=0755
+
+- ansible.builtin.include_tasks: check_db_status.yml
+- name: "Verify if the parameter table exists! "
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: | 
+    $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+    set serveroutput on;
+    spool /tmp/DBA_DB_PARAM_EXISTS_session_output
+
+    exec SYS.DBA_DB_PARAM_PKG.TABLE_EXISTS_CHECK
+    exit; 
+    EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF
+- name: "Read in the EXISTS output spool file"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.command: cat /tmp/DBA_DB_PARAM_EXISTS_session_output.lst
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  register: spool_file_output
+
+  changed_when: false
+- name: "Create the PARAMETER table in the database ONLY if it doesn't already exists "
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: | 
+    $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+    set serveroutput on;
+    @/tmp/DB_PARAM_TABLE_CREATE.sql
+    exit; 
+    EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  when: spool_file_output.stdout.find('DBA_DB_PARAM_SET__ALREADY_EXISTS') == -1
+  register: command_output
+
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF
+- name: "Create or Replace the PL/SQL package in the database "
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: |
+    $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+    set serveroutput on;
+    @/tmp/DBA_CIE_DB_PARAM_PKG.sql
+    exit;
+    EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  register: command_output
+
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF
+- name: "Remove table create script"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.file: 
+    path: /tmp/DB_PARAM_TABLE_CREATE.sql
+    state: absent  
+
+- name: "Remove the package script"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.file:
+    path: /tmp/DBA_CIE_DB_PARAM_PKG.sql
+    state: absent
+
+- name: "Remove the EXISTS spool file"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.file:
+    path: /tmp/DBA_DB_PARAM_EXISTS_session_output.lst
+    state: absent

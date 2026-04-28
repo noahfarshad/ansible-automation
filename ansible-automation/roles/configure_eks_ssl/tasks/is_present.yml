@@ -1,0 +1,24 @@
+---
+# tasks file for configure_eks_ssl
+
+- name: Set account to not expire
+  become: true
+  ansible.builtin.shell: |
+    mkdir /opt/certs
+    cd /opt/certs
+    openssl genrsa -out unrootCA.key 2048
+    openssl pkcs8 -topk8 -v2 aes256 -in unrootCA.key -out rootCA.key -passout pass:PASSWORD#123
+    openssl req -new -x509 -sha256 -days 3650 -key rootCA.key -out rootCA.crt -batch -passin pass:PASSWORD#123
+    openssl genrsa -out registry.{{system_name}}.com.key 4096
+    openssl req -new -sha256 -subj "/CN={{system_name}}.com" -key registry.{{system_name}}.com.key -out registry.{{system_name}}.com.csr
+    echo "subjectAltName=DNS:registry.{{system_name}}.com" > {{system_name}}.com.extfile.cnf
+    openssl x509 -req -sha256 -days 3650 -in registry.{{system_name}}.com.csr -CA rootCA.crt -CAkey rootCA.key -out registry.{{system_name}}.com.crt -extfile {{system_name}}.com.extfile.cnf -CAcreateserial -passin pass:PASSWORD#123
+    openssl genrsa -out {{system_name}}.local.key 4096
+    openssl req -new -sha256 -subj "/CN={{system_name}}.local" -key {{system_name}}.local.key -out {{system_name}}.local.csr
+    echo "subjectAltName=DNS:*.{{system_name}}.local" > {{system_name}}.local.extfile.cnf
+    openssl x509 -req -sha256 -days 3650 -in {{system_name}}.local.csr -CA rootCA.crt -CAkey rootCA.key -out {{system_name}}.local.crt -extfile {{system_name}}.local.extfile.cnf -CAcreateserial -passin pass:PASSWORD#123
+    openssl x509 -in rootCA.crt -out rootCA.pem -outform PEM
+    rm -rf *.csr *.srl *.cnf unrootCA* rootCA.crt rootCA.key
+    mv rootCA.pem /etc/pki/ca-trust/source/anchors/
+    update-ca-trust
+  # TODO: review changed_when for: mkdir /opt/certs

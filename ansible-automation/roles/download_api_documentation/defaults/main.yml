@@ -1,0 +1,13 @@
+---
+# defaults file for download_api_documentation
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# api_documentation: ""
+# classifier: ""
+example_group: "root"
+# nexus_host: ""
+# nexus_public: ""
+# staging: ""
+# version: ""

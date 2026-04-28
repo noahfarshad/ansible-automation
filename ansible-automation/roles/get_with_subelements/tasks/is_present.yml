@@ -1,0 +1,21 @@
+---
+# tasks file for get_with_subelements — present
+
+- name: Create "{{ nexus_drop_local }}" if it does not exist.
+  ansible.builtin.file: 
+    path: "{{ nexus_drop_local }}" 
+    state: directory 
+    mode: 0755
+
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+- name: Downloading {{target_desc}} from nexus
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}/{{item.0.group}}/{{item.1}}/{{item.0.version}}/{{item.1}}-{{item.0.version}}{{item.0.classifier | default('') }}.{{item.0.ext}}
+    dest: "{{ nexus_drop_local }}"
+    timeout: 30
+  with_subelements:
+    - "{{ target_dictionary }}"
+    - "{{ subelement_name }}"
+
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"

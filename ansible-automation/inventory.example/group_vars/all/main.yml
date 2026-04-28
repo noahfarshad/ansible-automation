@@ -1,0 +1,134 @@
+---
+# group_vars/all/main.yml
+#
+# Variables that apply to EVERY host in the inventory unless overridden by
+# a more specific scope. This is the place to set environment-wide values:
+# your domain, your DNS servers, your repo server, your timezone, etc.
+#
+# Override priority (later wins):
+#   group_vars/all/main.yml          <- this file
+#   group_vars/<group>/main.yml      <- per-group
+#   host_vars/<hostname>.yml         <- per-host
+#   --extra-vars on command line     <- highest
+
+# ===========================================================================
+# Identity — REQUIRED, edit these
+# ===========================================================================
+org_name:        example_coach
+org_domain:      example.coach
+org_email:       admin@example.coach
+
+# ===========================================================================
+# DNS — REQUIRED, edit to your nameservers
+# ===========================================================================
+dns_servers:
+  - 10.10.0.10
+  - 10.10.0.11
+
+dns_search_domains:
+  - example.coach
+  - internal.example.coach
+
+# ===========================================================================
+# NTP / time — required only if hosts don't already have NTP
+# ===========================================================================
+ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+ntp_timezone: America/Denver
+
+# ===========================================================================
+# Repository / artifact server (used by install_*, configure_yum, etc.)
+# ===========================================================================
+repo_server_host:  repo.example.coach
+repo_server_url:   "http://{{ repo_server_host }}"
+yum_repo_baseurl:  "{{ repo_server_url }}/yum"
+
+# ===========================================================================
+# Default admin user (created by configure_rhel*, push_sudoersd, etc.)
+# ===========================================================================
+default_admin_user:    ansible
+default_admin_uid:     1000
+default_admin_groups:
+  - wheel
+default_admin_shell:   /bin/bash
+
+# ===========================================================================
+# Filesystem layout
+# ===========================================================================
+install_root:    /opt
+log_root:        /var/log
+stage_root:      /var/staging
+backup_root:     /var/backup
+
+# ===========================================================================
+# TLS / certificates — internal CA bundle pushed to all hosts
+# ===========================================================================
+ca_bundle_path:    /etc/pki/ca-trust/source/anchors/internal-ca.crt
+internal_ca_url:   "{{ repo_server_url }}/ca/internal-ca.crt"
+
+# ===========================================================================
+# vSphere — REQUIRED for VM creation playbooks
+# Override per-environment. Account/password come from vault.
+# ===========================================================================
+vsphere_host:           vcenter.example.coach
+vsphere_datacenter:     example_dc
+vsphere_cluster:        primary_cluster
+vsphere_folder:         "/{{ org_domain }}/vms"
+vsphere_validate_certs: false        # set true once you have proper certs
+
+# Pulled from vault.yml — DON'T put real values here:
+vsphere_account:        "{{ vault_vsphere_account }}"
+vsphere_password:       "{{ vault_vsphere_password }}"
+
+# ===========================================================================
+# Active Directory — REQUIRED if joining Windows hosts
+# ===========================================================================
+ad_domain:              "{{ org_domain }}"
+ad_domain_netbios:      "{{ org_name | upper }}"
+ad_dc_hostname:         dc01.example.coach
+ad_default_ou:          "OU=Servers,OU=ExampleCoach,DC=example,DC=coach"
+ad_join_user:           "{{ vault_ad_bind_user }}"
+ad_join_password:       "{{ vault_ad_bind_password }}"
+
+# ===========================================================================
+# IPA (FreeIPA / Identity Management) — REQUIRED if using IPA on Linux
+# ===========================================================================
+ipa_admin_user:         admin
+ipa_admin_password:     "{{ vault_ipa_admin_password }}"
+ipa_servers:
+  - idm01.example.coach
+  - idm02.example.coach
+
+# ===========================================================================
+# Splunk forwarder defaults
+# ===========================================================================
+splunk_forwarder_host:  splunk-fwd.example.coach
+splunk_forwarder_port:  9997
+splunk_index:           "{{ org_name }}_default"
+
+# ===========================================================================
+# Logging / rsyslog
+# ===========================================================================
+rsyslog_target_host:    logs.example.coach
+rsyslog_target_port:    514
+rsyslog_target_proto:   tcp
+
+# ===========================================================================
+# Feature toggles
+# Set to false to skip the corresponding role(s).
+# ===========================================================================
+enable_selinux:         true
+enable_firewall:        true
+enable_ipa_client:      true
+enable_splunk_forwarder: true
+enable_nagios:          false
+enable_centrify:        false        # use IPA/SSSD instead
+
+# ===========================================================================
+# Misc
+# ===========================================================================
+system_name:            "{{ inventory_hostname }}"
+staging:                "/var/staging"
+artifact_staging:       "/var/staging/artifacts"

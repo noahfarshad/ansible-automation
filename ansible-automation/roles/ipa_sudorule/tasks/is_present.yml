@@ -1,0 +1,497 @@
+---
+# tasks file for ipa_sudorule
+- name: create sudo rule that allows sysadmin sudo privleges on all hosts
+  become: true
+  community.general.ipa_sudorule:
+    name: sysadmin_sudo
+    description: Administrators associated with essadmin allowed to become root globally
+    cmdcategory: all
+    hostcategory: all
+    usergroup:
+    - essadmin
+    ansible.builtin.user:
+    - un_tads-sysadmin
+    runasusercategory: all
+    runasgroupcategory: all
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of bolt on associated hosts.
+  community.general.ipa_sudorule:
+    name: bolt_sudo
+    description: Allow users to become bolt with no passwd
+    cmdcategory: all
+    host:
+    - afw-mw-01t
+    - afw-mw-02t
+    - afw-mw-03t
+    - afw-mw-04t
+    - afw-mw-05t
+    - afw-mw-01d
+    - afw-mw-02d
+    - afw-mw-03d
+    - afw-mw-04d
+    - afw-mw-05d
+    usergroup:
+    - boltgroup
+    runasextusers:
+    - bolt
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of vwadmin on associated hosts.
+  community.general.ipa_sudorule:
+    name: vwadmin_sudo
+    description: Allow users to become vwadmin with no passwd
+    cmdcategory: all
+    hostcategory: all
+    usergroup:
+    - vwadmingroup
+    runasextusers:
+    - vwadmin
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of vw21ows on associated hosts.
+  community.general.ipa_sudorule:
+    name: vw21ows_sudo
+    description: Allow users to become vw21ows with no passwd
+    cmdgroup: vw21ows
+    hostcategory: all
+    ansible.builtin.user:
+    - un_21-ows-t
+    runasextusers:
+    - vw21ows
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of cmadmin on associated hosts.
+  community.general.ipa_sudorule:
+    name: cmadmin_sudo
+    description: Allow users to become cmadmin with no passwd
+    cmdcategory: all
+    hostcategory: all
+    usergroup:
+    - cmadmingroup
+    runasextusers:
+    - cm
+    - cmtest
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of cmgov on associated hosts.
+  community.general.ipa_sudorule:
+    name: cmgov_sudo
+    description: Allow users to become cmadmin with no passwd
+    cmdcategory: all
+    host:
+    - afw-mw-01d
+    - afw-mw-02d
+    - afw-mw-03d
+    - afw-mw-04d
+    - afw-mw-05d
+    - afw-mw-01t
+    - afw-mw-02t
+    - afw-mw-03t
+    - afw-mw-04t
+    - afw-mw-05t
+    usergroup:
+    - cmadmingroup
+    runasextusers:
+    - cmgov
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of j2eeadmin on associated hosts.
+  community.general.ipa_sudorule:
+    name: j2eeadmin_sudo
+    description: Allow users to become cmadmin with no passwd
+    cmdcategory: all
+    host:
+    - afw-edh-01d
+    - afw-edh-02d
+    - afw-edh-03d
+    - afw-edh-04d
+    - afw-edh-05d
+    - afw-edh-01t
+    - afw-edh-02t
+    - afw-edh-03t
+    - afw-edh-04t
+    - afw-edh-05t
+    - afw-mw-a01x
+    - afw-mw-b01x
+    - afw-mw-01x
+    - afw-mw-02x
+    - afw-mw-03x
+    - afw-mw-04x
+    - afw-swafs-01d
+    - afw-swafs-02d
+    - afw-swafs-b01d
+    - afw-swafs-b02d
+    - afw-swafs-01t
+    - afw-swafs-02t
+    - afw-swafs-b01t
+    - afw-swafs-b02t
+    - afw-virapp-01d
+    - afw-virapp-02d
+    - afw-virapp-01t
+    - afw-virapp-02t
+    - afw-ps-01d
+    - afw-ps-02d
+    - afw-ps-01t
+    - afw-ps-02t
+    - afw-ps-03t
+    - afw-ps-04t
+    - afw-ps-05t
+    - afw-ps-06t
+    - afw-ps-07t
+    - afw-ps-08t
+    - afw-ps-01v
+    - afw-ps-02v
+    - afw-ps-03v
+    - afw-ps-04v
+    - afw-php-01d
+    - afw-php-02d
+    - afw-php-01t
+    - afw-php-02t
+    - afw-php-01v
+    - afw-php-02v
+    - afw-webdas-01d
+    - afw-webdas-01t
+    - afw-webdas-01v
+    - afw-webmisc-01d
+    - afw-webmisc-02d
+    - afw-webmisc-01t
+    - afw-webmisc-02t
+    - afw-webmisc-01v
+    - afw-webmisc-02v
+    - afw-metsat-01d
+    - afw-metsat-02d
+    - afw-metsat-01t
+    - afw-metsat-02t
+    - afw-metsat-03t
+    - afw-metsat-04t
+    - afw-metsat-05t
+    - afw-metsat-06t
+    - afw-metsat-01v
+    - afw-metsat-02v
+    - afw-metsat-03v
+    - afw-metsat-04v
+    - afw-metsat-05v
+    - afw-metsat-06v
+    - afw-metweb-01d
+    - afw-metweb-01t
+    - afw-metweb-02t
+    - wdd-mdrg-01t
+    - wdd-mdrg-02t
+    - wdd-mdrg-03t
+    - wdd-mdrg-04t
+    - afw-oiam-01t
+    - afw-oiam-02t
+    - afw-ptedh-01t
+    - afw-ptedh-02t
+    - afw-ptedh-03t
+    - afw-jms-01d
+    - afw-jms-02d
+    - afw-jms-03d
+    - afw-jms-04d
+    - afw-earth-01d
+    - afw-earth-01t
+    - afw-earth-02t
+    - afw-gfapp-01d
+    - afw-gfapp-02d
+    - afw-gfapp-01t
+    - afw-gfapp-02t
+    usergroup:
+    - j2eeadmingroup
+    runasextusers:
+    - j2eeadmin
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of leads on associated hosts.
+  community.general.ipa_sudorule:
+    name: leads_sudo
+    description: Allow users to become leads with no passwd
+    cmdcategory: all
+    hostcategory: all
+    usergroup:
+    - leadsgroup
+    runasextusers:
+    - leads
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+   
+- name: Ensure users can run any commands that are part of mw-a,mw-b, and mw-c on associated hosts.
+  community.general.ipa_sudorule:
+    name: mw_sudo
+    description: Allow users to become mw-a,mw-b, and mw-c with no passwd
+    cmdcategory: all
+    host:
+    - afw-mw-01t
+    - afw-mw-02t
+    - afw-mw-03t
+    - afw-mw-04t
+    - afw-mw-05t
+    - afw-ptmw-01t
+    - afw-ptmw-02t
+    - afw-ptmw-03t
+    - afw-mw-01d
+    - afw-mw-02d
+    - afw-mw-03d
+    - afw-mw-04d
+    - afw-mw-05d
+    usergroup:
+    - mwgroup
+    runasextusers:
+    - mw-a
+    - mw-b
+    - mw-c
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of process on associated hosts.
+  community.general.ipa_sudorule:
+    name: process_sudo
+    description: Allow users to become process with no passwd
+    cmdcategory: all
+    hostcategory: all
+    usergroup:
+    - processgroup
+    runasextusers:
+    - process
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of sdo on associated hosts.
+  community.general.ipa_sudorule:
+    name: sdo_sudo
+    description: Allow users to become sdo with no passwd
+    cmdcategory: all
+    host:
+    - afw-mw-01t
+    - afw-mw-02t
+    - afw-mw-03t
+    - afw-mw-04t
+    - afw-mw-05t
+    - afw-ptmw-01t
+    - afw-ptmw-02t
+    - afw-ptmw-03t
+    - afw-mw-01d
+    - afw-mw-02d
+    - afw-mw-03d
+    - afw-mw-04d
+    - afw-mw-05d
+    usergroup:
+    - sdosgroup
+    runasextusers:
+    - sdo
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of tdcftac on associated hosts.
+  community.general.ipa_sudorule:
+    name: tdcftac_sudo
+    description: Allow users to become tdcftac with no passwd
+    cmdcategory: all
+    hostcategory: all
+    usergroup:
+    - tdcftacroup
+    runasextusers:
+    - tdcftac
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of weblogic on associated hosts.
+  community.general.ipa_sudorule:
+    name: weblogic_sudo
+    description: Allow users to become weblogic with no passwd
+    cmdcategory: all
+    host:
+    - wdd-pais-01x
+    - wdd-pais-02x
+    - wdd-pais-01d
+    - wdd-pais-02d
+    - wdd-pais-03d
+    - wdd-pais-01t
+    - wdd-pais-02t
+    - wdd-pais-03t
+    usergroup:
+    - weblogicroup
+    runasextusers:
+    - weblogic
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of jenkins on associated hosts.
+  community.general.ipa_sudorule:
+    name: jenkins_sudo
+    description: Allow users to become jenkins with no passwd
+    cmdcategory: all
+    host:
+    - afw-php-01d
+    - afw-php-02d
+    - afw-php-01t
+    - afw-php-02t
+    - afw-php-01v
+    - afw-php-02v
+    - afw-metweb-01d
+    - afw-metweb-01t
+    - afw-metweb-02t
+    - afw-oam-01d
+    - afw-oam-02d
+    - afw-oam-01t
+    - afw-oam-02t
+    - afw-oiam-01t
+    - afw-oiam-02t
+    - afw-webgate-01d
+    - afw-webgate-02d
+    - afw-webgate-01t
+    - afw-webgate-02t
+    - afw-webproxy-01t
+    - afw-webproxy-02t
+    usergroup:
+    - jenkinsroup
+    runasextusers:
+    - jenkins
+    sudoopt:
+    - '!authenticate'
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of oracle on associated hosts.
+  community.general.ipa_sudorule:
+    name: oracle_sudo
+    description: Allow users to become oracle with passwd
+    cmdcategory: all
+    hostcategory: all
+    usergroup:
+    - dba
+    runasextusers:
+    - oracle
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of 16ws on associated hosts.
+  community.general.ipa_sudorule:
+    name: specm_sudo
+    description: Allow users to become specm with no passwd
+    cmdcategory: all
+    host:
+    - wdd-globus-01t
+    - wdd-globus-02t
+    - wdd-globus-03t
+    - wdd-globus-01d
+    - wdd-globus-02d
+    - wdd-globus-03d
+    usergroup:
+    - 16ws
+    runasextusers:
+    - specm
+    - globus
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of swafs on associated hosts.
+  community.general.ipa_sudorule:
+    name: swafs_sudo
+    description: Allow users to become swafs with no passwd
+    cmdcategory: all
+    host: 
+    - swfs-gaim-a01t
+    - swfs-gaim-a02t
+    - swfs-core-a01t
+    - swfs-core-a02t
+    usergroup:
+    - swafsgroup
+    runasextusers:
+    - swafs1
+    - swafs2
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure users can run any commands that are part of dv on associated hosts.
+  community.general.ipa_sudorule:
+    name: dv_sudo
+    description: Allow users to become dv with no passwd
+    cmdcategory: all
+    host:
+    - afw-mw-01t
+    - afw-mw-02t
+    - afw-mw-03t
+    - afw-mw-04t
+    - afw-mw-05t
+    - afw-ptmw-01t
+    - afw-ptmw-02t
+    - afw-ptmw-03t
+    - afw-mw-01d
+    - afw-mw-02d
+    - afw-mw-03d
+    - afw-mw-04d
+    - afw-mw-05d
+    usergroup:
+    - dvgroup
+    runasextusers:
+    - dv
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true

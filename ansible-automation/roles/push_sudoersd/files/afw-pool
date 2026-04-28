@@ -1,0 +1,38 @@
+#
+# Don't use sudo aliases - it messes up the Ansible validation command and is largely unneeded with Ansible doing the sudo management
+#  Just list the required sudo command
+#
+#
+
++un_sems-afwwebs  ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-afwwebs  ALL=(vwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-afwwebs  ALL=(process)NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-afwwebs  ALL=(jenkins)NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-afwwebs  ALL=(root) /bin/systemctl start jws5-tomcat,/bin/systemctl stop jws5-tomcat, /bin/systemctl restart jws5-tomcat, /bin/journalctl -u jws5-tomcat, /bin/systemctl status jws5-tomcat
++un_sems-afwwebs  ALL=(root) /bin/systemctl start http,/bin/systemctl stop http, /bin/systemctl restart http, /bin/journalctl -u http, /bin/systemctl status http
++un_sems-cm       ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-cm       ALL=(vwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-cm       ALL=(process) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-cm       ALL = (cm) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-cm       ALL = (cmtest) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
++un_sems-wdd       ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-wdd       ALL=(vwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-wdd       ALL=(process) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
+
++un_tads-afwwebs  ALL=(afwadmin) LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-afwwebs  ALL=(vwadmin) LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-afwwebs  ALL=(process)NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-afwwebs  ALL=(jenkins)NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-afwwebs  ALL=(root) /bin/systemctl start jws5-tomcat,/bin/systemctl stop jws5-tomcat, /bin/systemctl restart jws5-tomcat, /bin/journalctl -u jws5-tomcat, /bin/systemctl status jws5-tomcat
++un_tads-afwwebs  ALL=(root) /bin/systemctl start http,/bin/systemctl stop http, /bin/systemctl restart http, /bin/journalctl -u http, /bin/systemctl status http
++un_tads-cm       ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-cm       ALL=(vwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-cm       ALL=(process) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-cm       ALL = (cm) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-cm       ALL = (cmtest) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-wdd       ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-wdd       ALL=(vwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-wdd       ALL=(process) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
+
++fn_afwWebMisc,!+un_sems-testers,!+un_tads-testers  ALL = (afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sys-cm        ALL = (cmgov) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL

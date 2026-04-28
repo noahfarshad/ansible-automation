@@ -1,0 +1,30 @@
+---
+# tasks file for configure_win_disk-old — present
+
+# Expected Var:
+#
+# hardware.disks:
+#   - size_gb: Int
+#     type: thin
+#     disk_partition: { letter: , filesystem: , disk_number: , volume_number: }
+# 
+#
+- name: "Windows Disk Partition"
+  block:
+  - name: "Partition Disks"
+    ansible.builtin.include_tasks: win_diskpart.yml
+    loop: "{{ hardware.disks }}"
+    loop_control:
+      loop_var: virtual_disk 
+ 
+# There may be a idempotency bug with win_partition and partitioning additional virtual disks on windows 2012   
+#- name: "Windows Disk Partition" 
+#  when:
+#    - hostvars[ inventory_hostname ].ansible_distribution_version is version('6.2', '>=') 
+#  block:
+#  - name: "Partition Disks"
+#    include_tasks: win_partition.yml
+#    loop: "{{ disk_list }}"
+#    loop_control:
+#      index_var: count
+#      loop_var: virtual_disk

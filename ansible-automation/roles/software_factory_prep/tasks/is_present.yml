@@ -1,0 +1,63 @@
+---
+# tasks file for software_factory_prep
+# Only to be done on initial deployment of software-factory or upgrading an existing software-factory
+
+- name: Remove Staging Directory if Exists
+
+  ansible.builtin.file: 
+    path: "{{ sw_factory_stage }}{{ sw_factory_dir }}"
+    state: absent
+
+- name: Create Staging Directory
+
+  ansible.builtin.file: 
+    path: "{{ sw_factory_stage }}{{ sw_factory_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Create Bin Directory
+
+  ansible.builtin.file: 
+    path: /usr/local/bin/
+    state: directory
+    mode: '0777'
+  delegate_to: "{{ eksadmin }}"
+
+- name: UnTar Software Factory
+
+  ansible.builtin.unarchive:
+    src: "{{ sw_factory_stage }}{{ sw_factory_tar_gz }}"
+    dest: "{{ sw_factory_stage }}{{ sw_factory_dir }}"
+
+- name: Copy Software Factory Files to eksadmin 
+  ansible.builtin.copy:
+    src: "{{ sw_factory_stage }}{{ sw_factory_dir }}"
+    dest: /usr/local/bin/{{ string_name }}
+    remote_src: yes
+
+- name: Move UnTared files
+
+  ansible.builtin.shell: |
+    cd /usr/local/bin/{{ string_name }}/{{ sw_factory_dir }}
+    mv * /usr/local/bin/
+    cd /usr/local/bin/
+    chmod +x software-factory
+    rpm --import docker.gpg.key
+    rm -rf {{ sw_factory_dir }}
+    mv software-factory.tar.gz {{ string_name }}/
+
+
+  # TODO: review changed_when for: cd /usr/local/bin/{{ string_name }}/{{ sw_factory_dir }}
+- name: Copy software-factory.yml
+
+  ansible.builtin.copy: 
+    src: "{{ yaml_loc }}{{ sw_factory_yaml }}"
+    dest: /usr/local/bin/{{ string_name }}
+    remote_src: yes
+
+- name: Copy software-factory.yml
+
+  ansible.builtin.copy: 
+    src: "{{ yaml_loc }}{{ sw_factory_yaml }}"
+    dest: /usr/local/bin/
+    remote_src: yes

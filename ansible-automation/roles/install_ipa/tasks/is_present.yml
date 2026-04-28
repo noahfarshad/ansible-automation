@@ -1,0 +1,60 @@
+---
+# tasks file for install_ipa
+
+- name: Firewall arrangements for replication
+
+  ansible.builtin.shell: |
+    firewall-cmd --add-service=freeipa-replication
+    firewall-cmd --runtime-to-permanent
+    
+
+  # TODO: review changed_when for: firewall-cmd --add-service=freeipa-replication
+- name: Install IPA
+
+  ansible.builtin.command: "ipa-server-install --realm EXAMPLE.COACH --ds-password {{ipa_admin_password}} --admin-password {{ipa_admin_password}} --unattended"
+
+
+  # TODO: review changed_when for: ipa-server-install --realm EXAMPLE.COACH --ds-password {{ipa
+- name: Wait for IPA to start up
+
+  ansible.builtin.wait_for:
+    host: "{{inventory_hostname}}:{{ipa_port}}"
+    delay: 15
+    timeout: 30
+    state: present
+
+- name: update CA cert
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+    sleep 5
+    ipa-cacert-manage -p {{ipa_admin_password}} -t C,, install /root/certs/CA.cer
+    sleep 15
+
+
+  changed_when: false
+- name: IPA cert update
+
+  ansible.builtin.command: "ipa-certupdate"
+
+
+  # TODO: review changed_when for: ipa-certupdate
+- name: Wait for IPA to start after the cert update
+  ansible.builtin.wait_for:
+    host: "{{inventory_hostname}}:{{ipa_port}}"
+    delay: 15
+    timeout: 30
+    state: present
+
+- name: Update server certificate
+
+  ansible.builtin.command: "ipa-server-certinstall -d --dirsrv_pin {{ipa_admin_password}} --dirman-password={{ipa_admin_password}} -w --http_pin {{inventory_hostname}} /root/certs/{{inventory_hostname}}.key /root/certs/{{inventory_hostname}}.cer"
+  delay: 30
+
+
+  # TODO: review changed_when for: ipa-server-certinstall -d --dirsrv_pin {{ipa_admin_password}
+- name: IPA restart
+
+  ansible.builtin.command: "ipactl restart"
+
+  # TODO: review changed_when for: ipactl restart

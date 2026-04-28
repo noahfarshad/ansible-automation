@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>Splunk Forwarder</short>
+  <description>For Splunk Forwarder communication  Connect this zone to the appropriate source ip address to ensure connectivity to the application.</description>
+  <port protocol="tcp" port="9443"/>
+  <port protocol="tcp" port="9997"/>
+</service>

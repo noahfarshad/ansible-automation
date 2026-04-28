@@ -1,0 +1,4 @@
+{{ yum_local_report_header }}
+{% for result in template_packages.results %}
+{{ result.name }},{{ result.version }},{{ result.release }}
+{% endfor %}

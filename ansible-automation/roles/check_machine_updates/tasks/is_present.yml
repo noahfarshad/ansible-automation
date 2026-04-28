@@ -1,0 +1,26 @@
+---
+# tasks file for check_machine_updates — present
+
+- name: Deploy yum.conf
+  become: true
+  ansible.builtin.copy:
+    src: yum.conf
+    dest: /etc/yum.conf
+
+- name: Verify Linux VM needs updating
+  become: true
+  ansible.builtin.command: 'yum check-update'
+  register: update_out
+  failed_when: "update_out.rc == 1"
+
+  changed_when: false
+- debug:
+    msg: "Machine needs updating..."
+  when: "do_report and update_out.rc == 100"
+
+- name: Update packages on machine
+  become: true
+  ansible.builtin.yum:
+    name: '{{ target_package }}'
+    state: "{{ package_upgrade | default(false) | ternary('latest', 'present') }}"
+  when: "do_updates and update_out.rc == 100"

@@ -1,0 +1,8 @@
+domain localdomain
+search localdomain
+{% for hostname in hostvars[inventory_hostname].groups['consul_servers'] %}
+nameserver {{hostvars[hostname]['ansible_default_ipv4']['address']}}
+{% endfor %}
+{% for searchname in hostvars[inventory_hostname].groups['dns_search_domains'] %}
+search {{searchname}}
+{% endfor %}

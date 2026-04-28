@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<wldf-resource xmlns="http://xmlns.oracle.com/weblogic/weblogic-diagnostics" xmlns:sec="http://xmlns.oracle.com/weblogic/security" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls" xsi:schemaLocation="http://xmlns.oracle.com/weblogic/weblogic-diagnostics http://xmlns.oracle.com/weblogic/weblogic-diagnostics/1.0/weblogic-diagnostics.xsd">
+  <name>Module-HealthState</name>
+  <watch-notification>
+    <watch>
+      <name>ServerHealthWatc</name>
+      <enabled>true</enabled>
+      <rule-type>Harvester</rule-type>
+      <rule-expression>(${ServerRuntime//[weblogic.management.runtime.ServerRuntimeMBean]com.bea:Name=AdminServer,Type=ServerRuntime//HealthState.State} &gt;= 3)</rule-expression>
+      <alarm-type xsi:nil="true"></alarm-type>
+      <notification>ServerHealthNotification</notification>
+    </watch>
+    <smtp-notification>
+      <name>ServerHealthNotification</name>
+      <enabled>true</enabled>
+      <mail-session-jndi-name>mail.Session</mail-session-jndi-name>
+      <subject xsi:nil="true"></subject>
+      <body xsi:nil="true"></body>
+      <recipient>DLISExample@internal.ngc.com</recipient>
+    </smtp-notification>
+  </watch-notification>
+</wldf-resource>

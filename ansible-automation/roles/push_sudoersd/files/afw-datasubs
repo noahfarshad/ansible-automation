@@ -1,0 +1,19 @@
+# This sudo config file allows users to perform commands as splunk
+
+# User Aliases
+User_Alias      DATASUBS_ADMIN =       +un_sys-datarouting-d,+un_sys-datarouting-t
+
+
+
+# These define the possible application accounts (comma-separated)
+Runas_Alias     DATASUBS_APPACCT =                datasubs
+
+# These define the possible hosts that users are allowed to run commands on
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+DATASUBS_ADMIN               EDH_TEST,AFW_MW_TEST = (DATASUBS_APPACCT) LOG_OUTPUT: LOG_INPUT: ALL
+

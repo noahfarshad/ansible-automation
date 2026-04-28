@@ -1,0 +1,37 @@
+---
+# tasks file for update_dbdd — present
+
+# Execute the script to generate the DBDD CSV files
+
+- name: Create the DBDD csv files
+  become_user: ora_rmt
+  become: true
+  ansible.builtin.command: "{{decompressed_directory}}example/DBDD_GEN_Run_Reports.sh {{ORACLE_SID}}"
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+
+
+
+  # TODO: review changed_when for: {{decompressed_directory}}example/DBDD_GEN_Run_Reports.sh {{
+- name: Fetch csv files
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.fetch:
+    src: "/tmp/{{ item }}"
+    dest: "/tmp/{{ item }}"
+    flat: yes
+  loop:
+    '{{ fetch_csv_list }}'
+
+
+- name: Fetch qc files
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.fetch:
+    src: "/tmp/{{ item }}"
+    dest: "/tmp/{{ item }}"
+    flat: yes
+    fail_on_missing: no
+  loop:
+    '{{ fetch_qc_list }}'

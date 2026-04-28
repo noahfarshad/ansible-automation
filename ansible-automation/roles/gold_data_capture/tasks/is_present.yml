@@ -1,0 +1,80 @@
+---
+# tasks file for gold_data_capture — present
+
+# Role Inputs:
+#  system
+#  version
+
+- block:
+    - name: Assert Staging Directory is Present 
+      ansible.builtin.file:
+        path: "{{ tmp_dmp_directory }}"
+        state: directory
+        mode: 0755
+
+    - name: Verify Staging Directory is Populated
+      ansible.builtin.find:
+        paths: "{{ tmp_dmp_directory }}"
+        patterns: '*.dmp'
+      register: dmp_files
+
+    - fail:
+        msg: | 
+          No dmp files present at {{ tmp_dmp_directory }} 
+          To create the files:
+            - run the export.yml playbook to create the dmp content
+            # EXAMPLE: ansible-playbook ./dev-playbooks/export_data.yml  -i inventory/{{ system}} -e "system={{ system }} version={{ version }}"
+      when: dmp_files.matched == 0
+      
+      #This file contains the export_version value
+      # see data_migration/export_data role
+    - fetch:
+        become_user: ora_rmt
+        src: "{{ tmp_dmp_directory }}export_version"
+        dest: "{{ staging }}"
+        flat: yes
+
+    - name: Read last export version
+      become_user: ora_rmt
+      ansible.builtin.include_vars:
+        ansible.builtin.file: "{{ staging }}/export_version"
+
+    - fail:
+        msg: | 
+          The specified version  '{{ version }}' does not match the version of exported data on the target environment. 
+          {{ system }} was last exported at {{ export_version}}.
+          Either use {{ export_version }} in the command, or update the exported data in the {{ system }} environment.
+      when: version != export_version 
+     
+    - name: Get database script archive from Nexus
+      become_user: ora_rmt
+      ansible.builtin.get_url:
+        url: http://{{nexus_host_qualified}}/{{nexus_public}}/{{group}}/database/{{version}}/{{ script_archive }}
+        dest: "{{ tmp_dmp_directory }}"
+        mode: 0755
+
+    - name: Create archive of database dmp files
+      become_user: ora_rmt
+      ansible.builtin.archive:
+        path: "{{ tmp_dmp_directory }}/*.dmp"
+        dest: "{{ tmp_dmp_directory }}/{{ dmp_archive }}"
+        mode: 0755
+        
+
+    #https://support.sonatype.com/hc/en-us/articles/115006744008
+    # Tried the URI module, but it does not allow for the file to be sent!
+
+    - name: Upload database dmp archive to nexus
+      ansible.builtin.command: curl -u {{ nexus_admin }}:{{ nexus_password }} --upload-file {{ tmp_dmp_directory }}/{{ dmp_archive }} http://{{ nexus_host_qualified }}/repository/{{ nexus_gold_repository }}/{{ group }}/database/{{ version }}/{{ dmp_archive }}
+
+      # TODO: review changed_when for: curl -u {{ nexus_admin }}:{{ nexus_password }} --upload-file
+    - name: Upload database scripts to nexus
+      ansible.builtin.command: curl -u {{ nexus_admin }}:{{ nexus_password }} --upload-file {{ tmp_dmp_directory }}/{{ script_archive }} http://{{nexus_host_qualified}}/repository/{{ nexus_gold_repository }}/{{ group }}/database/{{ version }}/{{ script_archive }}
+
+      # TODO: review changed_when for: curl -u {{ nexus_admin }}:{{ nexus_password }} --upload-file
+    - name: Removing database dmp archive from file system
+      become_user: ora_rmt
+      ansible.builtin.file:
+        path: "{{ tmp_dmp_directory }}/{{ dmp_archive }}"
+        state: absent
+  become: true

@@ -1,0 +1,75 @@
+
+- block:
+    - name: Install RPCBind
+
+      ansible.builtin.yum:
+        name: 'rpcbind'
+        state: "{{ rpcbind_rpm_version }}"
+
+    - name: Install NFS-Utils
+
+      ansible.builtin.yum:
+        name: 'nfs-utils'
+        state: "{{ nfs_utils_rpm_version }}"
+
+    - name: Ensure shared directories are present
+
+      ansible.builtin.file:
+        path: "{{ item.directory }}"
+        mode: "{{ item.mode }}"
+        state: directory
+        setype: "{{ item.secontext | d('default_t') }}"
+      loop: "{{ nfs_exports }}"
+
+    - name: Ensure NFS configuration file is present
+
+      ansible.builtin.file:
+        path: "{{ nfs_exports_file }}"
+        state: file
+        mode: 0644
+
+    - name: Update NFS Export configuration
+
+      ansible.builtin.lineinfile:
+        path: "{{ nfs_exports_file }}"
+        line: "{{ item.directory }} {{ item.client_ip }}({{ item.permissions }})"
+        regexp: "^{{ item.directory }}.*"
+        state: present
+      loop: "{{ nfs_exports }}"
+      notify:
+        - Reload NFS Exports
+
+    - name: Set export secontext if applicable
+
+      sefcontext:
+        target: "{{ item.directory }}(/.*)?"
+        setype: "{{ item.secontext }}"
+        state: present
+      loop: "{{ nfs_exports }}"
+      when: item.secontext is defined
+
+    - name: Apply new SELinux file context to filesystem
+
+      ansible.builtin.command: "/usr/sbin/restorecon -irv {{ item.directory }}"
+      loop: "{{ nfs_exports }}"
+      when: item.secontext is defined and False
+
+
+      # TODO: review changed_when for: /usr/sbin/restorecon -irv {{ item.directory }}
+    - name: Create additional links
+
+      ansible.builtin.file:
+        src: "{{ item.target }}"
+        dest: "{{ item.link }}"
+        owner: "{{ item.owner }}"
+        ansible.builtin.group: "{{ item.group }}"
+        state: link
+      loop: "{{ nfs_additional_links }}"
+      when: nfs_additional_links is defined
+
+    - name: Enable NFS server service
+
+      ansible.builtin.systemd:
+        name: nfs
+        enabled: yes
+  become: true

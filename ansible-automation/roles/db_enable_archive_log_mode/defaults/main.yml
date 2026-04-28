@@ -1,0 +1,23 @@
+---
+
+oracle_owner: ora_rmt
+oracle_group: ora_rmt
+oracle_perms: "0755"
+ORACLE_HOME: /opt/oracle/app/ora_rmt/product/12.1.0
+ORACLE_SID: example
+JAVA_HOME: /opt/Oracle/java
+archive_log: 'ARCHIVELOG'
+PATH: "$ORACLE_HOME/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/var/shares/cots/midtier_share/admin_scripts/:/home/apps/ora_rmt/bin"
+
+#
+#  Database Parameterization related items
+#db_process_name: ora_pmon_example
+initd_script_name_example: dbora_example
+
+spool_file_name_1: /tmp/DB_CIE_Inspect_1.lst
+spool_file_name_2: /tmp/DB_CIE_Inspect_2.lst
+
+
+
+archive_log_dir: /u01/oradata/data/example/CIE_ARCHIVELOG
+

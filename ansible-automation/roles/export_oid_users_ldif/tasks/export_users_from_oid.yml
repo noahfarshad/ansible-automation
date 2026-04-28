@@ -1,0 +1,28 @@
+---
+
+# export the the users from LDAP
+- name: Exporting the LDAP users from OID
+  become: true
+  become_user: app_admin
+  environment:
+     ORACLE_HOME: "{{ldap_oid_directory}}"
+  ansible.builtin.shell: >-
+     {{ldap_bin_directory}}/ldapsearch -p 3060 -h localhost
+     -D "{{oid_ldap_user}}" -w '{{ldap_password}}'
+     -L -s one -b "{{user_base_dn}}" '(&(objectclass=*)(!(memberOf=cn=SIPRRelGroup,{{group_base_dn}})))' {{ldap_fields}}
+     > {{ldif_export_file}}
+     
+  # TODO: review changed_when for: {{ldap_bin_directory}}/ldapsearch -p 3060 -h localhost
+- name: fetch the file and place it in the staging directory
+  become: true
+  ansible.builtin.fetch:
+    src: "{{ldif_export_file}}"
+    dest: "{{staging}}"
+    flat: yes
+
+- name: Remove the ldif file from the remote folder
+  become_user: app_admin
+  become: true
+  ansible.builtin.file: 
+     path: "{{ldif_export_file}}"
+     state: absent

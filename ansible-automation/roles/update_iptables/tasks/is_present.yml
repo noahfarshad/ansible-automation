@@ -1,0 +1,59 @@
+---
+# tasks file for update_iptables — present
+
+ - name: "Get value for LB_INT_IP"
+
+   ansible.builtin.shell: "grep IPADDR /etc/sysconfig/network-scripts/ifcfg-eth0 | cut -d'=' -f2"
+   register: LB_INT_IP
+
+
+   changed_when: false
+ - debug:
+     msg: "LB_INT_IP: {{LB_INT_IP.stdout}}"
+
+ - name: "Get value for ETH1"
+
+   ansible.builtin.shell: "ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{print $1}'"
+   register: ETH1
+
+
+   # TODO: review changed_when for: ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{prin
+ - debug:
+     msg: "ETH1: {{ETH1.stdout}}"
+
+ - name: "Get value for CIE_IP"
+
+   ansible.builtin.shell: "grep ipaddresses '/opt/zeus/zxtm/conf/flipper/External IP' | awk -F' ' '{print $2}'"
+   register: CIE_IP
+
+
+   changed_when: false
+ - debug:
+     msg: "{{CIE_IP.stdout}}"
+
+ - name: "Get value for CIEREL_IP"
+
+   ansible.builtin.shell: "grep ipaddresses '/opt/zeus/zxtm/conf/flipper/External REL IP' | awk -F' ' '{print $2}'"
+   register: CIEREL_IP
+
+
+   changed_when: false
+ - debug:
+     msg: "{{CIEREL_IP.stdout}}"
+
+ - name: "Get value for CIESVCS_IP"
+
+   ansible.builtin.shell: "grep ipaddresses '/opt/zeus/zxtm/conf/flipper/External AOC IP' | awk -F' ' '{print $2}'"
+   register: CIESVCS_IP
+
+
+   changed_when: false
+ - debug:
+     msg: "{{CIESVCS_IP.stdout}}"
+
+ - name: "Replacing iptables Files"
+
+   ansible.builtin.template: src=lb_iptables_template dest=/etc/sysconfig/iptables owner=root group=root mode=0600
+   notify:
+     - restart iptables
+     - restart network

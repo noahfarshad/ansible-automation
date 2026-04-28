@@ -1,0 +1,28 @@
+---
+- name: Remove versioned packages
+
+  ansible.builtin.yum:
+    name: "{{ build_agent_present_packages }}"
+    state: absent
+  when: build_agent_present_packages is defined
+
+- name: Remove latest packages
+
+  ansible.builtin.yum:
+    name: "{{ build_agent_latest_packages }}"
+    state: absent
+
+- name: Remove latest headless chrome support packages
+
+  ansible.builtin.yum:
+    name: "{{ build_agent_chrome_latest }}"
+    state: absent
+
+- name: Remove versioned global npm packages
+
+  npm:
+    name: "{{ item.name }}"
+    version: "{{ item.version }}"
+    state: absent
+    global: yes
+  loop: "{{ build_agent_npm_packages }}"

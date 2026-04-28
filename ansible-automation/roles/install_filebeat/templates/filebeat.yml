@@ -1,0 +1,11 @@
+#=========================== Filebeat prospectors =============================
+
+filebeat.config.prospectors:
+   enables: true
+   path: /etc/filebeat/conf.d/*.yml
+  
+
+#----------------------------- Logstash output --------------------------------
+output.logstash:
+  hosts: ["{{elk_ip}}:{{elk_port}}"]
+  bulk_max_size: 1024

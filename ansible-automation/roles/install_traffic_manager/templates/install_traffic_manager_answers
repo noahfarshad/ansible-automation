@@ -1,0 +1,15 @@
+Zeus::ZInstall::Common::get_password:Please choose a password for the admin server={{stingray_password}}
+Zeus::ZInstall::Common::get_password:Re-enter={{stingray_password}}
+admin!password={{stingray_password}}
+selfreg!register=N
+start_at_boot=N
+zxtm!cluster=C
+zxtm!community_edition_accepted=Y
+zxtm!group=root
+zxtm!license_key=
+zxtm!name_setname=1
+zxtm!unique_bind=N
+zxtm!user=root
+accept-license=accept
+zeushome=/opt/traffic_manager
+zxtm!perform_initial_config=Y

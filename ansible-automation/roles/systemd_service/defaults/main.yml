@@ -1,0 +1,3 @@
+service_file_dest: /etc/systemd/system
+
+service_file_path: "{{ service_file_dest }}/{{ service_name }}.service"

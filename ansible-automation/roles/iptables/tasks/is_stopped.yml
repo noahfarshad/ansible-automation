@@ -1,0 +1,5 @@
+- name: Stopping iptables
+  become: true
+  ansible.builtin.systemd:
+    name: iptables
+    state: stopped

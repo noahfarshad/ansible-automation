@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wldf-resource xsi:schemaLocation="http://xmlns.oracle.com/weblogic/weblogic-diagnostics http://xmlns.oracle.com/weblogic/weblogic-diagnostics/1.0/weblogic-diagnostics.xsd" xmlns="http://xmlns.oracle.com/weblogic/weblogic-diagnostics" xmlns:sec="http://xmlns.oracle.com/weblogic/security" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls">
+  <name>Module-Health State</name>
+  <watch-notification>
+    <watch>
+      <name>ServerHealthWatch</name>
+      <enabled>true</enabled>
+      <rule-type>Harvester</rule-type>
+      <rule-expression>(${ServerRuntime//[weblogic.management.runtime.ServerRuntimeMBean]com.bea:Name=AdminServer,Type=ServerRuntime//HealthState.State} >= 3)</rule-expression>
+      <alarm-type xsi:nil="true"/>
+    </watch>
+  </watch-notification>
+</wldf-resource>

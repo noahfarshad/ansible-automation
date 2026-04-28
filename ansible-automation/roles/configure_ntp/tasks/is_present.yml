@@ -1,0 +1,57 @@
+---
+# tasks file for configure_ntp — present
+
+# Confirm latest version of ntp is installed
+- block:
+    - name: Confirming latest version of ntp is installed
+
+      ansible.builtin.yum:
+        name: ntp
+        state: present  # use {{ configure_ntp_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+      tags:
+        - skip_ansible_lint
+
+    # Confirm latest version of sntp is installed
+    - name: Confirming latest version of sntp is installed
+
+      ansible.builtin.yum:
+        name: sntp
+        state: present  # use {{ configure_ntp_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+      tags:
+        - skip_ansible_lint
+      when:
+        - ansible_distribution_major_version == "7"
+        - ansible_distribution == "CentOS"
+
+    # Copy current NTP configuration file.
+    - name: Downloading NTP configuration file
+
+      ansible.builtin.copy:
+        src: ntp.conf
+        dest: /etc/ntp.conf
+
+    # Copy current localtime file.
+    - name: Downloading localtime file
+
+      ansible.builtin.copy:
+        src: localtime
+        dest: /etc/localtime
+
+    # Attempt to force sync of server time
+    - name: Attempting to force ntp synch immediately
+
+      ansible.builtin.command: sntp -s {{ ntp_server_ip }}
+      when:
+        - ansible_distribution_major_version == "7"
+        - ansible_distribution == "CentOS"
+
+    # Restart and enable ntpd
+
+      changed_when: false
+    - name: Restarting and enabling ntpd
+
+      ansible.builtin.service:
+        name: ntpd
+        state: restarted
+        enabled: yes
+  become: true

@@ -1,0 +1,51 @@
+---
+# tasks file for install_filebeat — present
+
+# This installs filebeats on a string host. The template uses mostly group_vars to accomplish this task
+- block:
+    - name: Install filebeats
+
+      ansible.builtin.yum: 
+         name: filebeat
+         state: present  # use {{ install_filebeat_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+    # Use the filebeat template and group_vars to configure the eventual configuration.
+    - name: "Placing Main Filebeat Configuration File"
+
+      ansible.builtin.template: 
+         src: filebeat.yml
+         dest: "{{filebeat_config_dir}}/filebeat.yml" 
+         owner: root 
+         ansible.builtin.group: root 
+         mode: 0644
+
+    # Create the filebean config directory if it doesn't already exist
+    - name: "Verify the config directory exists"
+
+      ansible.builtin.file: 
+         path: "{{prospectors_config_dir}}"
+         state: "{{item}}"
+         owner: root 
+         ansible.builtin.group: root 
+         mode: 0644
+      loop:
+         - absent
+         - directory
+
+    # Use the filebeat template and group_vars to configure the eventual configuration.
+    - name: "Placing Filebeat prospectors Configuration File"
+
+      ansible.builtin.template: 
+         src: "filebeat_{{inventory_hostname}}.yml"
+         dest: "{{prospectors_config_dir}}/filebeat_{{inventory_hostname}}.yml"
+         owner: root
+         ansible.builtin.group: root
+         mode: 0644
+
+    # Enable the filebeats service to start on boot.
+    - name: "Start and Enable Filebeats"
+
+      ansible.builtin.service: 
+         name: filebeat 
+         state: restarted
+         enabled: yes
+  become: true

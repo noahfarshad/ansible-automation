@@ -1,0 +1,9 @@
+---
+# defaults file for isilon_mount
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# isilon_fstab_lines: ""
+# isilon_hostname: ""
+# isilon_zone: ""

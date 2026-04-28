@@ -1,0 +1,38 @@
+---
+# tasks file for install_package
+- name: verify if repos are enabled
+  remote_user: admin_local
+  become: true
+  become_method: sudo
+  become_user: root
+  ansible.builtin.rhsm_repository:
+    name: "{{item.name}}"
+    state: enabled
+  loop: "{{repo_list}}"
+  when: repo_list is defined
+  tags: install_package
+
+- name: verify if packages are present
+  remote_user: admin_local
+  become: true
+  become_method: sudo
+  become_user: root
+  ansible.builtin.dnf:
+    name: "{{item.name}}"
+    state: present
+    skip_broken: true
+  loop: "{{package_list}}"
+  when: package_list is defined
+  tags: install_package
+
+- name: Upgrade all packages
+  remote_user: admin_local
+  become: true
+  become_method: sudo
+  become_user: root
+  ansible.builtin.dnf:
+    name: "{{item.name}}"
+    state: "{{ package_upgrade | default(false) | ternary('latest', 'present') }}"
+  loop: "{{package_list}}"
+  when: package_list is defined
+  tags: install_package

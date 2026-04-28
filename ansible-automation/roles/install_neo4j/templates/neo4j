@@ -1,0 +1,66 @@
+#!/bin/sh
+
+# This script is meant to start the neo4j database instance
+#
+# /etc/init.d/{{neo4j_service_name}}
+# Subsystem file for Neo4j database
+#
+# chkconfig: 2345 95 05
+# description: Neo4j Database daemon
+#
+# processname: {{neo4j_service_name}}
+# config: /etc/sysconfig/{{neo4j_service_name}}
+# pidfile: {{neo4j_dir}}/{{neo4j_service_name}}.pid
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+# pull in sysconfig settings
+[ -f /etc/sysconfig/{{neo4j_service_name}} ] && . /etc/sysconfig/{{neo4j_service_name}}
+
+
+SERVICE_NAME={{neo4j_service_name}}
+BASE_CMD=". /etc/init.d/{{service_env}} && {{neo4j_dir}}/{{neo4j_package}}/bin/neo4j"
+RUN_AS="app_admin"
+LOCKFILE=/var/lock/subsys/${SERVICE_NAME}
+NEO4J_HOME={{neo4j_dir}}
+
+
+start() {
+    echo "Starting $SERVICE_NAME ..."
+    touch ${LOCKFILE}
+
+    /bin/su - ${RUN_AS} -c "${BASE_CMD} start" 1> ${NEO4J_HOME}/${SERVICE_NAME}.out 2>&1 & echo $! > $PIDFILE
+    # change owner of the files, since we want the log files to be owned by the same user as the executor
+    chown ${RUN_AS}:${RUN_AS} ${NEO4J_HOME}/${SERVICE_NAME}.out
+    RETVAL=0
+}
+
+stop() {
+    /bin/su - ${RUN_AS} -c "${BASE_CMD} stop"
+    /bin/rm -f ${LOCKFILE}
+    RETVAL=0
+}
+
+case "$1" in
+    start)
+        shift
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        shift
+        start
+        ;;
+    status)
+        /bin/su - ${RUN_AS} -c "${BASE_CMD} status"
+        RETVAL=$?
+        ;;
+    *)
+        echo "Usage: ${0} {start|stop|restart|status}"
+esac
+#exit ${RETVAL}
+        

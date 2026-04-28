@@ -1,0 +1,5 @@
+---
+tmp_dmp_directory: /u02/data_dmp/
+dmp_archive: database-dmp-{{ version }}.tar.gz
+script_archive: database-{{version}}-scripts.tar.gz
+nexus_gold_repository: goldData_storage

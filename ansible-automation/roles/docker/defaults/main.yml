@@ -1,0 +1,31 @@
+---
+docker_dist_version: ee
+docker_package_name: "docker-{{ docker_dist_version }}"
+docker_cli_package_name: "docker-{{ docker_dist_version }}-cli"
+
+docker_present_packages:
+  - "{{ docker_package_name }}"
+  - "{{ docker_cli_package_name }}"
+
+docker_latest_packages:
+  - python2-urllib3
+  - python-docker-py
+  - container-selinux
+  - containerd.io
+
+docker_latest_state: present
+
+docker_daemon_template_name: daemon_template
+docker_daemon_file_name: daemon.json
+docker_daemon_target_dir: /etc/docker
+docker_daemon_target_filename: daemon.json
+
+docker_daemon_additions: 'prod'
+docker_daemon_additions_list: "{{ daemon_additions_dict[docker_daemon_additions] }}"
+
+daemon_additions_dict:
+  dev:
+   - '"debug": true,'
+   - '"live-restore": true,'
+   - '"insecure-registries" : ["10.10.10.89:5000", "10.10.10.82:5000"],'
+  prod:

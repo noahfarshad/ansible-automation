@@ -1,0 +1,53 @@
+---
+# tasks file for manage_dnsmasq — present
+
+#Verify the user specified dnsmasq_services_action is valid
+- assert:
+    that:
+      - dnsmasq_services_action is defined
+      - dnsmasq_services_action in valid_dnsmasq_services_actions
+    msg: "Action {{ dnsmasq_services_action }} is invalid. Must be one of: {{ valid_dnsmasq_services_actions }}"
+
+#Uninstall
+- name: "Uninstall {{ dnsmasq_name }}"
+  include: uninstall_dnsmasq.yml
+
+  become_user: root
+  when: >
+    dnsmasq_services_action == "reinstall"
+    or dnsmasq_services_action == "uninstall"
+
+#Install
+- name: "Install {{ dnsmasq_name }}"
+  include: install_dnsmasq.yml
+
+  become_user: root
+  when: >
+    dnsmasq_services_action == "reinstall"
+    or dnsmasq_services_action == "install"
+
+#Configure
+- name: "Configure {{ dnsmasq_name }}"
+  include: configure_dnsmasq.yml
+
+  become_user: root
+  when: >
+    dnsmasq_services_action == "reinstall"
+    or dnsmasq_services_action == "install"
+    or dnsmasq_services_action == "configure"
+
+#Restart Service
+- include_role:
+    name: service_management/restart_linux_service_java_app_with_port
+
+  become_user: root
+  vars:
+    service_name: "{{dnsmasq_name}}"
+    service_dir: "{{dnsmasq_pid_dir}}"
+    port_number: "{{dnsmasq_port_number}}"
+    service_java_home: ""
+  when: >
+    dnsmasq_services_action == "restart"
+    or dnsmasq_services_action == "install"
+    or dnsmasq_services_action == "reinstall"
+    or dnsmasq_services_action == "configure"

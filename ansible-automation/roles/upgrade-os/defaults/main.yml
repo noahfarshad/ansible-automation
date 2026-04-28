@@ -1,0 +1,12 @@
+---
+# defaults file for upgrade-os
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# cfg_name: ""
+# firmware_image: ""
+# ifc_current: ""
+# name: ""
+# released_os: ""
+# site: ""

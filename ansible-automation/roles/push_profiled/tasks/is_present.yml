@@ -1,0 +1,37 @@
+---
+- name: copy profile.d archive file to target host
+  remote_user: admin_local
+  become: true
+  become_method: sudo
+  become_user: root
+  ansible.builtin.copy:
+    src: "{{profiled_src_file}}"
+    dest: /tmp/
+    owner: root
+    ansible.builtin.group: root
+    mode: 0750
+
+- name: unarchive profile.d.tar.gz
+  remote_user: admin_local
+  become: true
+  become_method: sudo
+  become_user: root
+  ansible.builtin.unarchive:
+    src: /tmp/profile.d.tar.gz
+    dest: /etc/
+    owner: root
+    ansible.builtin.group: root
+    mode: 0755
+    remote_src: yes
+
+- name: copy master profile file to /etc/
+  remote_user: admin_local
+  become: true
+  become_method: sudo
+  become_user: root
+  ansible.builtin.copy:
+    src: profile
+    dest: /etc/
+    owner: root
+    ansible.builtin.group: root
+    mode: 0644

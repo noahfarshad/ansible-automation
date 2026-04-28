@@ -1,0 +1,7 @@
+  <admin-server-name>AdminServer</admin-server-name>
+  <wldf-system-resource>
+    <name>Module-HealthState</name>
+    <descriptor-file-name>diagnostics/Module-HealthState-1900.xml</descriptor-file-name>
+    <description/>
+  </wldf-system-resource>
+

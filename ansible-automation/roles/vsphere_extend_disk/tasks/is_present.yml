@@ -1,0 +1,61 @@
+---
+# tasks file for vsphere_extend_disk
+- name: Create annotation text
+  ansible.builtin.set_fact:
+    annotation_text: |
+      Built by vRA
+      Time: {{ lookup('pipe','date') }}
+      Type: {{ short_hostname }}
+      Source Template : {{ template_name }}
+      OS: {{ ansible_os_family }}
+
+- name: Add annotation text to VM
+  become: false
+  community.vmware.vmware_guest:
+    ansible.builtin.hostname: "{{vcenter_hostname}}"
+    username: "{{vsphere_account}}"
+    password: "{{vsphere_password}}"
+    validate_certs: no
+    datacenter: "{{vsphere_datacenter}}"
+    datastore: "{{vsphere_datastore}}"
+    state: present
+    folder: "{{vsphere_folder}}"
+    ansible.builtin.template: "{{template_name}}"
+    name: "{{inventory_hostname}}"
+    annotation: "{{ annotation_text }}"
+    cluster: "{{vsphere_cluster}}"
+    wait_for_ip_address: yes      
+  retries: 5      
+  delegate_to: localhost
+
+- name: extend virtual disk to vm
+  become: false
+  vmware_guest_disk:
+    ansible.builtin.hostname: "{{vcenter_hostname}}"
+    username: "{{vsphere_account}}"
+    password: "{{vsphere_password}}"
+    validate_certs: no
+    datacenter: "{{vsphere_datacenter}}"
+    folder: "{{vsphere_folder}}"
+    name: "{{inventory_hostname}}"
+    disk:
+      - size_gb: "{{disk_gb}}"
+        scsi_type: "{{scsi_type}}"
+        type: "{{disk_type}}"
+        datastore: "{{disk_datastore}}"
+        scsi_controller: "{{disk_scsi_controller}}"
+        unit_number: "{{disk_scsi_unit}}"
+        # state: present
+  delegate_to: localhost
+
+- name: Wait for VMware tools to become available VM
+  community.vmware.vmware_guest_tools_wait:
+    ansible.builtin.hostname: "{{vcenter_hostname}}"
+    username: "{{vsphere_account}}"
+    password: "{{vsphere_password}}"
+    validate_certs: no
+    name: "{{inventory_hostname}}"
+    folder: "{{vsphere_folder}}"
+    datacenter: "{{vsphere_datacenter}}"
+  delegate_to: localhost
+  register: facts

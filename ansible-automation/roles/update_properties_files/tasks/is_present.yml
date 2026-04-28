@@ -1,0 +1,24 @@
+---
+# tasks file for update_properties_files — present
+
+- name: "Update properties files"
+  become: true
+  become_user: app_admin
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ app_share }}/app/application_config"
+    owner: app_admin
+    ansible.builtin.group: app_admin
+    mode: 0600
+  loop:
+    - Servers.properties
+    - app.properties
+    - udop.properties
+
+- name: "Update server identity"
+  become: true
+  become_user: app_admin
+  ansible.builtin.replace:
+    path: "{{ gc2_global_config }}/serveridentity.properties"
+    regexp: "{{ server_identity_regexp }}"
+    ansible.builtin.replace: "{{ server_identity }}"

@@ -1,0 +1,16 @@
+Defaults:NAGIOS_USERS !requiretty
+
+User_Alias  NAGIOS_USERS = nagios,nrpe
+
+NAGIOS_USERS      ALL=(ALL)   NOPASSWD:    /usr/lib64/nagios/plugins/
+NAGIOS_USERS      ALL=(ALL)   NOPASSWD:    /usr/sbin/hpacucli
+NAGIOS_USERS      ALL=(ALL)   NOPASSWD:    /usr/sbin/hpssacli
+NAGIOS_USERS      ALL=(ALL)   NOPASSWD:    /usr/sbin/ssacli
+NAGIOS_USERS      ALL=(ALL)   NOPASSWD:    /sbin/hpasmcli
+NAGIOS_USERS      ALL=(ALL)   NOPASSWD:    /usr/sbin/dmidecode
+NAGIOS_USERS      ALL=(ALL)   NOPASSWD:    /root/bin/decrypt-fence
+NAGIOS_USERS      ALL=(ALL)   NOPASSWD:    /sbin/multipath -l
+NAGIOS_USERS      ALL=(ALL)   NOPASSWD:    /usr/lib64/nagios/plugins/check_file.pl
+
+# Required for SCS Broker Checks, runs as j2eeadmin user
+NAGIOS_USERS      ALL=(j2eeadmin)   NOPASSWD:   /opt/apps/jmxeval/jmx_master_script

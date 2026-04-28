@@ -1,0 +1,8 @@
+---
+- name: "Creating service file for {{ service_name }}"
+  become: true
+  ansible.builtin.template:
+    src: "service_template.j2"
+    dest: "{{ service_file_path }}"
+    mode: 0644
+  notify: Reload Systemd

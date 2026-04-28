@@ -1,0 +1,10 @@
+---
+# defaults file for join_domain_rhel
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# domain_ou_path: ""
+# domain_password: ""
+# domainadmin_user: ""
+# system_name: ""

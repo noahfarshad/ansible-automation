@@ -1,0 +1,14 @@
+ntp_config_template: ntp_template.conf
+ntp_template_dest: /etc/ntp.conf
+ntp_rpm_version: 'latest'
+
+ntp_template_additions:
+  client:
+    additions:
+      - "server time"
+  server:
+    additions:
+      - "server 127.127.1.0"
+      - "fudge 127.127.1.0 stratum 10"
+
+ntp_additions: "{{ ntp_template_additions['client']['additions'] }}"

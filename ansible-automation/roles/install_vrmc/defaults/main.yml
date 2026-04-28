@@ -1,0 +1,4 @@
+---
+# defaults file for install_vmrc
+vmrcOLD: "16e849.msi"
+VMRC_install_loc: "C:\\Windows\\Installer\\"

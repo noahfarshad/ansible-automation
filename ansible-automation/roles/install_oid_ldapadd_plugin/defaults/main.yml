@@ -1,0 +1,7 @@
+---
+plugin_name: "NewUserPlugin"
+force_replace: 'true'
+oid_plugins_directory: "/opt/Oracle/Middleware/Oracle_IDM1/ldap/server/plugin/"
+oid_service: "ora_oid"
+ldap_bin: "/opt/Oracle/Middleware/Oracle_IDM1/bin/"
+idm_oracle_home: "/opt/Oracle/Middleware/Oracle_IDM1"

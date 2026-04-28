@@ -1,0 +1,99 @@
+---
+# tasks file for detect_java — present
+
+# This role detects whether a specified version of java is installed at a specified path
+# Used in combination with a when statement in a playbook to trigger an action, such as the installation of java
+# The path, major and/or minor versions may be specified when calling the role to override the defaults
+#
+# -- Ansible Version Dependencies --
+# In a when statement use 'version' instead of 'version_compare' if running Ansible 2.5 or greater
+#
+# -- Example 1 --
+#  ### Installs Java8 if it is not detected, or if the detected major version number does not exactly match what was designated
+#  roles:
+#    - role: common/detect_java
+#      detect_java_path: /opt/Oracle/java
+#      detect_java_major_version: 1.8.0
+#    - role: installers/install_java8
+#      when: (detected_java_major_version == "notfound") or (detected_java_major_version | version_compare(detect_java_major_version, 'ne'))
+#
+# -- Example 2 --
+#  ### Installs Java8 if it is not detected, or if the detected major version number is less than designated, or if the detected major version is equal but the detected minor version is less than designated
+#  roles:
+#    - role: common/detect_java
+#      detect_java_path: /opt/Oracle/java
+#      detect_java_major_version: 1.8.0
+#      detect_java_minor_version: 191
+#    - role: installers/install_java8
+#      when: (detected_java_major_version == "notfound") or (detected_java_major_version | version_compare(detect_java_major_version, 'lt')) or ((detected_java_major_version | version_compare(detect_java_major_version, 'eq')) and (detected_java_minor_version | version_compare(detect_java_minor_version, 'lt')))
+#
+# -- Example 3 --
+#  ### Installs Java8 if it is not detected, or if the detected major version number is less than designated, or if the detected major version is equal but the detected minor version is less than designated, or if a Java JDK is not present
+#  roles:
+#    - role: common/detect_java
+#      detect_java_path: /opt/Oracle/java
+#      detect_java_major_version: 1.8.0
+#      detect_java_minor_version: 191
+#    - role: installers/install_java8
+#      when: (detected_java_jdk == "false") or (detected_java_major_version == "notfound") or (detected_java_major_version | version_compare(detect_java_major_version, 'lt')) or ((detected_java_major_version | version_compare(detect_java_major_version, 'eq')) and (detected_java_minor_version | version_compare(detect_java_minor_version, 'lt')))
+
+
+# Get the installed java jre version, example 1.8.0_191
+- name: Detect Java jre major version in {{detect_java_path}}
+  become: true
+  become_user: "{{app_user}}"
+  ansible.builtin.shell: "{{detect_java_path}}/bin/java -version 2>&1 | head -n 1 | cut -d'\"' -f2"
+  register: detected_java_version
+
+# Get the installed java jdk version, example 1.8.0_191
+  # TODO: review changed_when for: {{detect_java_path}}/bin/java -version 2>&1 | head -n 1 | cu
+- name: Detect Java jdk major version in {{detect_java_path}}
+  become: true
+  become_user: "{{app_user}}"
+  ansible.builtin.shell: "{{detect_java_path}}/bin/javac -version 2>&1 | head -n 1 | cut -d'\ ' -f2"
+  register: detected_java_jdk_version
+
+# Fail if java jre and jdk versions do not match
+# The JRE version should always match the JDK version if a JDK is present
+  # TODO: review changed_when for: {{detect_java_path}}/bin/javac -version 2>&1 | head -n 1 | c
+- name: Compare java jre and jdk versions
+  ansible.builtin.fail:
+    msg: "The Java jre version {{detected_java_version}} does not match the jdk version {{detected_java_jdk_version}}"
+  when: '"_" in detected_java_jdk_version.stdout and detected_java_version.stdout != detected_java_jdk_version.stdout'
+
+# These facts default to notfound but will be changed if java is detected
+- name: Set Java default facts
+  ansible.builtin.set_fact:
+    detected_java_major_version: "notfound"
+    detected_java_minor_version: "notfound"
+    detected_java_jdk: "false"
+
+- name: Set Java major version fact
+  ansible.builtin.set_fact:
+    detected_java_major_version: "{{detected_java_version.stdout.split('_')[0]}}"
+  when: '"_" in detected_java_version.stdout'
+
+- name: Set Java minor version fact
+  ansible.builtin.set_fact:
+    detected_java_minor_version: "{{detected_java_version.stdout.split('_')[1]}}"
+  when: '"_" in detected_java_version.stdout'
+
+- name: Set Java jdk presence fact
+  ansible.builtin.set_fact:
+    detected_java_jdk: "true"
+  when: '"_" in detected_java_jdk_version.stdout'
+
+# The JDK is not always expected to be present, let us know if it is present
+- name: Display message when Java jdk is detected
+  ansible.builtin.debug:
+    msg: "Java jdk was detected in {{detect_java_path}}"
+  when: '"_" in detected_java_jdk_version.stdout'
+
+- name: Display message if Java jre not detected
+  ansible.builtin.debug:
+    msg: "Java jre was not detected in {{detect_java_path}}"
+  when: '"_" not in detected_java_version.stdout'
+
+- name: Display detected Java version info
+  ansible.builtin.debug:
+    msg: "Major: {{detected_java_major_version}}  Minor: {{detected_java_minor_version}}"

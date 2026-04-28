@@ -1,0 +1,24 @@
+---
+# tasks file for enable_jsse — present
+
+- name: Copy files into place
+  become: true
+  become_user: app_admin
+  ansible.builtin.copy:
+    src: "{{ssl_script}}"
+    dest: "{{target_ssl_script_path}}"
+
+- name: Modify admin server to utilize JSSE
+  become: true
+  become_user: app_admin
+  ansible.builtin.shell: "{{wlst_path}} {{target_ssl_script_path}}/{{ssl_script}} {{item}}"
+  loop:
+    '{{domains}}'
+
+  # TODO: review changed_when for: {{wlst_path}} {{target_ssl_script_path}}/{{ssl_script}} {{it
+- name: Cleanup JSSE scripts
+  become: true
+  become_user: app_admin
+  ansible.builtin.file:
+    state: absent
+    path: "{{target_ssl_script_path}}/{{ssl_script}}"

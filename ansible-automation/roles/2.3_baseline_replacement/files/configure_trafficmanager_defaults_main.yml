@@ -1,0 +1,113 @@
+---
+# Username and password are vault vars.
+traffic_manager_port: 9070
+restapi_version: 7.0
+traffic_manager_string: localhost
+traffic_manager_temp: /tmp/traffic_manager/
+
+# Traffic IP groups
+# external_rel_ip not included and is currently commented out inside inventory file.
+traffic_ip_groups:
+  system_gateway_group:
+    group_name: System_Gateway_IP
+    ipaddress: "192.168.0.9"
+  external_group:
+    group_name: External_IP
+    ipaddress: "{{external_ip[0]}}"
+  external_gems_group:
+    group_name: External_GEMS_IP
+    ipaddress: "{{external_gems_ip[0]}}"
+  internal_application_group:
+    group_name: Internal_Application_IP
+    ipaddress: "192.168.0.10"
+  external_aoc_group:
+    group_name: External_AOC_IP
+    ipaddress: "{{external_aoc_ip[0]}}"
+  gc2_rel_dagr_ip:
+    group_name: GC2_REL_DAGR_IP
+    ipaddress: "{{external_rel_ip[0]}}"
+
+# Traffic manager pools
+traffic_manager_pools:
+  gc2_pool:
+    pool_name: GAP_CIE_2_Pool
+    pool_nodes:
+      - 192.168.0.151:7201
+      - 192.168.0.152:7201
+  gc2_web_services_pool:
+    pool_name: GC2_Web_Services_Pool
+    pool_nodes:
+      - 192.168.0.182:7301
+      - 192.168.0.183:7301
+  web_https_pool:
+    pool_name: Web_HTTPS_Pool
+    pool_nodes:
+      - 192.168.0.191:443
+  web_https_admin_pool:
+    pool_name: Web_HTTPS_Admin_Pool
+    pool_nodes:
+      - 192.168.0.191:8889
+  gc2_rel_dagr_app_pool:
+    pool_name: GC2_REL_DAGR_App_Pool
+    pool_nodes:
+      - 192.168.0.191:8443
+  gc2_rel_dagr_pool:
+    pool_name: GC2_REL_DAGR_Pool
+    pool_nodes:
+      - 192.168.0.191:8890
+  gc2_filter_group_pool:
+    pool_name: GC2_Filter_Group_Pool
+    pool_nodes:
+      - 192.168.0.181:7201
+
+# Traffic manager virtual servers
+traffic_manager_virtual_servers:
+  gc2_vs:
+    vs_name: GAP_CIE_2_VS
+    vs_protocol: http
+    vs_port: 10020
+    pool: "{{traffic_manager_pools.gc2_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  external_https_vs:
+    vs_name: External_HTTPS_VS
+    vs_protocol: https
+    vs_port: 443
+    pool: "{{traffic_manager_pools.web_https_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.external_group}}"
+  external_https_admin_vs:
+    vs_name: External_HTTPS_Admin_VS
+    vs_protocol: https
+    vs_port: 8889
+    pool: "{{traffic_manager_pools.web_https_admin_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.external_group}}"
+  gc2_web_services_vs:
+    vs_name: GC2_Web_Services_VS
+    vs_protocol: http
+    vs_port: 10004
+    pool: "{{traffic_manager_pools.gc2_web_services_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"
+  gc2_rel_dagr_app_vs:
+    vs_name: GC2_REL_DAGR_App_VS
+    vs_protocol: https
+    vs_port: 443
+    pool: "{{traffic_manager_pools.gc2_rel_dagr_app_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.gc2_rel_dagr_ip}}"
+  gc2_rel_dagr_vs:
+    vs_name: GC2_REL_DAGR_VS
+    vs_protocol: https
+    vs_port: 8890
+    pool: "{{traffic_manager_pools.gc2_rel_dagr_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.gc2_rel_dagr_ip}}"
+  gc2_filter_group_vs:
+    vs_name: GC2_Filter_Group_VS
+    vs_protocol: http
+    vs_port: 11021
+    pool: "{{traffic_manager_pools.gc2_filter_group_pool}}"
+    listen_on_any: false
+    groups: "{{traffic_ip_groups.internal_application_group}}"

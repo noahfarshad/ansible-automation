@@ -1,0 +1,14 @@
+---
+# tasks file for enable_tls_win7 — absent
+#
+# This role runs Windows commands (win_shell / win_command). Determining
+# the correct rollback for shell-driven Windows operations requires
+# environment-specific knowledge.
+#
+# Default behavior: no-op with explanatory debug message.
+
+- name: "enable_tls_win7 — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      The 'absent' state for role 'enable_tls_win7' is intentionally not implemented.
+      Edit tasks/is_absent.yml to add Windows rollback steps if needed.

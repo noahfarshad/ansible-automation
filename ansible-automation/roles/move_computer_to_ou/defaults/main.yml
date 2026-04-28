@@ -1,0 +1,9 @@
+---
+# defaults file for move_computer_to_ou
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# system: ""
+# users: ""
+# vmware: ""

@@ -1,0 +1,22 @@
+  - name: Power On VM
+    delegate_to: localhost
+    vmware_guest_powerstate:
+      ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+      username: "{{ users.vcenter_admin_user }}"
+      password: "{{ users.vcenter_admin_password }}"
+      name: "{{ inventory_hostname }}"
+      state: powered-on
+      validate_certs: no
+  - name: Wait for Confirmation of vmwareGuestTools Running
+    delegate_to: localhost
+    community.vmware.vmware_guest_info:
+      ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+      username: "{{ users.vcenter_admin_user }}"
+      password: "{{ users.vcenter_admin_password }}"
+      datacenter: "{{ vmware.datacenter }}"
+      validate_certs: no
+      name: "{{ inventory_hostname }}"
+    register: facts
+    delay: 60
+    retries: 5 
+    until: facts.instance.guest_tools_status == "guestToolsRunning"

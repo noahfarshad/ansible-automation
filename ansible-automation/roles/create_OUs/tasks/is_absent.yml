@@ -1,0 +1,17 @@
+---
+# tasks file for create_OUs — absent
+
+- name: Set environment color for IFC if even
+  ansible.builtin.set_fact:
+    color: 'BLUE'
+  when: ifc[-1::] | int % 2 == 0
+
+- name: Set environment color for IFC if odd
+  ansible.builtin.set_fact:
+    color: 'GREEN'
+  when: ifc[-1::] | int % 2 != 0
+
+- name: Remove OU
+  microsoft.ad.ou:
+    name: '{{ domain_ou | upper }}_{{ color }}'
+    state: absent

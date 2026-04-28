@@ -1,0 +1,9 @@
+---
+# defaults file for reboot_windows_post_patch
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# domain_password: ""
+# domainadmin_user: ""
+# system_name: ""

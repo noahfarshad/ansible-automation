@@ -1,0 +1,12 @@
+---
+# tasks file for remove_java8_compiler — present
+
+- name: Remove Java Compiler
+  become: true
+  become_user: "{{java_owner}}"
+  ansible.builtin.file:
+    state: absent
+    path: "{{java_install_directory}}/bin/javac"
+  tags:
+    - java_compiler
+

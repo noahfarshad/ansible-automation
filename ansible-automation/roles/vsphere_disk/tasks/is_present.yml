@@ -1,0 +1,22 @@
+---
+# tasks file for vsphere_disk
+
+- name: add virtual disk to vm
+  become: false
+  vmware_guest_disk:
+    ansible.builtin.hostname: "{{vsphere_hostname}}"
+    username: "{{vsphere_account}}"
+    password: "{{vsphere_password}}"
+    validate_certs: no
+    datacenter: "{{vsphere_datacenter}}"
+    name: "{{inventory_hostname}}"
+    disk:
+      - size_gb: "{{item.disk_gb}}"
+        type: "{{item.disk_type}}"
+        datastore: "{{item.disk_datastore}}"
+        scsi_controller: "{{ item.disk_scsi_controller }}"
+        unit_number: "{{ item.disk_scsi_unit }}"
+        state: present
+  loop: "{{add_virtual_disks}}"
+  when: add_virtual_disks is defined
+  delegate_to: localhost

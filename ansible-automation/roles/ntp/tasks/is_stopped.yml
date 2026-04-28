@@ -1,0 +1,5 @@
+- name: Stop NTP
+  become: true
+  ansible.builtin.systemd:
+    name: "ntpd"
+    state: stopped

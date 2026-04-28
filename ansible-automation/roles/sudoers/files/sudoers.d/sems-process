@@ -1,0 +1,6 @@
+User_Alias      PROCESS_ADMIN =           +un_sems-cm, +un_sems-wdd, +un_tads-wdd, +un_tads-cm
+
+Runas_Alias     PROCESS_APPACCT =         process
+
+
+PROCESS_ADMIN ALL = (PROCESS_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL

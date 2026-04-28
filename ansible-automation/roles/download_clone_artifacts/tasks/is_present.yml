@@ -1,0 +1,16 @@
+---
+# tasks file for download_clone_artifacts — present
+
+# Create Staging directory if it does not exist
+  - name: Create string staging directory if it does not exist.
+    ansible.builtin.file:
+      path: "{{staging}}"
+      state: directory
+      mode: 0755
+
+# Download infrastructure repo
+  - name: Clone infrastructure repository
+    hg:
+      repo: "{{infra_vm_scm}}"
+      dest: "{{staging}}/infravm-internal"
+      force: yes

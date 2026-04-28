@@ -1,0 +1,1 @@
+/ess/data/vw/replicator -fstype=fuse,ro,allow_other,default_permissions,compression=no,cache=yes,IdentityFile=/home/vwadmin/.ssh/id_rsa :sshfs\#vwadmin@ess-nas-03p\:/ess/data/vw/replicator

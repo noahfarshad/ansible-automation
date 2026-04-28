@@ -1,0 +1,40 @@
+---
+# tasks file for cis_benchmark_check — present
+
+    
+- name: Copy cis_benchmark scripts to target
+  become: true
+  ansible.builtin.copy:
+    src: "{{item}}" 
+    dest: "{{target_dir}}/{{item}}"
+    mode: 0750
+  loop:
+    - "{{cis_script_parent_dir_name}}/"
+  tags:
+    - keycloak.check.config.cis
+    
+- name: Run cis_benchmark script
+  become: true
+  ansible.builtin.shell: "cd {{target_dir}}/{{cis_script_parent_dir_name}}; ./{{docker_cis_benchmark_script_name}}"
+  tags:
+    - keycloak.check.config.cis
+
+  # TODO: review changed_when for: cd {{target_dir}}/{{cis_script_parent_dir_name}}; ./{{docker
+- name: Retrieve the results of the benchmark scan
+  ansible.builtin.fetch:
+     src: "{{target_dir}}/{{cis_script_parent_dir_name}}/{{item}}"
+     dest: "{{results_fetch_dir}}/{{item}}"
+     fail_on_missing: yes
+     flat: yes
+  loop:
+    - "{{scan_artifact}}"
+  tags:
+    - keycloak.check.config.cis
+    
+- name: Remove the cis_benchmark directory and files
+  become: true
+  ansible.builtin.file:
+    path: "{{target_dir}}/{{item}}"
+    state: absent
+  loop:
+    - "{{cis_script_parent_dir_name}}/"    

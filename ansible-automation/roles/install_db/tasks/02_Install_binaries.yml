@@ -1,0 +1,60 @@
+---
+
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+- name: move and unzip Installation_files
+  become: true
+  ansible.builtin.unarchive:
+    src: "{{staging}}/{{item.1}}-{{item.0.db_version}}.{{item.0.ext}}"
+    dest: "{{unzip_directory}}"
+    owner: "{{oracle_owner}}"
+    ansible.builtin.group: "{{oracle_group}}"
+    mode: 0755
+  with_subelements:
+    - "{{installation_files}}"
+    - files
+
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+- name: Copy over response files
+  become: true
+  ansible.builtin.template:
+     src: "{{item}}"
+     dest: "{{unzip_directory}}"
+     owner: "{{oracle_owner}}"
+     ansible.builtin.group: "{{oracle_group}}"
+     mode: 0755
+  loop:
+     - db-1.0.rsp
+     - dbca-1.0.rsp
+     - netca-1.0.rsp
+
+# Get a Time Hak
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+##Need to add verbosity and log file here
+- name: Run install
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: |
+    /var/tmp/database/runInstaller -silent  -responseFile /var/tmp/db-1.0.rsp |
+    while read l ;
+    do
+      echo "$l" ;
+    done
+    << EOF
+
+  # TODO: review changed_when for: /var/tmp/database/runInstaller -silent  -responseFile /var/t
+- name: Run root.sh script
+  become: true
+  ansible.builtin.shell: /opt/oracle/app/ora_rmt/product/12.1.0/root.sh
+
+  # TODO: review changed_when for: /opt/oracle/app/ora_rmt/product/12.1.0/root.sh
+- name: Reset permissions on /etc/sysctl.conf
+  become: true
+  ansible.builtin.file:
+    path: /etc/sysctl.conf
+    mode: 0600
+
+# Get a Time Hak
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"

@@ -1,0 +1,17 @@
+#
+# Don't use sudo aliases - it messes up the Ansible validation command and is largely unneeded with Ansible doing the sudo management
+#  Just list the required sudo command
+#
+#
+
++un_sems-afwwebs  ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-cm  ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-afwwebs        ALL=(root) /bin/systemctl start hapee-2.6-lb, /bin/systemctl stop hapee-2.6-lb, /bin/systemctl restart hapee-2.6-lb, /bin/systemctl status hapee-2.6-lb, /bin/journalctl -u hapee-2.6-lb, /bin/systemctl reload hapee-2.6-lb
++un_sems-afwwebs        ALL=(root) /bin/systemctl start hapee-extras-vrrp, /bin/systemctl stop hapee-extras-vrrp, /bin/systemctl restart hapee-extras-vrrp, /bin/systemctl status hapee-extras-vrrp, /bin/systemctl enable hapee-extras-vrrp
++un_sems-afwwebs        ALL=(root) /bin/systemctl start hapee-extras-stktagg, /bin/systemctl stop hapee-extras-stktagg, /bin/systemctl restart hapee-extras-stktagg, /bin/systemctl status hapee-extras-stktagg
+
++un_tads-afwwebs  ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-cm  ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-afwwebs        ALL=(root) /bin/systemctl start hapee-2.6-lb, /bin/systemctl stop hapee-2.6-lb, /bin/systemctl restart hapee-2.6-lb, /bin/systemctl status hapee-2.6-lb, /bin/journalctl -u hapee-2.6-lb, /bin/systemctl reload hapee-2.6-lb
++un_tads-afwwebs        ALL=(root) /bin/systemctl start hapee-extras-vrrp, /bin/systemctl stop hapee-extras-vrrp, /bin/systemctl restart hapee-extras-vrrp, /bin/systemctl status hapee-extras-vrrp, /bin/systemctl enable hapee-extras-vrrp
++un_tads-afwwebs        ALL=(root) /bin/systemctl start hapee-extras-stktagg, /bin/systemctl stop hapee-extras-stktagg, /bin/systemctl restart hapee-extras-stktagg, /bin/systemctl status hapee-extras-stktagg

@@ -1,0 +1,2 @@
+# Configuration for SSHFS mounted filesystems
+/-          /etc/auto.sshfs

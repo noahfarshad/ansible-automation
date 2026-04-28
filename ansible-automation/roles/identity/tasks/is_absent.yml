@@ -1,0 +1,5 @@
+- name: Remove identity directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ identity_directory_target.path }}"
+    state: absent

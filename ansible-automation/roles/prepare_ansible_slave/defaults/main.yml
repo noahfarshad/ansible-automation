@@ -1,0 +1,4 @@
+---
+# defaults file for prepare_ansible_slave
+#
+# Items come from a `loop:` in is_present.yml; no role-level defaults required.

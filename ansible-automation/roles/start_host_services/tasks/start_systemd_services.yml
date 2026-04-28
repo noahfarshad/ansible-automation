@@ -1,0 +1,11 @@
+- name: "Starting Systemd Services"
+  become: true
+  become_user: "{{ service_user }}"
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    enabled: yes
+    name: "{{ item }}"
+    state: started
+  loop:
+      - "{{ systemd_services }}"
+  when: systemd_services is defined and systemd_services is not none and systemd_services|length>0

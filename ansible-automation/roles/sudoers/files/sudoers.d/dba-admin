@@ -1,0 +1,10 @@
+#
+#       Changes per SA-6222 and SA-6224 to allow un_sys-dba team to admin oracle
+#       The host list is for both RHEL5 & RHEL6 hosts
+#	The RHEL5 version of the file does not have the LOG_*: flags
+#	
+User_Alias DBA_TEAM = +un_sys-dba
+
+Runas_Alias ORACLE_APPADMIN = oracle
+
+DBA_TEAM ALL = (ORACLE_APPADMIN) LOG_INPUT: LOG_OUTPUT: ALL

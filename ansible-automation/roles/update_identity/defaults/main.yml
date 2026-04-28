@@ -1,0 +1,6 @@
+---
+      apache_cas_path: 'apache_cas'
+      cacerts_path: 'cacerts'
+      identity_path: 'identity.jks'
+      wlwallet_p12_path: 'ewallet.p12'
+      wlwallet_sso_path: 'cwallet.sso'

@@ -1,0 +1,117 @@
+---
+# tasks file for configure_ns — present
+
+# This role creates the db.string.local and db.10.100 files from jinja templates located in /templates
+# It determines current string by parsing the NS01-# hostname
+# The DNS table is built from reading group names matching string_#_physical and string_# and using the ip var from the hostname 
+
+- name: infra_dns_server_01 exists
+  ansible.builtin.assert:
+    that: "infra_dns_server_01 is defined"
+    fail_msg: "infra_dns_server_01 undefined, please add to system_vars.yml and rebuild config"
+  tags: ["assert"]
+
+- name: infra_dns_server_02 exists
+  ansible.builtin.assert:
+    that: "infra_dns_server_02 is defined" 
+    fail_msg: "infra_dns_server_02 undefined, please add to system_vars.yml and rebuild config"
+
+- name: Configure NS 
+  become: true
+  block:
+  
+  - name: install bind
+    ansible.builtin.yum:
+      name: "{{ packages }}"
+      state: present
+    vars:
+      packages:
+      - bind
+      - bind-utils
+
+  - name: create directories
+    ansible.builtin.file:
+      path: /etc/named/zones
+      state: directory
+
+  - name: set permissions
+    ansible.builtin.file: 
+      path: /etc/named
+      state: directory
+      mode: '0755'
+
+  - name: load /etc/named.conf configuration
+    ansible.builtin.copy: 
+      src: /mnt/software/deploy/ns01/named.conf
+      dest: /etc/named.conf
+      force: yes
+
+  - name: load /etc/named/named.conf.local configuration
+    ansible.builtin.copy: 
+      src: /mnt/software/deploy/ns01/named.conf.local
+      dest: /etc/named/named.conf.local
+
+  - name: Create ns01 db.string.local
+    ansible.builtin.template:
+      src: 'templates/db.string.j2'
+      dest: '/etc/named/zones/db.string.local'
+      force: yes
+    vars:
+      current_string: "{{ inventory_hostname_short.split('-')[-1] }}"
+
+  - name: Create ns01 db.10.100 
+    ansible.builtin.template:
+      src: 'templates/db.10.100.j2'
+      dest: '/etc/named/zones/db.10.100'
+      force: yes
+    vars:
+      current_string: "{{ inventory_hostname_short.split('-')[-1] }}"
+     
+  - name: modify forwarder configuration in /etc/named.conf for dcserver01
+    ansible.builtin.replace:
+      path: /etc/named.conf
+      regexp: '#DCSERVER01'
+      ansible.builtin.replace: "{{ infra_dns_server_01 }};"
+
+  - name: modify forwarder configuration in /etc/named.conf for dcserver02
+    ansible.builtin.replace:
+      path: /etc/named.conf
+      regexp: '#DCSERVER02'
+      ansible.builtin.replace: "{{ infra_dns_server_02 }};"
+
+  - name: check configuration
+    ansible.builtin.shell: named-checkconf
+
+  - name: start bind and register at boot
+    ansible.builtin.systemd:
+      state: started
+      name: named 
+      enabled: yes
+
+  - name: open firewall
+    firewalld:
+      ansible.builtin.service: dns
+      zone: public
+      permanent: yes
+      state: enabled
+
+  - name: Change DNS1 to point to itself
+    ansible.builtin.ini_file:
+      path: /etc/sysconfig/network-scripts/ifcfg-ens192
+      option: DNS1
+      value: "{{ hostvars[ inventory_hostname ].networking.interfaces[0].ip }}" 
+      section: null
+
+  - name: Change DNS2 to point to DCServer2
+    ansible.builtin.ini_file:
+      path: /etc/sysconfig/network-scripts/ifcfg-ens192
+      option: DNS2
+      value: "{{ infra_dns_server_02 }}" 
+      section: null
+
+  - name: Reset Network Settings
+    ansible.builtin.systemd:
+      name: network
+      state: restarted
+       
+    changed_when: false

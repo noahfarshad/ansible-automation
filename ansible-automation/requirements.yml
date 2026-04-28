@@ -1,0 +1,37 @@
+---
+# requirements.yml
+#
+# Galaxy collections required by the bundled role library and the playbooks here.
+# Installed by `make install` or `./scripts/setup.sh`.
+#
+# Note: the role library (350 roles in roles/) is bundled directly in this
+# repo — there's no separate role dependency to fetch.
+
+collections:
+  # Core Ansible content
+  - name: ansible.posix
+    version: ">=1.5.0"
+  - name: ansible.windows
+    version: ">=2.1.0"
+  - name: ansible.utils
+    version: ">=2.10.0"
+
+  # Community modules
+  - name: community.general
+    version: ">=8.0.0"
+  - name: community.windows
+    version: ">=2.0.0"
+  - name: community.crypto
+    version: ">=2.15.0"
+
+  # vSphere VM creation (used by build_*_vm.yml)
+  - name: community.vmware
+    version: ">=4.0.0"
+
+  # Microsoft AD (used by Windows domain-join)
+  - name: microsoft.ad
+    version: ">=1.4.0"
+
+  # Docker (optional — only used by app-tier playbooks)
+  - name: community.docker
+    version: ">=3.10.0"

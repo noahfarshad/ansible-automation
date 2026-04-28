@@ -1,0 +1,6 @@
+---
+# handlers file for push_systemd
+- name: reload daemon
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true

@@ -1,0 +1,9 @@
+---
+# defaults file for certificates
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# files_to_copy: ""
+# group_name: ""
+# passphrase_name: ""

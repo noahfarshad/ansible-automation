@@ -1,0 +1,54 @@
+---
+# playbooks/linux/configure_appserver.yml
+#
+# Configures a Linux application server (JVM-based). Runs after build_linux_vm.yml.
+#
+# Usage:
+#   make linux-app HOST=app01.example.coach
+
+- name: Configure application server
+  hosts: appservers
+  gather_facts: true
+  become: true
+  vars:
+    desired_state: present
+
+  pre_tasks:
+    - name: Confirm host is a Linux app server
+      ansible.builtin.assert:
+        that:
+          - ansible_os_family == 'RedHat'
+          - inventory_hostname in groups['appservers']
+
+  roles:
+    - { role: install_java8,        tags: [java, install],
+        when: java_version | default('17') | int <= 8 }
+    - { role: install_fmw_infrastructure,
+        tags: [fmw, install], when: app_engine | default('weblogic') == 'weblogic' }
+    - { role: binary_installer,     tags: [install] }
+    - { role: configure_log_rotation, tags: [logging] }
+    - { role: push_systemd,         tags: [systemd, service] }
+
+  post_tasks:
+    - name: Open firewall for app ports
+      ansible.posix.firewalld:
+        port: "{{ item }}/tcp"
+        permanent: true
+        state: enabled
+        immediate: true
+      loop:
+        - "{{ app_http_port }}"
+        - "{{ app_https_port }}"
+        - "{{ app_admin_port }}"
+      when: enable_firewall | bool
+      tags: [firewall]
+
+    - name: Confirm app port is listening
+      ansible.builtin.wait_for:
+        port: "{{ app_http_port }}"
+        host: "{{ inventory_hostname }}"
+        delay: 5
+        timeout: 60
+      delegate_to: localhost
+      tags: [verify]
+      ignore_errors: true     # apps can take a while to come up; warn but don't fail

@@ -1,0 +1,17 @@
+---
+# tasks file for configure_ns — absent
+#
+# Stops the service, removes the package.
+
+- name: Stop and disable service
+  ansible.builtin.service:
+    name: "network"
+    state: stopped
+    enabled: false
+  failed_when: false
+
+- name: Remove package(s)
+  ansible.builtin.package:
+    name: "{{ packages | default([]) }}"
+    state: absent
+  when: (packages | default([])) | length > 0

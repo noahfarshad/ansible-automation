@@ -1,0 +1,4 @@
+---
+# defaults file for install_putty
+putty_install_loc: "C:\\Windows\\Installer\\"
+putty_old: "5663a1.msi"

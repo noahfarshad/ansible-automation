@@ -1,0 +1,72 @@
+---
+# task file for configure_affinity/tasks/is_present.yml
+- block:
+    - name: Create BLUE Affinity VM Groups
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "vmserver01_graphics_vm_group"
+        vms: 
+        - fws01-blue
+        - nws01-blue
+        - gws01-blue
+        - ctws01-bue
+        state: present
+      # loop: "{{ vm_group_list }}"
+      delegate_to: localhost
+
+    - name: Create Affinity Host Groups
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account  }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "vmserver01_graphics_host_group"
+        hosts: 
+        - vmserver01
+        state: present
+      # loop: "{{ host_group_list }}"
+      delegate_to: localhost
+
+    #affinity rules    
+    - name: Create VM-to-VM Affinity Rules
+      community.vmware.vmware_vm_vm_drs_rule:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{  vsphere_account}}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        vms: 
+        - fws01-blue
+        - nws01-blue
+        affinity_rule: true
+        drs_rule_name: "BLUE-graphics-affinity-rule"
+        enabled: True
+        mandatory: True
+        state: present
+      delegate_to: localhost
+      # loop: "{{ rules_list }}"
+
+    - name: Create VM-to-Host Affinity Rules
+      community.vmware.vmware_vm_vm_drs_rule:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{  vsphere_account}}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        vm_group_name: "vmserver01_graphics_vm_group"
+        host_group_name: "vmserver01_graphics_host_group"
+        affinity_rule: true
+        drs_rule_name: "vmserver01_affinity_rule"
+        enabled: True
+        mandatory: True
+        state: present
+      delegate_to: localhost
+      # loop: "{{ affinity['rules'] }}"
+  become: true

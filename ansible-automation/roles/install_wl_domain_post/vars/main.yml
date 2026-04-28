@@ -1,0 +1,91 @@
+---
+
+
+#-------------------------------------------------------------------
+#  Weblogic Domain Security Realm Settings Input Properties
+#-------------------------------------------------------------------
+#
+
+# Security Realm Name
+Security_Realm_Name: myrealm
+
+# Domain Name
+Domain_Name:         wl_domain
+
+Node_Manager_User_Name: wl_admin_user
+
+Security_Type:  SecurityConfiguration
+
+
+# Role Mapper Properties
+Role_Mapper_Bean_Name: XACMLRoleMapper
+Role_Mapper_Version: 1.0
+Role_Mapper_Deployment_Enabled: True
+Role_Mapper_Path: weblogic.security.providers.xacml.authorization.XACMLRoleMapper
+Role_Mapper_Provider_Class: weblogic.security.providers.xacml.authorization.XACMLRoleMapperProviderImpl
+
+
+# Authorizer Properties
+Authorizer_Bean_Name: XACMLAuthorizer
+Authorizer_Version: 1.0
+Authorizer_Deployment_Enabled: True
+Authorizer_Path: weblogic.security.providers.xacml.authorization.XACMLAuthorizer
+Authorizer_Provider_Class: weblogic.security.providers.xacml.authorization.XACMLAuthorizationProviderImpl
+
+
+# Auditor Properties 
+Auditor_Bean_Name: DefaultAuditor
+Auditor_Version: 1.0
+Auditor_Path: weblogic.security.providers.audit.DefaultAuditor
+Auditor_Provider_Class: weblogic.security.providers.audit.DefaultAuditProviderImpl
+
+
+# Lockout Manager Specific Properties
+Lockout_Name:   UserLockoutManager
+Lockout_Enabled:   True
+Lockout_Threshold: 3 
+Lockout_Duration:  15
+Lockout_Reset_Duration: 15
+
+#--------------------------------------------------------
+#  Password Validator Settings
+#--------------------------------------------------------
+Password_Validator_Name:  SystemPasswordValidator
+Password_Validator_Version: 1.0
+Password_Validator_Provider_Class: com.bea.security.providers.authentication.passwordvalidator.SystemPasswordValidatorProviderImpl
+Password_Validator_Minimum_Password_Length: 15
+Password_Validator_Minimum_Lowercase_Characters: 1
+Password_Validator_Minimum_Uppercase_Characters: 1
+Password_Validator_Minimum_NonAlphanumeric_Characters: 1
+Password_Validator_Minimum_Numeric_Or_Special_Characters: 1
+Password_Validator_Minimum_Numeric_Characters: 1
+
+#-------------------------------------------------------------------
+#  Properties required for communicating with the Admin Console
+#-------------------------------------------------------------------
+#
+# Note.  SSL is now configured so we will connect to the Admin server with SSL
+# this means the address changes from vm4 to wl-admin.example.coach because the certificate requires the
+# fully qualified path
+#
+Admin_Server: wl-admin.example.coach
+Admin_Server_HTTP_Port: 7201
+Admin_Server_HTTPS_Port: 7202
+Admin_Username: wl_admin_user
+#Admin_Protocol: t3s
+Admin_Protocol: t3
+
+
+os_user: app_admin
+os_group: app_admin
+remote_dir: /tmp
+
+pickle_file_name: pickled_vars.p
+
+# run_mode can be CREATE or REPORT_ONLY. 
+# REPORT_ONLY means the addCluster, addMachines, andServers python scripts do nothing.  But the settings Files will get
+# created when the play book runs.  The contents of the settings files are used by the configure settings playbook
+run_mode: CREATE
+
+
+   

@@ -1,0 +1,38 @@
+---
+# tasks file for install_ipa_rhel6 — present
+
+# Install and configure IPA Client
+- name: Install ipa-client package
+  ansible.builtin.yum:
+    name: "ipa-client"
+    state: present
+  tags: InstallPackage
+- name: Set hostname to FQDN
+  ansible.builtin.hostname:
+    name: "{{ ansible_hostname }}.example.coach"
+  tags: HostnameFQDN
+- name: Restart network
+  ansible.builtin.service:
+    name: network
+    state: restarted
+  tags: RestartNetwork
+- name: Fetch IPA ca.crt from idm01
+  #become: true
+  ansible.builtin.fetch:
+    src: /etc/ipa/ca.crt
+    dest: roles_ipa/install_ipa_rhel6/files/
+    flat: yes
+  delegate_to: idm01.example.coach
+  run_once: true
+  tags: FetchIPACert
+- name: Copy IPA ca.crt target host
+  #become: true
+  ansible.builtin.copy:
+    src: roles_ipa/install_ipa_rhel6/files/ca.crt
+    dest: /etc/ipa/
+  tags: CopyIPACert
+- name: Configure IPA client (ipa-client-install)
+  ansible.builtin.shell: |
+    /usr/sbin/ipa-client-install --domain=example.coach --server=idm01.example.coach --password=E55@dmin --principal=admin --realm=EXAMPLE.COACH --no-sshd --force-join --unattended
+  tags: IPAClientInstall
+  # TODO: review changed_when for: /usr/sbin/ipa-client-install --domain=example.coach --server

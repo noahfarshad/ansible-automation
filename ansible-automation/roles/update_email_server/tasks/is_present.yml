@@ -1,0 +1,36 @@
+---
+# tasks file for update_email_server — present
+
+- name: Setting remote folder path...
+
+  become_user: app_admin
+  ansible.builtin.stat: path="{{remote_dir}}"
+  register: remote_dir_register
+
+- name: Checking for remote folder...
+
+  become_user: app_admin
+  ansible.builtin.file: path="{{remote_dir}}" state=directory mode=0755
+  when: remote_dir_register.stat.exists == false
+
+- name: Copying WLST config file...
+
+  become_user: app_admin
+  ansible.builtin.copy: src={{wl_user_config_path}} dest={{remote_dir}} mode=0755
+
+- name: Copying WLST key file...
+
+  become_user: app_admin
+  ansible.builtin.copy: src={{wl_user_key_path}} dest={{remote_dir}} mode=0755
+
+- name: Copying the update email server script...
+
+  become_user: app_admin
+  ansible.builtin.copy: src={{wl_email_server_script}} dest={{remote_dir}} mode=0755
+
+- name: Updating the email server configuration in weblogic...
+
+  become_user: app_admin
+  ansible.builtin.command: "{{wlst_path}} {{remote_dir}}/{{wl_email_server_script}} {{remote_dir}}/{{wl_user_config}} {{remote_dir}}/{{wl_user_key}} {{system}}"
+
+  # TODO: review changed_when for: {{wlst_path}} {{remote_dir}}/{{wl_email_server_script}} {{re

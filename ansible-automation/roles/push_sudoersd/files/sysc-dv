@@ -1,0 +1,22 @@
+# This sudo config file allows users to perform commands as cmgov
+
+# User Aliases
+User_Alias      DV_ADMIN =        +un_sys-an
+
+# These are the allowed commands, referenced later
+# Cmnd_Alias    SOME_CMD                /bin/bash,/bin/cat
+
+# These define the possible application accounts (comma-separated)
+Runas_Alias     DV_ACCT =                 dv
+
+# These define the possible hosts that users are allowed to run commands on
+# MW_NONPROD is already defined elsewhere.
+#EDH_DEV and EDH_TEST are already defined elsewhere
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+# Allow cmgov netgroup to sudo to their shared account everywhere
+DV_ADMIN          MW_NONPROD = (DV_ACCT) LOG_OUTPUT: LOG_INPUT: ALL

@@ -1,0 +1,8 @@
+---
+# defaults file for configure_rhel7
+#
+# Disk and LVM layout. Override per-host in host_vars.
+disk:      "/dev/sda"
+partition: "/dev/sda3"
+volgroup:  "vg_root"
+logvol:    "lv_root"

@@ -1,0 +1,96 @@
+---
+# tasks file for install_webgate — present
+
+# This task installs Oracle Webgate
+- block:
+    - name: "test for available disk space on /opt"
+      ansible.builtin.assert:
+        that:
+          - not {{ item.mount == '/opt' and ( item.size_available < 1468006400 ) }}
+      loop: 
+        - "{{ansible_mounts}}"
+      ignore_errors: yes
+      register: disk_free
+
+    - name: "If there is not enough Disk space then fail playbook"
+      ansible.builtin.fail: msg="Not enough Disk space on /opt /opt = {{ disk_free.results.7.item.size_available }} 1468006400"
+      when: disk_free|failed
+
+    - name: "If there is not enough memory then fail the playbook"
+      ansible.builtin.fail: msg="Not enough memory.  Please have at least 1G configured.  Current memory is {{ansible_memtotal_mb}}"
+      when: "{{ansible_memtotal_mb}} < 1000"
+
+    - name: Create temp installation directory if it does not exist
+      become_user: app_admin
+      ansible.builtin.file:
+        path: "{{temp_install_dir}}"
+        state: directory
+      tags:
+        - webgate
+
+    # Copy apache webgate installer
+    - name: Copy install binary
+      ansible.builtin.unarchive:
+          owner: app_admin
+          ansible.builtin.group: app_admin
+          mode: 0755
+          src: "{{staging}}/ofm_webgates_apache24-2.4.zip"
+          dest: "{{temp_install_dir}}"
+
+    # Extract JDK into install dir
+    - name: Copy JDK
+      ansible.builtin.unarchive:
+          owner: app_admin
+          ansible.builtin.group: app_admin
+          mode: 0755
+          src: "{{staging}}/jdk-1.7.0_60.tar.gz"
+          dest: "{{temp_install_dir}}"
+
+    # Copy apache webgate response file
+    - name: Copy response file
+      ansible.builtin.template:
+        src: responseFile.txt
+        dest: "{{temp_install_dir}}/Disk1/responseFile.txt"
+        mode: 0755
+        owner: app_admin
+        ansible.builtin.group: app_admin
+
+    # Create Central Inventory
+    - name: Create central inventory
+      ansible.builtin.command: /opt/Oracle/app/oraInventory/createCentralInventory.sh
+
+    # Delete the old Webgate
+      # TODO: review changed_when for: /opt/Oracle/app/oraInventory/createCentralInventory.sh
+    - name: Remove old version of webgate
+      ansible.builtin.file:
+        path: "{{webgate_dir}}"
+        state: absent
+
+    # Create Webgate Directory
+    - name: Create webgate directory
+      become_user: app_admin
+      ansible.builtin.file:
+        path: "{{webgate_dir}}"
+        state: directory
+      tags:
+        - webgate
+
+    # Do the install
+    - name: Install OAM Webgate
+      become_user: app_admin
+      ansible.builtin.shell: "{{temp_install_dir}}/Disk1/runInstaller -silent -responseFile {{temp_install_dir}}/Disk1/responseFile.txt -jreLoc {{temp_install_dir}}/jdk1.7.0_60 -invPtrLoc /etc/oraInst.loc -ignoreSysPrereqs | /bin/sleep 90"
+      tags:
+        - webgate
+
+    # Clean up expanded directories
+      # TODO: review changed_when for: {{temp_install_dir}}/Disk1/runInstaller -silent -responseFil
+    - name: Clean up installation artifacts
+      ansible.builtin.file:
+        path: "{{ temp_install_dir}}/{{item}}"
+        state: absent
+      loop:
+          - Disk1
+          - jdk1.7.0_60
+      tags:
+        - webgate
+  become: true

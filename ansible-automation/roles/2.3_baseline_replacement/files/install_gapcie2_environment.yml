@@ -1,0 +1,27 @@
+---
+ - include: install_traffic_manager.yml
+
+ - include: dev-playbooks/install_database.yml
+
+ - include: install_apache.yml
+
+ - include: create_weblogic_stack.yml
+
+ - include: create_osb_weblogic_stack.yml
+
+ - include: configure_osb_services_12c.yml
+
+# Install neo4j
+ - hosts: neo4j
+   become: true
+   roles:
+     - installers/install_java8
+     - installers/neo4j/install_neo4j
+
+# Populate relationship neo4j instance with mock data
+ - name: Deploy mock relationship data
+   hosts: vm4i
+   roles:
+     - deployments/deploy_mock_relationship_data
+
+ - include: install_messaging_services.yml

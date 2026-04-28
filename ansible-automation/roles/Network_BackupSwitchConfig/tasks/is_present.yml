@@ -1,0 +1,43 @@
+---
+# tasks file for Backup Switch Configuration
+
+### STEP 1: Creating a known place that will be used to store configs before updates###
+
+- name: Check if networkbackups folder exists
+  ansible.builtin.stat:
+    path: \\san01\config\networkbackups
+  register: result
+
+- name: Create networkbackups folder if it does not exist
+  ansible.builtin.file:
+    path: \\san01\config\networkbackups
+    state: directory
+  when: not result.stat.exists
+
+###STEP 2: Gather the running config and save it to a file###
+
+- name: Gather the running config and save it to a file
+  cisco.nxos.nxos_config:
+    backup: true
+    backup_options:
+      filename: "{{ inventory_hostname }}_{{ '%Y-%m-%d' | strftime }}.txt"
+      dir_path: /mnt/config/networkbackups
+#  when: ansible_network_os == 'cisco.nxos.nxos'
+
+#- name: Save config to file
+#  copy: 
+#    content: "{{ config_output.stdout }}"
+#    dest: \\san01\config\networkbackups\{{ inventory_hostname }}_running-config_{{ timestamp() }}.txt
+
+######Explanation:#######
+#  cisco.nxos.nxos_config module:
+#   This is the core module used to manage Cisco NXOS configurations in Ansible. 
+#  backup: yes:
+#   This key argument explicitly tells the module to create a backup of the current running configuration. 
+#  backup_options:
+#   filename: Specifies the name of the backup file, using variables like inventory_hostname to dynamically name files based on the device. 
+#   path: Sets the directory where the backup file will be saved on the Ansible control node. 
+#  conditional execution:
+#   Consider using when statements to only run the backup task on devices that are identified as Cisco NXOS switches. 
+#   when: ansible_network_os == 'cisco.nxos.nxos'
+#########################  

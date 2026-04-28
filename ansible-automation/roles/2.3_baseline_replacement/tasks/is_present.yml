@@ -1,0 +1,12 @@
+---
+- name: Get Ansible 2.3 baseline
+  ansible.builtin.command: "cp -rf {{ replacement_baseline_source }} {{ replacement_baseline_destination }}"
+  args:
+    creates: "{{ replacement_baseline_destination }}"
+
+- name: Replace files in 2.3 baseline
+  ansible.builtin.copy:
+    src: "{{ item.source_file }}"
+    dest: "{{ replacement_baseline_destination }}/{{ item.destination }}/{{ item.alias }}"
+  delegate_to: localhost
+  loop: "{{ replacement_baseline_substitutions }}"

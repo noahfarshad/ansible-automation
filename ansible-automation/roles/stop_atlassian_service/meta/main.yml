@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  author: essential.coach
+  description: stop_atlassian_service
+  company: essential.coach
+  license: MIT
+  min_ansible_version: "2.12"
+  galaxy_tags: []
+dependencies: []

@@ -1,0 +1,25 @@
+---
+# tasks file for download_apache_config — present
+
+- name: Create staging directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{staging}}"
+
+- name: Purge staging/apache directory so hg clone can get latest
+  ansible.builtin.file:
+    state: absent
+    path: "{{staging}}/apache"
+
+# Download apache repo
+- name: Clone apache config repository
+  hg:
+    repo: "{{apache_scm}}"
+    dest: "{{staging}}/apache"
+    force: yes
+
+# Mercurial history may cause issues with downstream events, such as rsync file transfers.  Removing it here is the consistent resolution to such issues. 
+- name: remove .hg directory
+  ansible.builtin.file:
+    state: absent
+    path: "{{staging}}/apache/.hg"

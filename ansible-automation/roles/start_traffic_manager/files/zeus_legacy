@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# Start and stop Zeus products
+
+# Provide basic LSB 1.3 support
+### BEGIN INIT INFO
+# Provides: zeus
+# Required-Start: $network $syslog ztrans-rebuild
+# Required-Stop:
+# Default-Start: 2 3 5
+# Default-Stop: 0 1 6
+# Short-Description: Manages starting and stopping of Zeus software
+# Description: Manages starting and stopping of Zeus software
+### END INIT INFO
+
+# Pull in some standard paths, if we don't already have them
+PATH=$PATH:/usr/bin:/bin
+export PATH
+
+# This is set to ZEUSHOME upon install
+cd /opt/zeus
+
+case $1 in
+
+    start_msg)
+        echo "Start Zeus server"
+        ;;
+
+    stop_msg)
+        echo "Stop Zeus server"
+        ;;
+
+    start)
+        ./start-zeus
+        exit $?
+        ;;
+
+    restart)
+        ./restart-zeus
+        exit $?
+        ;;
+
+    stop)
+        ./stop-zeus
+        exit $?
+        ;;
+
+esac
+
+exit 0

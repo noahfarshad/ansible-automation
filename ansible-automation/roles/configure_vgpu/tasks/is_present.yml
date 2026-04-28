@@ -1,0 +1,42 @@
+---
+# tasks file for configure_vgpu
+- block:
+    - name: Make sure VM is powered off gracefully
+      community.vmware.vmware_guest_powerstate:
+        ansible.builtin.hostname: "{{vcenter_hostname}}"
+        username: "{{vsphere_account}}"
+        password: "{{vsphere_password}}"
+        validate_certs: no
+        datacenter: "{{vsphere_datacenter}}"
+        name: "{{inventory_hostname}}"
+        state: shutdown-guest
+        state_change_timeout: 50
+      delegate_to: localhost
+
+    - name: Add vGPU profile to VM
+      community.vmware.vmware_guest_vgpu:
+        ansible.builtin.hostname: "{{vcenter_hostname}}"
+        username: "{{vsphere_account}}"
+        password: "{{vsphere_password}}"
+        validate_certs: no
+        name: "{{inventory_hostname}}"
+        vgpu: "{{vgpu}}"    
+        datacenter: "{{vsphere_datacenter}}"
+        state: present  
+      register: vgpu_info 
+      delegate_to: localhost
+
+    - name: Make sure VM is powered on
+      community.vmware.vmware_guest:
+        ansible.builtin.hostname: "{{vcenter_hostname}}"
+        datacenter: "{{vsphere_datacenter}}"
+        name: "{{ inventory_hostname }}"
+        username: "{{vsphere_account}}"
+        password: "{{vsphere_password}}"
+        validate_certs: no
+        state: poweredon
+        wait_for_customization: yes
+        wait_for_ip_address: yes
+      delegate_to: localhost
+      register: started
+  become: true

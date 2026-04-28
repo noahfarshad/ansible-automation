@@ -1,0 +1,10 @@
+---
+- name: Set Sysctl to defaults
+  become: true
+  ansible.builtin.sysctl:
+    name: "{{ item.property }}"
+    value: "{{ item.default }}"
+    reload: yes
+    state: absent
+  loop: "{{ sysctl_configuration_items }}"
+  when: sysctl_configuration_items is defined

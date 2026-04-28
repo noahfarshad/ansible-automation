@@ -1,0 +1,80 @@
+---
+# tasks file for import_data — present
+
+# Before doing anymore work verify the database software actually installed correctly
+- ansible.builtin.include_tasks: check_sw_install_status.yml
+#First move the dmp files. They must be in the tmp_dmp_directory
+- name: Move dmp files
+  become_user: ora_rmt
+
+  ansible.builtin.shell: "mv {{tmp_dmp_directory}}/*.dmp /u02/oradata/example/dpdump"
+  tags:
+    - move_dmp_files
+    - import_data
+
+# import the database data from a temporary file
+
+  # TODO: mv: not idempotent — gate with creates: <dest> or removes: <src>
+  # TODO: review changed_when for: mv {{tmp_dmp_directory}}/*.dmp /u02/oradata/example/dpdump
+- name: Importing CP_Example_DATA schema....
+  become_user: ora_rmt
+
+  ansible.builtin.shell: "{{decompressed_directory}}example/db_import_schema.sh {{oracle_db_example_system_password}} CP_Example_DATA"
+  tags:
+    - import_data
+
+# import the database data from a temporary file
+
+  # TODO: review changed_when for: {{decompressed_directory}}example/db_import_schema.sh {{orac
+- name: Importing DAGR schema....
+  become_user: ora_rmt
+
+  ansible.builtin.shell: "{{decompressed_directory}}example/db_import_schema.sh {{oracle_db_example_system_password}} DAGR"
+  tags:
+    - import_data
+
+# Post import processing
+
+  # TODO: review changed_when for: {{decompressed_directory}}example/db_import_schema.sh {{orac
+- name: Post Import processing for CP_Example_DATA....
+  become_user: ora_rmt
+
+  ansible.builtin.shell: "{{decompressed_directory}}example/db_import_schema_post.sh CP_Example_DATA"
+  tags:
+    - import_data
+    
+# Post import processing
+
+  # TODO: review changed_when for: {{decompressed_directory}}example/db_import_schema_post.sh C
+- name: Post Import processing for DAGR....
+  become_user: ora_rmt
+
+  ansible.builtin.shell: "{{decompressed_directory}}example/db_import_schema_post.sh DAGR"
+  tags:
+    - import_data
+
+#  Check to see if the import log did not successfully complete
+
+  # TODO: review changed_when for: {{decompressed_directory}}example/db_import_schema_post.sh D
+- name: Check for errors in the import log
+  become_user: ora_rmt
+
+  ansible.builtin.shell: "{{decompressed_directory}}example/db_import_error_checker.sh"
+  tags:
+    - import_data
+
+
+  # TODO: review changed_when for: {{decompressed_directory}}example/db_import_error_checker.sh
+- name: Check for errors in the import log
+  become_user: ora_rmt
+
+  ansible.builtin.stat: path="{{error_file}}"
+  register: stat_result  
+  tags:
+    - import_data
+
+- name: Fail the play if the import did not end successfully
+  ansible.builtin.fail: msg="the import had errors"
+  when: stat_result.stat.exists == True
+  tags:
+    - import_data

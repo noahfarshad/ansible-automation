@@ -1,0 +1,152 @@
+---
+# task file for configure_affinity/tasks/is_present.yml
+# This roles requires all the vGPU machines to exist, it will fail it they don't
+
+# Create affinity host groups for vmservers 
+- block:
+    - name: Create Affinity Host Group 1
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account  }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "vmserver_group1_graphics_host_group"
+        hosts: "{{ host_group_1 }}"
+        state: present
+      delegate_to: localhost
+
+    - name: Create Affinity Host Group 2
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account  }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "vmserver_group2_graphics_host_group"
+        hosts: "{{ host_group_2 }}"
+        state: present
+      delegate_to: localhost
+
+    # FWS Affinity groups and rules
+    - name: Create GREEN FWS Affinity VM Groups
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "GREEN_fws_graphics_vm_group"
+        vms: "{{ groups['fws'] }}"
+        state: present
+      delegate_to: localhost
+
+    - name: Create VM-to-Host Affinity Rules for FWS
+      community.vmware.vmware_vm_host_drs_rule:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{  vsphere_account}}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        vm_group_name: "GREEN_fws_graphics_vm_group"
+        host_group_name: "vmserver_group1_graphics_host_group"
+        affinity_rule: true
+        drs_rule_name: "GREEN-fws_affinity_rule"
+        enabled: True
+        mandatory: True
+        state: present
+      delegate_to: localhost
+
+    # CTWS Affinity groups and rules
+    - name: Create GREEN CTWS Affinity VM Groups
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "GREEN_ctws_graphics_vm_group"
+        vms: "{{ groups['ctws'] }}"
+        state: present
+      delegate_to: localhost
+
+    - name: Create VM-to-Host Affinity Rules for CTWS
+      community.vmware.vmware_vm_host_drs_rule:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{  vsphere_account}}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        vm_group_name: "GREEN_ctws_graphics_vm_group"
+        host_group_name: "vmserver_group2_graphics_host_group"
+        affinity_rule: true
+        drs_rule_name: "GREEN-ctws_affinity_rule"
+        enabled: True
+        mandatory: True
+        state: present
+      delegate_to: localhost
+
+    # GWS Affinity groups and rules
+    - name: Create GREEN GWS Affinity VM Groups
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "GREEN_gws_graphics_vm_group"
+        vms: "{{ groups['gws'] }}"
+        state: present
+      delegate_to: localhost
+
+    - name: Create VM-to-Host Affinity Rules for GWS
+      community.vmware.vmware_vm_host_drs_rule:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{  vsphere_account}}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        vm_group_name: "GREEN_gws_graphics_vm_group"
+        host_group_name: "vmserver_group2_graphics_host_group"
+        affinity_rule: true
+        drs_rule_name: "GREEN-gws_affinity_rule"
+        enabled: True
+        mandatory: True
+        state: present
+      delegate_to: localhost
+
+    # NWS Affinity groups and rules
+    - name: Create GREEN NWS Affinity VM Groups
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "GREEN_nws_graphics_vm_group"
+        vms: "{{ groups['nws'] }}"
+        state: present
+      delegate_to: localhost
+
+    - name: Create VM-to-Host Affinity Rules for NWS
+      community.vmware.vmware_vm_host_drs_rule:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{  vsphere_account}}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        vm_group_name: "GREEN_nws_graphics_vm_group"
+        host_group_name: "vmserver_group2_graphics_host_group"
+        affinity_rule: true
+        drs_rule_name: "GREEN-nws_affinity_rule"
+        enabled: True
+        mandatory: True
+        state: present
+      delegate_to: localhost
+  become: true

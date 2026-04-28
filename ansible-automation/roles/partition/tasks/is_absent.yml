@@ -1,0 +1,22 @@
+---
+- name: Unmount mounts
+  become: true
+  ansible.builtin.mount:
+    path: "{{ item.path }}"
+    state: unmounted
+  loop: "{{ string_vm_partitions[vm_size] }}"
+
+- name: Remove mounts
+  become: true
+  ansible.builtin.mount:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ string_vm_partitions[vm_size] }}"
+
+- name: Remove partitions
+  become: true
+  parted:
+    device: "{{ item.device }}"
+    number: "{{ item.number }}"
+    state: absent
+  loop: "{{ string_vm_partitions[vm_size] }}"

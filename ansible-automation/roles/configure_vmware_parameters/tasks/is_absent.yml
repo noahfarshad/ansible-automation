@@ -1,0 +1,14 @@
+---
+# tasks file for configure_vmware_parameters — absent
+#
+# This role uses third-party collection modules (cisco/dellemc/community/etc.).
+# Reversing those operations requires using the collection's own teardown
+# patterns, which vary by collection.
+#
+# Default behavior: no-op with explanatory debug message.
+
+- name: "configure_vmware_parameters — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      The 'absent' state for role 'configure_vmware_parameters' is intentionally not implemented.
+      Reversing collection-module operations requires per-collection knowledge.

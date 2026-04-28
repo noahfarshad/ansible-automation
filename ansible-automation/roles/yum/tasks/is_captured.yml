@@ -1,0 +1,44 @@
+---
+- name: Get template packages
+  become: true
+  ansible.builtin.yum:
+    list: installed
+  register: template_packages
+  run_once: yes
+  delegate_to: "{{ vsphere_string_template_ip }}"
+
+- name: Get installed packages
+  become: true
+  ansible.builtin.yum:
+    list: installed
+  register: yum_reported_packages
+
+- name: Register new packages
+  ansible.builtin.set_fact:
+    yum_diff_packages: "{{ yum_reported_packages.results | difference(template_packages.results) }}"
+
+- name: Dump diff installed
+  ansible.builtin.debug:
+    msg: "{{ yum_diff_packages }}"
+  when: yum_local_report_debug
+
+- name: Create reports path if required
+  ansible.builtin.file:
+    path: "{{ yum_local_report_directory }}"
+    state: directory
+    recurse: yes
+  run_once: yes
+  delegate_to: localhost
+
+- name: Dump template packages as CSV
+  ansible.builtin.template:
+    src: "{{ yum_template_local_report_template }}"
+    dest: "{{ yum_local_report_directory }}/{{ yum_template_local_report_file }}"
+  run_once: yes
+  delegate_to: localhost
+
+- name: Dump host unique packages as CSV
+  ansible.builtin.template:
+    src: "{{ yum_local_report_template }}"
+    dest: "{{ yum_local_report_directory }}/{{ yum_local_report_file }}"
+  delegate_to: localhost

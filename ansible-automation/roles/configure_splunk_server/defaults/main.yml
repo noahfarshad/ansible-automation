@@ -1,0 +1,11 @@
+---
+# defaults file for configure_splunk_server
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# infra_ifc_version: ""
+# nexus_vars: ""
+# splunk_package_list: ""
+# splunk_port_list: ""
+# users: ""

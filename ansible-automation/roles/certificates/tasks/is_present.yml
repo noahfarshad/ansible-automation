@@ -1,0 +1,159 @@
+---
+# tasks file for roles/certificates
+- name: Install dod_cacerts
+
+  ansible.builtin.get_url:
+    url: https://afw-artifactory-t.example.coach/artifactory/afw-certificates/DoD_CAs/dod_ca_individual_pem.tar.gz
+    dest: /etc/pki/tls/certs/dod_ca_individual_pem.tar.gz
+  tags: certificates
+
+- name: Install dod_ca_combined.pem
+
+  ansible.builtin.get_url:
+    url: https://afw-artifactory-t.example.coach/artifactory/afw-certificates/DoD_CAs/dod_ca_combined.pem
+    dest: /etc/pki/tls/certs/dod_ca_combined.pem
+  tags: certificates
+
+- name: Install dod_cacerts.jks
+
+  ansible.builtin.get_url:
+    url: https://afw-artifactory-t.example.coach/artifactory/afw-certificates/DoD_CAs/dod_cacerts.jks
+    dest: /etc/pki/tls/certs/dod_cacerts.jks
+  tags: certificates
+
+#- name: Install dod_ca_certs_cm.pem
+#  become: true
+#  ansible.builtin.get_url:
+#    url: https://afw-artifactory-t.example.coach/artifactory/afw-certificates/DoD_CAs/dod_ca_certs_cm.pem
+#    dest: /etc/pki/tls/certs/dod_ca_certs_cm.pem
+#  tags: certificates
+
+- name: copy encrypted passphrase to target host
+
+  ansible.builtin.copy:
+    src: roles/certificates/files/passphrase/{{passphrase_name}}.enc
+    dest: /opt/rh/httpd24/root/etc/httpd/conf/passphrase.enc
+    mode: "0664"
+  when: passphrase_name is defined
+  tags: certificates
+
+- name: copy passphrase shell script to target host
+
+  ansible.builtin.copy:
+    src: roles/certificates/files/passphrase.sh
+    dest: /opt/rh/httpd24/root/etc/httpd/conf/
+    mode: "711"
+  when: passphrase_name is defined
+  tags: certificates
+
+- name: Unarchive trust certs
+
+  ansible.builtin.unarchive:
+    src: /etc/pki/tls/certs/dod_ca_individual_pem.tar.gz
+    dest: /etc/pki/ca-trust/source/anchors/
+    owner: root
+    ansible.builtin.group: root
+    mode: 0644
+    remote_src: yes
+  tags: certificates
+
+- name: Update CA trust
+  ansible.builtin.command: update-ca-trust extract
+
+  tags: certificates
+
+#- name: Create symbolic link for java CA certs
+#  file:
+#    src: "/etc/pki/tls/certs/dod_cacerts.jks"
+#    dest: "/usr/lib/jvm-private/afwa/lib/security/cacerts"
+#    state: link
+#  tags: certificates
+
+  changed_when: false
+- name: Cleanup dod_cacerts archive
+
+  ansible.builtin.file:
+    name: /etc/pki/tls/certs/dod_ca_individual_pem.tar.gz
+    state: absent
+  tags: certificates
+
+## Removed to match other certifcate processes
+#- name: Get Files
+#  become: true
+#  shell: (find /cm/zAdmin/Certificates/{{ group_name }} -maxdepth 1 -type f)
+#  register: files_to_copy
+#  delegate_to: sems-cm-01t.example.coach
+#  ignore_errors: true
+#  tags: certificates
+#- name: Create pki directory
+#  file:
+#    path: /etc/pki/tls/private/{{ group_name }}
+#    mode: 0755
+#    state: directory
+#  become: true
+#  tags: certificates
+
+- name: Get Private Key
+
+  ansible.builtin.get_url:
+    url: "https://afw-artifactory-t.example.coach/artifactory/afw-certificates/server-certificates/{{ group_name }}/{{ group_name }}.key"
+    dest: /etc/pki/tls/private
+  tags: certificates
+
+- name: Change Private Key Permissions
+
+  ansible.builtin.file:
+    path: "/etc/pki/tls/private/{{ group_name }}.key"
+    state: file
+    owner: root
+    ansible.builtin.group: root
+    mode: "0644"
+  tags: certificates
+
+- name: Fetch .crt and .jks certs
+
+  ansible.builtin.get_url:
+    url: "{{ item }}"
+    dest: /etc/pki/tls/certs/
+  loop:
+    - "https://afw-artifactory-t.example.coach/artifactory/afw-certificates/server-certificates/{{ group_name }}/{{ group_name }}.crt"
+    - "https://afw-artifactory-t.example.coach/artifactory/afw-certificates/server-certificates/{{ group_name }}/{{ group_name }}.jks"
+  tags: certificates
+
+- name: Change Public Cert Permissions
+
+  ansible.builtin.file:
+    path: "/etc/pki/tls/certs/{{ group_name }}.crt"
+    state: file
+    owner: root
+    ansible.builtin.group: root
+    mode: "0644"
+  tags: certificates
+
+- name: Change Java Keystore Permissions
+
+  ansible.builtin.file:
+    path: "/etc/pki/tls/certs/{{ group_name }}.jks"
+    state: file
+    owner: root
+    ansible.builtin.group: root
+    mode: "0755"
+  tags: certificates
+
+#- name: Test CSR Creation
+#  shell: echo "{{ files_to_copy }}" >> /tmp/testFilesToCopy
+
+## temporalily stopped because doesn't work with new cert locations
+#- include: existingCerts.yml
+#  when: files_to_copy.stdout | length > 0
+#
+#- include: generateCerts.yml
+#  when: files_to_copy.stdout | length <= 0
+#
+- name: cleanup local ansible directories
+  ansible.builtin.file:
+    path: roles/certificates/files/{{ group_name }}
+    state: absent
+  run_once: true
+  delegate_to: localhost
+  tags: certificates

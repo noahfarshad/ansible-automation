@@ -1,0 +1,29 @@
+---
+- set_fact:
+    trellix_unpack_dir: "/opt/trellix_agent/"
+
+- name: Create {{ trellix_unpack_dir }} directory
+  ansible.builtin.file:
+    path: "{{ trellix_unpack_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Copy packages to {{ trellix_unpack_dir }}
+  ansible.builtin.copy:
+    remote_src: yes
+    src: "{{ trellix_path_rhel }}"
+    dest: "{{ trellix_unpack_dir }}"
+
+- name: Change permissions on install.sh
+  ansible.builtin.file:
+    dest: "{{ trellix_unpack_dir }}install.sh"
+    mode: '0555'
+
+- name: Install Trellix Agent
+  ansible.builtin.shell: "{{ trellix_unpack_dir }}install.sh -i"
+
+  # TODO: review changed_when for: {{ trellix_unpack_dir }}install.sh -i
+- name: Remove {{ trellix_unpack_dir }} directory
+  ansible.builtin.file:
+    path: "{{ trellix_unpack_dir }}"
+    state: absent

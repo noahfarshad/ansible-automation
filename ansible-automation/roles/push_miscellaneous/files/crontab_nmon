@@ -1,0 +1,6 @@
+# Collect NMON performance metrics for daily, weekly, and monthly purposes
+0 * * * * root if [ -e /root/bin/collect_nmon.sh ]; then /root/bin/collect_nmon.sh -d daily > /dev/null; fi
+0 * * * * root if [ -e /root/bin/collect_nmon.sh ]; then /root/bin/collect_nmon.sh -d weekly > /dev/null; fi
+0 * * * * root if [ -e /root/bin/collect_nmon.sh ]; then /root/bin/collect_nmon.sh -d monthly > /dev/null; fi
+# END
+

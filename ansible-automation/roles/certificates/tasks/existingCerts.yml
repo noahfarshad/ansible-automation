@@ -1,0 +1,19 @@
+---
+- name: fetch files
+  become: true
+  ansible.builtin.fetch:
+    src: "{{ item }}"
+    dest: roles/certificates/files/{{ group_name }}/
+    flat: yes
+  loop: "{{ files_to_copy.stdout_lines }}"
+  ignore_errors: true
+  delegate_to: sems-cm-01t.example.coach
+  tags: certificates
+
+- name: Copy host certs and keys to target host
+  become: true
+  ansible.builtin.copy:
+    src: roles/certificates/files/{{ group_name }}
+    dest: /etc/pki/tls/private/
+  ignore_errors: true
+  tags: certificates

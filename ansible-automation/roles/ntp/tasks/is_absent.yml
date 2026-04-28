@@ -1,0 +1,19 @@
+---
+- name: Stop and disable NTP service
+  become: true
+  ansible.builtin.systemd:
+    name: "ntpd"
+    enabled: no
+    state: stopped
+
+- name: Remove NTP Config
+  become: true
+  ansible.builtin.file:
+    path: "{{ ntp_template_dest }}"
+    state: absent
+
+- name: Remove NTP package
+  become: true
+  ansible.builtin.yum:
+    name: "ntp"
+    state: absent

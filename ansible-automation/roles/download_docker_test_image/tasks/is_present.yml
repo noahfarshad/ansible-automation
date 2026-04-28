@@ -1,0 +1,20 @@
+---
+# tasks file for download_docker_test_image — present
+
+- name: Pull and save test image
+  become: true
+  docker_image:
+    name: "{{base_repo_url}}/{{item.name}}"
+    tag: "{{item.tag}}"
+    archive_path: "{{staging}}/{{item.name | regex_replace('/','_')}}_{{item.tag}}.tar"
+  loop:
+    - "{{test_image}}"
+
+- name: Create hash files for the test image
+  become: true
+  ansible.builtin.shell: >-
+    docker inspect --format='{{'{{'}}index .Id{{'}}'}}' {{base_repo_url}}/{{item.name}}:{{item.tag}} 
+    > {{staging}}/{{item.name | regex_replace('/','_')}}_{{item.tag}}.txt
+  loop:
+    - "{{test_image}}"
+  changed_when: false

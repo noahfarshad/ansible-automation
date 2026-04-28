@@ -1,0 +1,174 @@
+---
+# playbooks/windows/build_windows_vm.yml
+#
+# Builds a Windows host end-to-end:
+#   1. (localhost) Create the vSphere VM from a Windows template
+#   2. (localhost) Wait for WinRM to become available
+#   3. (target host) Configure WinRM hardening
+#   4. (target host) Apply Windows baseline
+#   5. (target host) Join the host to the AD domain
+#   6. (target host) Reboot to complete the domain join
+#
+# Usage:
+#   make windows HOST=win01.example.coach
+#   # or:
+#   ansible-playbook -i inventory/hosts \
+#                    playbooks/windows/build_windows_vm.yml \
+#                    --limit win01.example.coach
+#
+# REQUIRED variables (set in host_vars/<host>.yml):
+#   vsphere_template, vsphere_folder, vsphere_datastore, vsphere_network,
+#   vsphere_cpu, vsphere_memory_mb, vsphere_disk_gb,
+#   static_ipv4_address, static_ipv4_netmask, static_ipv4_gateway,
+#   ad_target_ou (optional — defaults to ad_default_ou)
+#
+# REQUIRED variables (set in group_vars/all/main.yml or windows/main.yml):
+#   org_domain, dns_servers, vsphere_host, vsphere_datacenter, vsphere_cluster,
+#   ad_domain, ad_dc_hostname, ad_default_ou, windows_timezone,
+#   windows_local_admin_user
+#
+# REQUIRED secrets (vault.yml):
+#   vault_vsphere_account, vault_vsphere_password,
+#   vault_windows_local_admin_password,
+#   vault_ad_bind_user, vault_ad_bind_password
+
+# ----------------------------------------------------------------------------
+# Step 1 — create the VM in vSphere (delegated to localhost)
+# ----------------------------------------------------------------------------
+- name: Provision Windows VM in vSphere
+  hosts: windows
+  gather_facts: false
+  connection: local
+  tags: [vsphere, vm]
+
+  pre_tasks:
+    - name: Confirm required vSphere placement vars are set
+      ansible.builtin.assert:
+        that:
+          - vsphere_template is defined
+          - vsphere_folder is defined
+          - vsphere_datastore is defined
+          - vsphere_network is defined
+          - static_ipv4_address is defined
+        fail_msg: >-
+          Missing required host_vars. See docs/WINDOWS_VM.md for the full list.
+
+    - name: Confirm required AD vars are set
+      ansible.builtin.assert:
+        that:
+          - ad_domain is defined
+          - ad_dc_hostname is defined
+          - windows_local_admin_password is defined
+        fail_msg: >-
+          Missing AD or local-admin variables. See group_vars/all/main.yml
+          and group_vars/windows/main.yml.
+
+  tasks:
+    - name: Create / power on the Windows VM
+      community.vmware.vmware_guest:
+        hostname: "{{ vsphere_host }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vsphere_password }}"
+        validate_certs: "{{ vsphere_validate_certs | default(false) }}"
+        datacenter: "{{ vsphere_datacenter }}"
+        cluster: "{{ vsphere_cluster }}"
+        folder: "{{ vsphere_folder }}"
+        name: "{{ inventory_hostname }}"
+        template: "{{ vsphere_template }}"
+        datastore: "{{ vsphere_datastore }}"
+        hardware:
+          num_cpus: "{{ vsphere_cpu }}"
+          memory_mb: "{{ vsphere_memory_mb }}"
+        disk:
+          - size_gb: "{{ vsphere_disk_gb }}"
+            type: thin
+            datastore: "{{ vsphere_datastore }}"
+        networks:
+          - name: "{{ vsphere_network }}"
+            ip: "{{ static_ipv4_address }}"
+            netmask: "{{ static_ipv4_netmask }}"
+            gateway: "{{ static_ipv4_gateway }}"
+        customization:
+          hostname: "{{ inventory_hostname_short }}"
+          dns_servers: "{{ dns_servers }}"
+          domain: "{{ org_domain }}"
+          autologon: true
+          autologoncount: 5
+          password: "{{ windows_local_admin_password }}"
+          timezone: "{{ windows_timezone_code | default(omit) }}"
+          # Standard Windows server runonce — enable WinRM
+          runonce:
+            - "powershell.exe -ExecutionPolicy Bypass -Command \"Enable-PSRemoting -Force; Set-Item WSMan:\\localhost\\Service\\AllowUnencrypted $true; New-NetFirewallRule -Name 'WinRM_HTTP' -DisplayName 'WinRM HTTP' -Protocol TCP -LocalPort 5985 -Action Allow -Direction Inbound\""
+        wait_for_ip_address: true
+        wait_for_customization: true
+        state: poweredon
+      delegate_to: localhost
+
+    - name: Wait for WinRM to come up on the new VM
+      ansible.builtin.wait_for:
+        host: "{{ static_ipv4_address }}"
+        port: 5986
+        delay: 60
+        timeout: 1200
+      delegate_to: localhost
+
+# ----------------------------------------------------------------------------
+# Step 2 — configure WinRM (HTTPS, certificates, allowed users)
+# ----------------------------------------------------------------------------
+- name: Configure WinRM on the new Windows host
+  hosts: windows
+  gather_facts: true
+  vars:
+    desired_state: present
+    # Use local admin to start; we haven't joined AD yet
+    ansible_user: "{{ windows_local_admin_user }}"
+    ansible_password: "{{ windows_local_admin_password }}"
+  tags: [winrm]
+
+  pre_tasks:
+    - name: Confirm Windows
+      ansible.builtin.assert:
+        that: ansible_os_family == 'Windows'
+
+  roles:
+    - role: configure_winrm
+      tags: [winrm]
+
+    - role: upgrade_vmware_tools
+      tags: [vmware_tools]
+
+# ----------------------------------------------------------------------------
+# Step 3 — join the host to Active Directory
+# ----------------------------------------------------------------------------
+- name: Join Windows host to Active Directory
+  hosts: windows
+  gather_facts: true
+  vars:
+    desired_state: present
+    # Still using local admin until the join is done
+    ansible_user: "{{ windows_local_admin_user }}"
+    ansible_password: "{{ windows_local_admin_password }}"
+  tags: [ad, domain]
+
+  roles:
+    - role: join_windows_active_directory
+      vars:
+        domain_admin_user:     "{{ vault_ad_bind_user }}"
+        domain_admin_password: "{{ vault_ad_bind_password }}"
+        target_ou:             "{{ ad_target_ou | default(ad_default_ou) }}"
+
+  post_tasks:
+    - name: Reboot to finalize domain join
+      ansible.windows.win_reboot:
+        reboot_timeout: 1200
+        post_reboot_delay: 60
+      tags: [reboot]
+
+    - name: Wait for WinRM after domain-join reboot
+      ansible.builtin.wait_for:
+        host: "{{ static_ipv4_address }}"
+        port: 5986
+        delay: 30
+        timeout: 1200
+      delegate_to: localhost
+      tags: [reboot]

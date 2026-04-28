@@ -1,0 +1,35 @@
+---
+# host_vars/win01.example.coach.yml
+#
+# Per-host overrides for win01. Only set values here that genuinely differ
+# from the group defaults in group_vars/windows/main.yml.
+
+# ===========================================================================
+# vSphere placement (REQUIRED for build_windows_vm.yml)
+# ===========================================================================
+vsphere_template:           "win2022-template"
+vsphere_folder:             "/example_dc/vm/Windows"
+vsphere_datastore:          "datastore1"
+vsphere_network:            "VM Network"
+vsphere_cpu:                4
+vsphere_memory_mb:          16384
+vsphere_disk_gb:            120
+
+# ===========================================================================
+# Network — REQUIRED
+# ===========================================================================
+static_ipv4_address:        10.10.30.11
+static_ipv4_netmask:        255.255.255.0
+static_ipv4_gateway:        10.10.30.1
+
+# ===========================================================================
+# Active Directory placement
+# ===========================================================================
+ad_target_ou:               "OU=Web,OU=Servers,OU=ExampleCoach,DC=example,DC=coach"
+
+# ===========================================================================
+# Per-host extra software — extends windows_install_packages from group_vars
+# ===========================================================================
+windows_extra_packages:
+  - sql_server_management_studio
+  - powerbi_desktop

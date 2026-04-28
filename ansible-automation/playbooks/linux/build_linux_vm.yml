@@ -1,0 +1,138 @@
+---
+# playbooks/linux/build_linux_vm.yml
+#
+# Builds a Linux host end-to-end:
+#   1. (localhost) Create the vSphere VM from a template
+#   2. (target host) Apply OS baseline:
+#      - Filesystem layout (LVM volumes)
+#      - Package repos (yum/dnf)
+#      - Baseline packages
+#      - Firewall + SELinux
+#      - TLS certificates
+#      - SSSD / IPA client
+#      - sudoers, profile.d
+#      - Splunk forwarder
+#
+# Usage:
+#   make linux HOST=web01.example.coach
+#   # or:
+#   ansible-playbook -i inventory/hosts \
+#                    playbooks/linux/build_linux_vm.yml \
+#                    --limit web01.example.coach
+#
+# REQUIRED variables (set in host_vars/<host>.yml):
+#   vsphere_template, vsphere_folder, vsphere_datastore, vsphere_network,
+#   vsphere_cpu, vsphere_memory_mb, vsphere_disk_gb
+#   static_ipv4_address, static_ipv4_netmask, static_ipv4_gateway
+#
+# REQUIRED variables (set in group_vars/all/main.yml):
+#   org_domain, dns_servers, vsphere_host, vsphere_datacenter, vsphere_cluster
+#
+# REQUIRED secrets (set in vault.yml):
+#   vault_vsphere_account, vault_vsphere_password
+#   vault_ipa_admin_password (if enable_ipa_client: true)
+
+# ----------------------------------------------------------------------------
+# Step 1 — clean local known_hosts so SSH to a re-imaged host doesn't fail
+# ----------------------------------------------------------------------------
+- name: Clean stale SSH known_hosts entries
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  tags: [preflight]
+  roles:
+    - role: remove_known_hosts
+
+# ----------------------------------------------------------------------------
+# Step 2 — create the VM in vSphere (delegated to localhost)
+# ----------------------------------------------------------------------------
+- name: Provision Linux VM in vSphere
+  hosts: linux:!localhost
+  gather_facts: false
+  connection: local
+  tags: [vsphere, vm]
+
+  pre_tasks:
+    - name: Confirm required vSphere placement vars are set
+      ansible.builtin.assert:
+        that:
+          - vsphere_template is defined
+          - vsphere_folder is defined
+          - vsphere_datastore is defined
+          - vsphere_network is defined
+          - static_ipv4_address is defined
+        fail_msg: >-
+          Missing required host_vars. See docs/LINUX_VM.md for the full list.
+
+  tasks:
+    - name: Create / power on the VM
+      community.vmware.vmware_guest:
+        hostname: "{{ vsphere_host }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vsphere_password }}"
+        validate_certs: "{{ vsphere_validate_certs | default(false) }}"
+        datacenter: "{{ vsphere_datacenter }}"
+        cluster: "{{ vsphere_cluster }}"
+        folder: "{{ vsphere_folder }}"
+        name: "{{ inventory_hostname }}"
+        template: "{{ vsphere_template }}"
+        datastore: "{{ vsphere_datastore }}"
+        hardware:
+          num_cpus: "{{ vsphere_cpu }}"
+          memory_mb: "{{ vsphere_memory_mb }}"
+        disk:
+          - size_gb: "{{ vsphere_disk_gb }}"
+            type: thin
+            datastore: "{{ vsphere_datastore }}"
+        networks:
+          - name: "{{ vsphere_network }}"
+            ip: "{{ static_ipv4_address }}"
+            netmask: "{{ static_ipv4_netmask }}"
+            gateway: "{{ static_ipv4_gateway }}"
+        customization:
+          hostname: "{{ inventory_hostname_short }}"
+          dns_servers: "{{ dns_servers }}"
+          domain: "{{ org_domain }}"
+        wait_for_ip_address: true
+        wait_for_customization: true
+        state: poweredon
+      delegate_to: localhost
+      register: vm_create
+
+    - name: Wait for SSH to become available on the new VM
+      ansible.builtin.wait_for:
+        host: "{{ static_ipv4_address }}"
+        port: 22
+        delay: 30
+        timeout: 600
+      delegate_to: localhost
+
+# ----------------------------------------------------------------------------
+# Step 3 — baseline the new Linux host
+# ----------------------------------------------------------------------------
+- name: Apply Linux baseline
+  hosts: linux
+  gather_facts: true
+  become: true
+  vars:
+    desired_state: present
+  tags: [baseline]
+
+  pre_tasks:
+    - name: Confirm target is a supported Linux family
+      ansible.builtin.assert:
+        that: ansible_os_family in ['RedHat', 'Debian']
+        fail_msg: "Unsupported OS family: {{ ansible_os_family }}"
+
+  roles:
+    - { role: configure_yum,           tags: [packages, yum] }
+    - { role: install_package,         tags: [packages] }
+    - { role: configure_volumes,       tags: [storage, lvm] }
+    - { role: configure_firewall,      tags: [firewall, security], when: enable_firewall | bool }
+    - { role: configure_selinux,       tags: [selinux, security], when: enable_selinux | bool }
+    - { role: certificates,            tags: [tls, certificates] }
+    - { role: sssd_config,             tags: [identity, sssd] }
+    - { role: ipaclient,               tags: [identity, ipa], when: enable_ipa_client | bool }
+    - { role: push_sudoersd,           tags: [sudo, security] }
+    - { role: configure_splunk_forwarder_rhel,
+        tags: [logging, splunk], when: enable_splunk_forwarder | bool }

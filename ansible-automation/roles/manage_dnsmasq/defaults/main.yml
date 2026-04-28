@@ -1,0 +1,25 @@
+---
+valid_dnsmasq_services_actions:
+  - "restart"
+  - "uninstall"
+  - "install"
+  - "reinstall"
+  - "configure"
+
+valid_dnsmasq_config_actions:
+  - "add"
+  - "remove"
+  - "clear_all"
+  - "none"
+
+dnsmasq_name: dnsmasq
+dnsmasq_yum_name: dnsmasq
+dnsmasq_port_number: 53
+dnsmasq_pid_dir: /var/run
+dnsmasq_local_ip: 127.0.0.2
+dnsmasq_primaryconfig_file: dnsmasq.conf
+dnsmasq_primaryconfig_file_template: "{{dnsmasq_primaryconfig_file}}.j2"
+
+dnsmasq_config_action: none
+dnsmasq_config_file: dnsmasq_readme.txt
+dnsmasq_config_file_template: "{{dnsmasq_config_file}}.j2"

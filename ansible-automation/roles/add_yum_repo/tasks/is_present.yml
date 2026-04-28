@@ -1,0 +1,21 @@
+---
+- name: Add repository
+  become: true
+  ansible.builtin.yum_repository:
+    description: '{{ item.description }}'
+    name: '{{ item.name }}'
+    baseurl: '{{ item.baseurl }}'
+    enabled: yes
+    gpgcheck: no
+  loop: '{{ baseline_repos }}'
+
+- name: Add repository
+  become: true
+  ansible.builtin.yum_repository:
+    description: '{{ item.description }}'
+    name: '{{ item.name }}'
+    baseurl: '{{ item.baseurl }}'
+    enabled: yes
+    gpgcheck: no
+  loop: '{{ baseline_repos }}'
+  when: delta_repos is defined

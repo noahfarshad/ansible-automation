@@ -1,0 +1,8 @@
+---
+# tasks file for remove_known_hosts
+- name: remove known_hosts
+  delegate_to: localhost
+  connection: local 
+  ansible.builtin.file:
+    path: "~/.ssh/known_hosts"
+    state: absent

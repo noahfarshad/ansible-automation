@@ -1,0 +1,8 @@
+- name: Remove the groups in group list
+  become: true
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    gid: "{{ item.gid }}"
+    state: absent
+  loop: "{{ group_list }}"
+  when: group_list is defined

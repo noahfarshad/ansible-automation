@@ -1,0 +1,45 @@
+---
+
+oracle_owner: ora_rmt
+oracle_group: ora_rmt
+oracle_perms: "0755"
+ORACLE_HOME: /opt/oracle/app/ora_rmt/product/12.1.0
+ORACLE_SID: example
+JAVA_HOME: /opt/Oracle/java
+PATH: "$ORACLE_HOME/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/var/shares/cots/midtier_share/admin_scripts/:/home/apps/ora_rmt/bin"
+
+#
+#  Database Parameterization related items
+db_process_name: ora_pmon_example
+initd_script_name_example: dbora_example
+
+#  Used for the location for creating the parameter table
+schema_name: CP_Example_DATA
+
+# Reboot Database Setting - MUST BE all lowercase false true
+reboot_database_permitted: "true"
+
+#
+# List of Database Parameters
+#   Format is important it must be parameter:parameter value with no white space around the :
+#
+#  Database view v$parameter is used for examining database parameter values.  If you
+#  want to change a value look at the parameter in this view to ensure the case is
+#  correct if its a text value!
+#
+#  DB Parameter Notes:
+#  --------------------
+#  recyclebin:OFF - OFF or ON must be uppercase
+#
+db_parameters:
+  - remote_login_passwordfile:NONE
+  - db_writer_processes:11
+  - fast_start_mttr_target:900
+  - log_buffer:300000000
+  - open_cursors:600
+  - pga_aggregate_target:250000000
+  - processes:600
+  - recyclebin:OFF
+  - session_cached_cursors:250
+
+

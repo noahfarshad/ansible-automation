@@ -1,0 +1,7 @@
+---
+#Do not include /bin/java at end of expected path
+detect_java_path: /opt/Oracle/java
+#Java major version proceeds the underscore.  Example: 1.8.0_191 becomes 1.8.0
+detect_java_major_version: 1.8.0
+#Java minor version follows the underscore.  Example: 1.8.0_191 becomes 191
+detect_java_minor_version: 191

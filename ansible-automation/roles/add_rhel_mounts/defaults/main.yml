@@ -1,0 +1,16 @@
+parameters:
+  mount_host_src: "{{ 'san01.example.coach' if system.tld == 'dev.local' else 'san01' }}"
+  mount_rhel_paths:
+  - mount_path: /mnt/misc
+    src: "{{ parameters.mount_host_src }}:/export/misc"
+    fstype: nfs
+    opts: vers=3,rw,fg,hard,intr,proto=tcp,retry=10
+  - mount_path: /mnt/data
+    src: "{{ parameters.mount_host_src }}:/export/data"
+    fstype: nfs
+    opts: vers=3,rw,fg,hard,intr,proto=tcp,retry=10
+  - mount_path: /mnt/software
+    src: "{{ parameters.mount_host_src }}:/export/software"
+    fstype: nfs
+    opts: vers=3,rw,fg,hard,intr,proto=tcp,retry=10
+

@@ -1,0 +1,46 @@
+---
+# tasks file for configure_av_client_win
+- set_fact: 
+    mcafee_path: "/mnt/software/McAfee_HBSS_Installer"
+    
+- name: Verify Installer Exists
+  ansible.builtin.stat:
+    path: "{{ mcafee_path }}/McAfeeSmartInstall.exe"
+  register: file_stat
+  delegate_to: localhost
+  
+- name: Assert Installer is Accessible
+  ansible.builtin.assert: 
+    that: file_stat.stat.exists == true
+    msg: "The path {{ mcafee_path }}/McAfeeSmartInstall.exe does not exist. Please download the installer from http://admin01.example.coach:8443/core and move it to the specified folder"
+
+- name: Create Temp Folder
+  ansible.windows.win_tempfile:
+    state: directory
+    suffix: "mcafee_hbss"
+  register: install_loc
+
+- name: Copy Installer to Temp Folder
+  ansible.windows.win_copy:
+    src: "{{ mcafee_path }}"
+    dest: "{{ install_loc.path }}\\"
+
+- set_fact: 
+    sw_to_install:
+      baselinename: McAfee HBSS
+      installerpath: "{{ install_loc.path }}\\McAfee_HBSS_Installer\\McAfeeSmartInstall.exe"
+      productid: '{6256F19B-18EB-4942-8A7C-5A0A9DABFA35}' 
+
+- name: Installing software. May take a while...
+  ansible.windows.win_package:
+    path: "{{ sw_to_install['installerpath'] }}"
+    product_id: "{{ sw_to_install['productid'] }}"
+    state: present
+  register: install_status
+  failed_when: install_status.rc is defined and install_status.rc not in [SUCCESS, SUCCESS_REBOOT_INITIATED]
+  changed_when: install_status.rc is defined and install_status.rc in [SUCCESS, SUCCESS_REBOOT_INITIATED]
+  
+- name: Clear Temp Folder
+  ansible.windows.win_file:
+    path: "{{ install_loc.path }}"
+    state: absent

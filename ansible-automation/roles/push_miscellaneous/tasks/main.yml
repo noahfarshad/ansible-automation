@@ -1,0 +1,14 @@
+---
+# tasks file for push_miscellaneous
+
+- ansible.builtin.include_tasks: is_present.yml
+  when: desired_state | default('present') == 'present'
+
+- ansible.builtin.include_tasks: is_absent.yml
+  when: desired_state | default('present') == 'absent'
+
+#- ansible.builtin.include_tasks: is_started.yml
+#  when: desired_state | default('present') == 'started'
+
+#- ansible.builtin.include_tasks: is_stopped.yml
+#  when: desired_state | default('present') == 'stopped'

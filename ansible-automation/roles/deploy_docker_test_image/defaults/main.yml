@@ -1,0 +1,8 @@
+image_dir: "/opt/pest/"
+ptor_dir: "/opt/test_files/"
+ptor_local_dir: "{{staging}}/test_files/"
+test_tar: gc2Tests.tar.gz
+
+test_image:
+  name: node-ff
+  tag: 1.0.0

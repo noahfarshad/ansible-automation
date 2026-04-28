@@ -1,0 +1,17 @@
+---
+# defaults file for load_neo4j_store
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+backup_dir: "/opt/load_neo4j_store"
+# db_name: ""
+# db_name_dump: ""
+# db_name_version: ""
+# group: ""
+# neo4j_command: ""
+# neo4j_command_admin: ""
+# nexus_gold_repository: ""
+# nexus_host_qualified: ""
+# user: ""
+# version: ""

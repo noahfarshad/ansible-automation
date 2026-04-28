@@ -1,0 +1,15 @@
+---
+#ansible-playbook -i inventory/STRINGNAMEHERE create_SFA_environment.yml -e "version=XX.XX.XX.XXXX"
+#  Version is required for create_odsm_group.yml 
+
+- include: config_rel_properties.yml
+
+- include: extend_weblogic_stack_for_sfa.yml
+
+# put hazelcast jars on managed server paths
+# The lib dir should be 0750, but this will set it to 0755
+- hosts: managedserversrelsfa
+  vars:
+  - hazelcast_directory: /u01/domains/wl_domain/lib
+  roles:
+    - installers/install_hazelcast_server

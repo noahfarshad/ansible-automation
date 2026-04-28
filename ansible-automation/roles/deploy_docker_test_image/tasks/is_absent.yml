@@ -1,0 +1,10 @@
+---
+# tasks file for deploy_docker_test_image — absent
+#
+# Removes the extracted directory tree.
+
+- name: Remove extracted destination
+  ansible.builtin.file:
+    path: "{{ extract_dest | default(install_dir) }}"
+    state: absent
+  when: (extract_dest | default(install_dir | default(''))) | length > 0

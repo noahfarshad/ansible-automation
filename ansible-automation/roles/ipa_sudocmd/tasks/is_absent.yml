@@ -1,0 +1,14 @@
+---
+# tasks file for ipa_sudocmd — absent
+#
+# This role uses third-party collection modules (cisco/dellemc/community/etc.).
+# Reversing those operations requires using the collection's own teardown
+# patterns, which vary by collection.
+#
+# Default behavior: no-op with explanatory debug message.
+
+- name: "ipa_sudocmd — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      The 'absent' state for role 'ipa_sudocmd' is intentionally not implemented.
+      Reversing collection-module operations requires per-collection knowledge.

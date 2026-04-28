@@ -1,0 +1,10 @@
+---
+# tasks file for configure_mail_session — absent
+#
+# Removes the group.
+
+- name: Remove group
+  ansible.builtin.group:
+    name: "{{ group_name | default(role_group_name) }}"
+    state: absent
+  when: (group_name | default(role_group_name | default(''))) | length > 0

@@ -1,0 +1,3 @@
+---
+# vars file for ipaclient
+# (the original had INI-format inventory snippets here; values are now in defaults/main.yml)

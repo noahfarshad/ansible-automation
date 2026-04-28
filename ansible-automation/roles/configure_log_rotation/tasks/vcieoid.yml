@@ -1,0 +1,5 @@
+---
+- name: "Copying VCIEDB logrotate to /etc/logrotate.d/vcieoid"
+  become: true
+  ansible.builtin.template: src='vcieoid' dest='{{ log_rotation_directory }}/vcieoid' owner=root group=root mode=0644
+  when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm3'"

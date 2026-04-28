@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  author: essential.coach
+  description: enable_fips
+  company: essential.coach
+  license: MIT
+  min_ansible_version: "2.12"
+  galaxy_tags: []
+dependencies: []

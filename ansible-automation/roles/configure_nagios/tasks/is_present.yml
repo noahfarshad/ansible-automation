@@ -1,0 +1,17 @@
+---
+# tasks file for configure_nagios — present
+
+- ansible.builtin.include_tasks: pushNagiosConfigs.yml
+  when: desired_state == 'present'
+
+- ansible.builtin.include_tasks: pushHostConfigs.yml
+  when: desired_state == 'present'
+
+#- include: is_started.yml
+#  when: desired_state == 'started'
+
+#- include: is_stopped.yml
+#  when: desired_state == 'stopped'
+
+#- include: is_absent.yml
+#  when: desired_state == 'absent'

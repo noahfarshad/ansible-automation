@@ -1,0 +1,66 @@
+---
+
+- name: Create neo4j directory if it is missing
+  become: true
+  file:
+    path: "{{neo4j_dir}}"
+    state: directory
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+  tags:
+    - neo4j.install
+
+- name: Extract neo4j tar.gz
+  become: true
+  become_user: app_admin
+  unarchive: 
+    src: "{{staging}}/{{item}}"
+    dest: "{{neo4j_dir}}"
+    mode: 0755
+  loop:
+    - "{{neo4j_archive}}"
+  tags:
+    - neo4j.install
+
+#- name: Copy the startup script to /etc/init.d
+#  become: true
+#  template: 
+#    src: "{{item}}"
+#    dest: "/etc/init.d/{{item}}"
+#    mode: 0755
+#  with_items:
+#    - "{{neo4j_service_name}}"
+#    - "{{service_env}}"
+#  tags:
+#    - neo4j.install
+    
+- name: Update the neo4j configuration to use the correct listen address
+  become: true
+  become_user: app_admin
+  lineinfile:
+    path: "{{neo4j_dir}}/{{neo4j_package}}/conf/neo4j.conf"
+    regexp: '^#dbms.connectors.default_listen_address='
+    line: 'dbms.connectors.default_listen_address=0.0.0.0'
+  tags:
+    - neo4j.install
+    
+- name: Set the initial database password
+  become: true
+  become_user: app_admin
+  command: "{{neo4j_dir}}/{{neo4j_package}}/bin/neo4j-admin set-initial-password {{app_db_user_db_password}}"
+  ignore_errors: yes
+  environment:
+    JAVA_CMD: "{{java_install_directory}}/bin/java"
+  tags:
+    - neo4j.install
+
+- name: "Start the Neo4j instance"
+  become: true
+  systemd:
+    name: "{{neo4j_service_name}}"
+    state: started
+    enabled: yes
+  tags:
+    - neo4j.install
+    - neo4j.start

@@ -1,0 +1,17 @@
+---
+# tasks file for disable_db_remote_login — present
+
+- name: Disable remote access as sys and restart the DB
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: |
+         $ORACLE_HOME/bin/sqlplus / as sysdba << EOF
+         alter system set remote_login_passwordfile=NONE scope=spfile;
+         shutdown immediate;
+         startup;
+         << EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba << EOF

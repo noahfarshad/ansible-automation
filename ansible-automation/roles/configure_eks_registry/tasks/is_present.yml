@@ -1,0 +1,28 @@
+---
+# tasks file for configure_eks_registry
+
+- name: Creating cncf registry service file
+  become: true
+  ansible.builtin.shell: |
+    cat << EOF > /etc/systemd/system/cncf-registry.service
+
+    [Unit]
+    Description=CNCF registry configured via software factory
+
+    [Service]
+    ExecStart=/bin/bash -c "software-factory registry run --config /usr/local/bin/{{ sw_factory_yaml }}"
+
+    [Install]
+    WantedBy=multi-user.target
+
+    EOF
+
+  changed_when: false
+- name: Enable Registry Protocols
+  become: true
+  ansible.builtin.shell: |
+    firewall-cmd --add-port=443/tcp --permanent
+    firewall-cmd --reload
+    systemctl daemon-reload
+    systemctl enable cncf-registry --now
+  changed_when: false

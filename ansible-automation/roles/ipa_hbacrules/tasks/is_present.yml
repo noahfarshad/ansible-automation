@@ -1,0 +1,842 @@
+---
+# tasks file for ipa_hbacrules
+- name: Ensure hbacrule sysd is present
+
+  community.general.ipa_hbacrule:
+    name: sysd
+    description: Allow Example Org Database Administrators access
+    servicecategory: all
+    hostgroup:
+    - sysd
+    usergroup:
+    - dba
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure hbacrule cdfs-compute is present
+
+  community.general.ipa_hbacrule:
+    name: cdfs-compute
+    description: Allow Example Org Users to access Cloud Depiction and Forecasting Systems
+    servicecategory: all
+    hostgroup:
+    - cdfs-compute
+    usergroup:
+    - 16ws-wxnctune
+    - sys-cdfs
+    - sys-cm
+    - 16ws-wxet
+    - 16ws-wxnc
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure hbacrule ose-compute is present
+
+  community.general.ipa_hbacrule:
+    name: ose-compute
+    description: Allow Example Org Users to access Cloud Depiction and Forecasting Systems
+    servicecategory: all
+    hostgroup:
+    - ose-compute
+    usergroup:
+    - sys-cdfs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure hbacrule swfs core is present
+
+  community.general.ipa_hbacrule:
+    name: swfs-core
+    description: Allow Example Org Users to access SWAFS Systems
+    servicecategory: all
+    hostgroup:
+    - swfs-core
+    usergroup:
+    - 16ws-swit
+    - 16ws-wxet
+    - sys-swafs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure hbacrule swfs gaim is present
+
+  community.general.ipa_hbacrule:
+    name: swfs-gaim
+    description: Allow Example Org Users to access SWAFS Systems
+    servicecategory: all
+    hostgroup:
+    - swfs-gaim
+    usergroup:
+    - 16ws-swit
+    - 16ws-wxet
+    - sys-swafs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure hbacrule swfs is present
+
+  community.general.ipa_hbacrule:
+    name: afw-swafs
+    description: Allow Example Org Users to access SWAFS Systems
+    servicecategory: all
+    hostgroup:
+    - afw-swafs
+    usergroup:
+    - 16ws-swit
+    - 16ws-wxet
+    - sys-swafs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure hbacrule afw-appadmin is present
+
+  community.general.ipa_hbacrule:
+    name: afw-appadmin
+    description: Allow Example Org Users to access App Admin Systems
+    servicecategory: all
+    hostgroup:
+    - afw-appadmin
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure hbacrule afw-dmzproxy is present
+
+  community.general.ipa_hbacrule:
+    name: afw-dmzproxy
+    description: Allow Example Org Users to access dmzproxy Systems
+    servicecategory: all
+    hostgroup:
+    - afw-dmzproxy
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure hbacrule afw-earth is present
+
+  community.general.ipa_hbacrule:
+    name: afw-earth
+    description: Allow Example Org Users to access Google Earth Systems
+    servicecategory: all
+    hostgroup:
+    - afw-earth
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure hbacrule afw-edh is present
+
+  community.general.ipa_hbacrule:
+    name: afw-edh
+    description: Allow Example Org Users to access EDH Systems
+    servicecategory: all
+    hostgroup:
+    - afw-edh
+    usergroup:
+    - afwwebs
+    - sys-analyst
+    - sys-cm
+    - sys-datarouting-t
+    - wda4
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-gfapp is present
+
+  community.general.ipa_hbacrule:
+    name: afw-gfapp
+    description: Allow Example Org Users to access Glassfish Systems
+    servicecategory: all
+    hostgroup:
+    - afw-gfapp
+    usergroup:
+    - afwwebs
+    - sys-cm
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-jetxfer is present
+
+  community.general.ipa_hbacrule:
+    name: afw-jetxfer
+    description: Allow Example Org Users to access Joint Environmental Toolkit Systems
+    servicecategory: all
+    hostgroup:
+    - afw-jetxfer
+    usergroup:
+    - afwwebs
+    - sys-analyst
+    - sys-cm
+    - sys-datarouting-t
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-jms is present
+
+  community.general.ipa_hbacrule:
+    name: afw-jms
+    description: Allow Example Org Users to access JMS Systems
+    servicecategory: all
+    hostgroup:
+    - afw-jms
+    usergroup:
+    - afwwebs
+    - wda4
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-metsat is present
+
+  community.general.ipa_hbacrule:
+    name: afw-metsat
+    description: Allow Example Org Users to access Metsat Systems
+    servicecategory: all
+    hostgroup:
+    - afw-metsat
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-metweb is present
+
+  community.general.ipa_hbacrule:
+    name: afw-metweb
+    description: Allow Example Org Users to access Metweb Systems
+    servicecategory: all
+    hostgroup:
+    - afw-metweb
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-mw is present
+
+  community.general.ipa_hbacrule:
+    name: afw-mw
+    description: Allow Example Org Users to access Moving Weather Systems
+    servicecategory: all
+    hostgroup:
+    - afw-mw
+    usergroup:
+    - afwwebs
+    - 16ws-wxnm
+    - edhxfer
+    - wda4
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-oam is present
+
+  community.general.ipa_hbacrule:
+    name: afw-oam
+    description: Allow Example Org Users to access OAM Systems
+    servicecategory: all
+    hostgroup:
+    - afw-oam
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-ows is present
+
+  community.general.ipa_hbacrule:
+    name: afw-ows
+    description: Allow Example Org Users to access OWS Systems
+    servicecategory: all
+    hostgroup:
+    - afw-ows
+    usergroup:
+    - afwwebs
+    - 21-ows-t
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-php is present
+
+  community.general.ipa_hbacrule:
+    name: afw-php
+    description: Allow Example Org Users to access  PHP Systems
+    servicecategory: all
+    hostgroup:
+    - afw-php
+    usergroup:
+    - afwwebs
+    - 16ws-wxet
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-ps is present
+
+  community.general.ipa_hbacrule:
+    name: afw-ps
+    description: Allow Example Org Users to access Product Services Systems
+    servicecategory: all
+    hostgroup:
+    - afw-ps
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-pslite is present
+
+  community.general.ipa_hbacrule:
+    name: afw-pslite
+    description: Allow Example Org Users to access pslite Systems
+    servicecategory: all
+    hostgroup:
+    - afw-pslite
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-splunk is present
+
+  community.general.ipa_hbacrule:
+    name: afw-splunk
+    description: Allow Example Org Users to access splunk Systems
+    servicecategory: all
+    hostgroup:
+    - afw-splunk
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-swafs is present
+
+  community.general.ipa_hbacrule:
+    name: afw-swafs
+    description: Allow Example Org Users to access splunk Systems
+    servicecategory: all
+    hostgroup:
+    - afw-swafs
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-webdas is present
+
+  community.general.ipa_hbacrule:
+    name: afw-webdas
+    description: Allow Example Org Users to access afw-webdas Systems
+    servicecategory: all
+    hostgroup:
+    - afw-webdas
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-webgate is present
+
+  community.general.ipa_hbacrule:
+    name: afw-webgate
+    description: Allow Example Org Users to access afw-webgate Systems
+    servicecategory: all
+    hostgroup:
+    - afw-webgate
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-webmisc is present
+
+  community.general.ipa_hbacrule:
+    name: afw-webmisc
+    description: Allow Example Org Users to access afw-webmisc Systems
+    servicecategory: all
+    hostgroup:
+    - afw-webmisc
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+  
+- name: Ensure hbacrule afw-webproxy is present
+
+  community.general.ipa_hbacrule:
+    name: afw-webproxy
+    description: Allow Example Org Users to access afw-webproxy Systems
+    servicecategory: all
+    hostgroup:
+    - afw-webproxy
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-virapp is present
+
+  community.general.ipa_hbacrule:
+    name: afw-virapp
+    description: Allow Example Org Users to access afw-virapp Systems
+    servicecategory: all
+    hostgroup:
+    - afw-virapp
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-vwingest is present
+
+  community.general.ipa_hbacrule:
+    name: afw-vwingest
+    description: Allow Example Org Users to access afw-vwingest Systems
+    servicecategory: all
+    hostgroup:
+    - afw-vwingest
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule afw-vwproxy is present
+
+  community.general.ipa_hbacrule:
+    name: afw-vwproxy
+    description: Allow Example Org Users to access afw-vwproxy Systems
+    servicecategory: all
+    hostgroup:
+    - afw-vwproxy
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule wxrd-aersat is present
+
+  community.general.ipa_hbacrule:
+    name: wxrd-aersat
+    description: Allow Example Org Users to access wxrd-aersat Systems
+    servicecategory: all
+    hostgroup:
+    - wxrd-aersat
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule wxrd-swit is present
+
+  community.general.ipa_hbacrule:
+    name: wxrd-swit
+    description: Allow Example Org Users to access wxrd-swit Systems
+    servicecategory: all
+    hostgroup:
+    - wxrd-swit
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule sems-cm is present
+
+  community.general.ipa_hbacrule:
+    name: sems-cm
+    description: Allow Example Org Users to access sems-cm Systems
+    servicecategory: all
+    hostgroup:
+    - sems-cm
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule sems-cmnode is present
+
+  community.general.ipa_hbacrule:
+    name: sems-cmnode
+    description: Allow Example Org Users to access sems-cmnode Systems
+    servicecategory: all
+    hostgroup:
+    - sems-cmnode
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule sysc-alpha is present
+
+  community.general.ipa_hbacrule:
+    name: sysc-alpha
+    description: Allow Example Org Users to access sysc-alpha Systems
+    servicecategory: all
+    hostgroup:
+    - sysc-alpha
+    usergroup:
+    - afwwebs
+    - sys-an
+    - sys-cm
+    - sys-analyst
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule sysc-sat is present
+
+  community.general.ipa_hbacrule:
+    name: sysc-sat
+    description: Allow Example Org Users to access sysc-sat Systems
+    servicecategory: all
+    hostgroup:
+    - sysc-sat
+    usergroup:
+    - afwwebs
+    - sys-analyst
+    - sys-cdfs
+    - sys-cm
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule sysc-swx is present
+
+  community.general.ipa_hbacrule:
+    name: sysc-swx
+    description: Allow Example Org Users to access sysc-swx Systems
+    servicecategory: all
+    hostgroup:
+    - sysc-swx
+    usergroup:
+    - afwwebs
+    - sys-analyst
+    - sys-an
+    - sys-cm
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule sysc-volc is present
+
+  community.general.ipa_hbacrule:
+    name: sysc-volc
+    description: Allow Example Org Users to access sysc-volc Systems
+    servicecategory: all
+    hostgroup:
+    - sysc-volc
+    usergroup:
+    - afwwebs
+    - sys-analyst
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule cm-pipeline is present
+
+  community.general.ipa_hbacrule:
+    name: cm-pipeline
+    description: Allow Example Org Users to access cm-pipeline Systems
+    servicecategory: all
+    hostgroup:
+    - cm-pipeline
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule dp2g-dtig is present
+
+  community.general.ipa_hbacrule:
+    name: dp2g-dtig
+    description: Allow Example Org Users to access dp2g-dtig(datapipe) Systems
+    servicecategory: all
+    hostgroup:
+    - dp2g-dtig
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule wdd-avms is present
+
+  community.general.ipa_hbacrule:
+    name: wdd-avms
+    description: Allow Example Org Users to access wdd-avms Systems
+    servicecategory: all
+    hostgroup:
+    - wdd-avms
+    usergroup:
+    - afwwebs
+    - edhxfer
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule wdd-mdrg is present
+
+  community.general.ipa_hbacrule:
+    name: wdd-mdrg
+    description: Allow Example Org Users to access wdd-mdrg Systems
+    servicecategory: all
+    hostgroup:
+    - wdd-mdrg
+    usergroup:
+    - afwwebs
+    - sys-analyst
+    - sys-cm
+    - sys-datarouting-t
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule wdd-pais is present
+
+  community.general.ipa_hbacrule:
+    name: wdd-pais
+    description: Allow Example Org Users to access wdd-pais Systems
+    servicecategory: all
+    hostgroup:
+    - wdd-pais
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true 
+
+- name: Ensure hbacrule wdd-wda is present
+
+  community.general.ipa_hbacrule:
+    name: wdd-wda
+    description: Allow Example Org Users to access wdd-wda Systems
+    servicecategory: all
+    hostgroup:
+    - wdd-wda
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true   
+
+- name: Ensure hbacrule sym-cm is present
+
+  community.general.ipa_hbacrule:
+    name: sym-cm
+    description: Allow Example Org Users to access sym-cm Systems
+    servicecategory: all
+    hostgroup:
+    - sym-cm
+    usergroup:
+    - afwwebs
+    - sys-analyst
+    - sys-cm
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true   
+
+- name: Ensure hbacrule gvcm-cmsrv is present
+
+  community.general.ipa_hbacrule:
+    name: gvcm-cmsrv
+    description: Allow Example Org Users to access gvcm-cmsrv Systems
+    servicecategory: all
+    hostgroup:
+    - gvcm-cmsrv
+    usergroup:
+    - afwwebs
+    - 16ws-gvcm
+    - 16ws-gvcm-user
+    - 16ws-wxet
+    - sys-analyst
+    - sys-cm
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true   
+
+- name: Ensure hbacrule wdd-globus is present
+
+  community.general.ipa_hbacrule:
+    name: wdd-globus
+    description: Allow Example Org Users to access wdd-globus Systems
+    servicecategory: all
+    hostgroup:
+    - wdd-globus
+    usergroup:
+    - afwwebs
+    - 16ws
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true   
+
+- name: Ensure hbacrule afwwebs-refresh is present
+
+  community.general.ipa_hbacrule:
+    name: afwwebs-refresh
+    description: Allow Example Org Users to access wdd-globus Systems
+    servicecategory: all
+    hostgroup:
+    - afwwebs-refresh
+    usergroup:
+    - afwwebs
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true   
+
+- name: Ensure hbacrule essadmin is present
+
+  community.general.ipa_hbacrule:
+    name: essadmin
+    description: Allow Example Org System Administrators access
+    servicecategory: all
+    hostcategory: all
+    usergroup:
+    - essadmin
+    - admins
+    state: present
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure hbacrule allow_all is disabled
+
+  community.general.ipa_hbacrule:
+    name: allow_all
+    description: Allow all users to access any host from any host
+    state: disabled
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true

@@ -1,0 +1,22 @@
+---
+# tasks file for download_scanning_artifacts — present
+
+# Variables are inherited from command line arguments on package_example.yml
+
+# Create Staging directory if it does not exist
+- name: Create string staging directory if it does not exist.
+  ansible.builtin.file:
+    path: "{{staging}}"
+    state: directory
+    mode: 0755
+
+# Download scanning artifacts
+- name: Download Docker Scanning Artifacts
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}/{{item.group}}/{{item.artifact}}/{{item.version}}/{{item.artifact}}-{{item.version}}.{{item.extension}}
+    dest: "{{staging}}"
+    timeout: 30
+  loop:
+    - "{{docker_scans}}"
+  tags:
+     - scan.dependencies

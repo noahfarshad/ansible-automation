@@ -1,0 +1,10 @@
+---
+# defaults file for install_office2013
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# office2013: ""
+# office_2013_path: ""
+sw_base_dir: "/opt/install_office2013"
+# sw_to_install: ""

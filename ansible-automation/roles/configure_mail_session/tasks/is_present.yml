@@ -1,0 +1,73 @@
+---
+# tasks file for configure_mail_session — present
+
+- block:
+    - name: Create role vars file directory
+      local_action: file path={{role_path}}/files state=directory mode=0755
+      run_once: true
+
+    - name: Populate role vars file
+      local_action: template src={{role_path}}/templates/vars_template.yml dest={{role_path}}/files/vars_populated.yml
+      run_once: true
+
+    - name: Pickle role vars
+      local_action: command python {{pickler}} {{role_path}}/files/vars_populated.yml {{role_path}}/files/pickled_vars.p
+      run_once: true
+
+    - name: Change Ownership of local files dir
+
+      local_action: command chown -R  {{ansible_os_user}}:{{ansible_os_group}} {{role_path}}/files
+      run_once: true
+
+    - name: "Copy Over Template files"
+
+      become_user: "{{os_user}}"
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "{{gc2_remote_dir}}"
+        owner: "{{os_user}}"
+        ansible.builtin.group: "{{os_group}}"
+        mode: 0600
+      loop:
+        - configure_mail_session.py
+
+    - name: "Copy Over Pickle File"
+
+      become_user: "{{os_user}}"
+      ansible.builtin.copy:
+        src: "{{pickle_file_name}}"
+        dest: "{{gc2_remote_dir}}"
+        owner: "{{os_user}}"
+        ansible.builtin.group: "{{os_group}}"
+        mode: 0600
+
+    - name: Create the Mail Session
+
+      become_user: '{{os_user}}'
+      ansible.builtin.shell: '{{gc2_wlst_path}} {{gc2_remote_dir}}/configure_mail_session.py'
+
+      # TODO: review changed_when for: {{gc2_wlst_path}} {{gc2_remote_dir}}/configure_mail_session.
+    - name: "Remove configure_mail_session.py"
+
+      become_user: "{{os_user}}"
+      ansible.builtin.file:
+        path: "{{gc2_remote_dir}}/configure_mail_session.py"
+        state: absent
+
+    - name: "Remove pickle file"
+
+      become_user: "{{os_user}}"
+      ansible.builtin.file:
+        path: "{{gc2_remote_dir}}/pickled_vars.p"
+        state: absent
+
+    - name: "Remove local pickle file from /tmp"
+
+      local_action: file path={{gc2_remote_dir}}/pickled_vars.p state=absent
+      run_once: true
+
+    - name: "Remove local files dir"
+
+      local_action: file path={{role_path}}/files state=absent
+      run_once: true
+  become: true

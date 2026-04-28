@@ -1,0 +1,3 @@
+---
+jenkins_cli_dl: "{{jenkins_url}}/jnlpJars/jenkins-cli.jar"
+cli_location: /var/tmp/jenkins

@@ -1,0 +1,23 @@
+---
+- name: "Checking if {{service_name}} .pid file is present"
+  ansible.builtin.wait_for:
+    path:  "{{pid_location}}"
+    timeout: 5
+    state: present
+    # msg Requires Ansible 2.4 or higher, uncomment the line below after upgrade to enable
+    #msg: "The {{service_name}} .pid is not yet present"
+  when: ansible_hostname == inventory_hostname
+  register: servicepidpresent
+  ignore_errors: true
+
+- name: "Status"
+  ansible.builtin.debug:
+    msg: "{{servicepidpresent.msg}}"
+  when: servicepidpresent.failed is defined
+
+- name: "Halt if {{service_name}} pid file not found"
+  ansible.builtin.fail:
+     msg: "FAILED: {{service_name}} pid file not found on {{ansible_hostname}}. {{servicepidpresent.msg}}"
+  when: servicepidpresent.failed is defined
+  tags:
+    - forcefail

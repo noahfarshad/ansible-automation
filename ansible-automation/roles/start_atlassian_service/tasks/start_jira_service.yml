@@ -1,0 +1,6 @@
+- name: "Starting jira"
+  become: true
+  ansible.builtin.service:
+    name: jira
+    pattern: jira
+    state: started

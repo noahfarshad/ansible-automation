@@ -1,0 +1,60 @@
+---
+
+- name: Install Sql Server Express 2014
+  block:
+
+  - name: create temp folder for config file
+    ansible.windows.win_tempfile:
+      state: directory
+      suffix: 'sqlexpr2014'
+    register: install_loc
+
+  - name: copy sql express config file to temp folder  
+    ansible.windows.win_template:
+     src: files/sql_expr_conf.ini.j2
+     dest: "{{ install_loc.path }}\\sql_expr_conf.ini"
+
+  - name: define arguments
+    ansible.builtin.set_fact:
+      args: "/ConfigurationFile={{install_loc.path}}\\sql_expr_conf.ini"
+
+  - name: install SQL server express 2014
+    ansible.windows.win_package:
+      path: "{{artifact_staging}}{{SQLEXPR}}"
+      arguments: "{{ args }}"
+      wait_for_children: true
+      state: present
+    become: true
+    become_method: runas
+    become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+    vars:
+      ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+      ansible_become_password: '{{domain_password}}'
+
+  - name: copy SQL server Management studio config file to temp folder
+    ansible.windows.win_template:
+      src: files/ssms_conf.ini.j2
+      dest: "{{ install_loc.path }}\\ssms_conf.ini"
+  
+  - name: define arguments
+    ansible.builtin.set_fact:
+      args: "/ConfigurationFile={{install_loc.path}}\\ssms_conf.ini"
+
+  - name: install SQL server Management Studio
+    ansible.windows.win_package:
+      path: "{{artifact_staging}}{{SQLSMS}}"
+      arguments: "{{ args }}"
+      wait_for_children: true
+      state: present
+    become: true
+    become_method: runas
+    become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+    vars:
+      ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+      ansible_become_password: '{{domain_password}}'
+  
+  always:
+  - name: clear temp folder
+    ansible.windows.win_file:
+      path: "{{ install_loc.path }}"
+      state: absent

@@ -1,0 +1,8 @@
+---
+# defaults file for install_trellix_agent_rhel
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# trellix_path_rhel: ""
+trellix_unpack_dir: "/opt/install_trellix_agent_rhel"

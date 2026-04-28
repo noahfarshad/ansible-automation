@@ -1,0 +1,2 @@
+---
+pid_location: "{{service_dir}}/{{service_name}}.pid"

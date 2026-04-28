@@ -1,0 +1,12 @@
+splunk_package_list:
+  - src: splunk-add-on-for-microsoft-windows_600.tgz 
+    dest: /opt/splunk/etc/deployment-apps/
+  - src: splunk-add-on-for-unix-and-linux_602.tgz
+    dest: /opt/splunk/etc/deployment-apps/ 
+
+splunk_port_list:
+  - 8000/tcp
+  - 514/tcp
+  - 1514/tcp
+  - 9997/tcp
+  - 8089/tcp

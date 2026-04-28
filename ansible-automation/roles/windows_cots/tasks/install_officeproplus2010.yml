@@ -1,0 +1,67 @@
+---
+
+- name: Create Temp Folder for Installer
+  ansible.windows.win_tempfile: 
+    state: directory 
+    suffix: 'officeproplus2010'
+  register: install_loc
+
+- no_log: true
+  ansible.builtin.include_vars:
+    ansible.builtin.file: roles/nexus_setup_server/vars/nexus_vars.yml
+    name: nexus_vars
+
+- name: Query Nexus For Installer
+  register: artifact_list
+  delegate_to: localhost
+  custom_nexus_query:
+    nexus_base_url: "{{ nexus_vars.nexus_rest_api }}"
+    nexus_repo_id: "{{ nexus_vars.raw_public_name }}"
+    nexus_search_repo: "{{ infra_ifc_version }}"
+    nexus_search_artifactid: "Microsoft/Office2010"
+    
+- name: Copy Artifact To Host
+  vars:
+    artifact: "{{ artifact_list.status.query_results[0] }}"
+  block:
+  - name: Copy Installer Zip
+    ansible.windows.win_get_url:
+      validate_certs: false
+      url: "{{ artifact.downloadUrl }}"
+      dest: "{{ install_loc.path }}\\{{ artifact.filename}}"
+
+  - name: Unzip Installer
+    ansible.windows.win_unzip:
+      delete_archive: yes
+      src: "{{ install_loc.path }}\\{{ artifact.filename}}"
+      dest: "{{ install_loc.path }}"
+      
+- set_fact: 
+    sw_base_dir: "{{ install_loc.path }}\\Microsoft\\Office2010"
+      
+- set_fact:
+    sw_to_install:
+      baselinename: Microsoft Office Professional Plus 2010
+      requiredversion: 14.0.4763.1000
+      installerpath: "{{ sw_base_dir }}\\setup.exe"
+      productid: Office14.PROPLUS
+      installargs: "/config {{ sw_base_dir }}\\ProPlus.WW\\config.xml /adminfile {{ sw_base_dir }}\\fullinstall.msp"
+
+- name: Wait for Any Other Installation Processes to Complete
+  win_wait_for_process:
+    process_name_pattern: 'msiexec'
+    state: absent
+    timeout: 600
+
+- name: Install Office Professional Plus 2010
+  ansible.windows.win_package:
+    path: "{{ sw_to_install['installerpath'] }}"
+    product_id: "{{ sw_to_install['productid'] }}"
+    arguments: "{{ sw_to_install['installargs'] }}"
+    state: present
+  register: install_status
+  changed_when: install_status.rc is defined and install_status.rc in [SUCCESS, SUCCESS_REBOOT_INITIATED]
+
+- name: Wait for Reboot
+  ansible.builtin.wait_for_connection:
+    delay: 15 

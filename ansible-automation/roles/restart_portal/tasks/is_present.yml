@@ -1,0 +1,33 @@
+---
+# tasks file for restart_portal — present
+
+# This is for restarting the portal ms1 and ms2 servers
+- block:
+    - name: Start Portal Managed Server 1
+
+      ansible.builtin.service:
+        name: wlsportms1
+        state: started
+      when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm51'"
+
+    - name: Start Portal Managed Server 2
+
+      ansible.builtin.service:
+        name: wlsportms2
+        state: started
+      when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm52'"
+
+    - name: Restarting Portal Managed Server 1
+
+      ansible.builtin.service:
+        name: wlsportms1
+        state: restarted
+      when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm51'"
+
+    - name: Restarting Portal Managed Server 2
+
+      ansible.builtin.service:
+        name: wlsportms2
+        state: restarted
+      when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm52'"
+  become: true

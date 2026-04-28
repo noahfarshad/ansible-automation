@@ -1,0 +1,9 @@
+---
+# defaults file for install_package_yum
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# package_list: ""
+# package_upgrade: ""
+# repo_list: ""

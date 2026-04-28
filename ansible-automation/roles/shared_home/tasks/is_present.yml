@@ -1,0 +1,30 @@
+- name: Create shared home directories
+  become: true
+  ansible.builtin.file:
+    path: "{{ item.target }}/{{ item.name }}"
+    owner: "{{ item.owner }}"
+    ansible.builtin.group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    setype: "{{ item.secontext }}"
+    state: directory
+  loop: "{{ shared_homes_list }}"
+
+- name: Move bashrc
+  become: true
+  ansible.builtin.template:
+    src: "{{ shared_home_bashrc_template }}"
+    dest: "{{ item.target }}/{{ item.name }}/.{{ shared_home_bashrc_template }}"
+    owner: "{{ item.owner }}"
+    ansible.builtin.group: "{{ item.group }}"
+    mode: '0740'
+  loop: "{{ shared_homes_list }}"
+
+- name: Move bash_profile
+  become: true
+  ansible.builtin.template:
+    src: "{{ shared_home_profile_template }}"
+    dest: "{{ item.target }}/{{ item.name }}/.{{ shared_home_profile_template }}"
+    owner: "{{ item.owner }}"
+    ansible.builtin.group: "{{ item.group }}"
+    mode: '0740'
+  loop: "{{ shared_homes_list }}"

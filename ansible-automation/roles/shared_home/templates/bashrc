@@ -1,0 +1,9 @@
+# .bashrc
+
+# Source global definitions 
+if [ -f /etc/bashrc ]; then
+        . /etc/bashrc
+fi
+
+# Update prompt
+PS1="[\[\e[1;31m\]{{ system }}\[\e[0m\]|\u@\h \W]\$ "

@@ -1,0 +1,13 @@
+---
+# tasks file for download_microservice_dependencies — present
+
+- name: Download DAGR dependencies
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}/{{item.group}}/{{item.artifact}}/{{item.version}}/{{item.artifact}}-{{item.version}}.{{item.extension}}
+    dest: "{{staging}}/{{item.name}}"
+    timeout: 30
+  loop:
+    - "{{microservice_dependencies}}"
+  tags:
+     - microservice.dependencies
+     - download_artifacts

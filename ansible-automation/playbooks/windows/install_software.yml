@@ -1,0 +1,95 @@
+---
+# playbooks/windows/install_software.yml
+#
+# Installs standard software on Windows hosts. The list of packages comes
+# from `windows_install_packages` (group_vars/windows/main.yml) plus any
+# `windows_extra_packages` (host_vars/<host>.yml).
+#
+# How it works:
+#   - Each entry in windows_install_packages should be a key matching either
+#     a known install_<pkg> role in roles/ OR an entry in the
+#     windows_chocolatey_packages map (handled here).
+#   - We also install via Chocolatey for packages not covered by a dedicated role.
+#
+# Usage:
+#   make windows-software HOST=win01.example.coach
+#
+# Variables:
+#   windows_install_packages (group_vars/windows/main.yml)
+#   windows_extra_packages   (host_vars/<host>.yml, optional)
+#   windows_chocolatey_packages (mapping of package-name -> choco-name)
+
+- name: Install standard software on Windows hosts
+  hosts: windows
+  gather_facts: true
+  vars:
+    desired_state: present
+
+    # Map of "friendly name" -> "chocolatey name". The default covers the
+    # group_vars/windows/main.yml example list. Override or extend as needed.
+    windows_chocolatey_packages:
+      7zip:                       7zip
+      notepad_plus_plus:          notepadplusplus
+      firefox:                    firefox
+      chrome:                     googlechrome
+      vscode:                     vscode
+      putty:                      putty
+      winscp:                     winscp
+      git:                        git
+      wireshark:                  wireshark
+      sql_server_management_studio: sql-server-management-studio
+      powerbi_desktop:            powerbi
+      adobereader:                adobereader
+
+    # Combine the group default with any per-host extras
+    _combined_packages: >-
+      {{
+        (windows_install_packages | default([]))
+        + (windows_extra_packages | default([]))
+      }}
+
+  pre_tasks:
+    - name: Show package list for this host
+      ansible.builtin.debug:
+        msg: "Will install: {{ _combined_packages }}"
+
+    - name: Confirm Chocolatey is installed
+      ansible.windows.win_chocolatey:
+        name: chocolatey
+        state: present
+
+  tasks:
+    # ---------------------------------------------------------------------
+    # Path 1: dedicated install_<pkg> roles in roles/
+    # (Add roles here as the library gains more install_* roles)
+    # ---------------------------------------------------------------------
+    - name: Install via dedicated role — winscp
+      ansible.builtin.include_role:
+        name: install_winscp
+      when: "'winscp' in _combined_packages"
+      tags: [winscp]
+
+    - name: Install via dedicated role — Trellix antivirus agent
+      ansible.builtin.include_role:
+        name: install_trellix_agent_win
+      when: "'trellix' in _combined_packages or install_trellix | default(false) | bool"
+      tags: [trellix, security]
+
+    # ---------------------------------------------------------------------
+    # Path 2: install everything else via Chocolatey
+    # ---------------------------------------------------------------------
+    - name: Install packages via Chocolatey
+      ansible.windows.win_chocolatey:
+        name: "{{ windows_chocolatey_packages[item] | default(item) }}"
+        state: present
+      loop: "{{ _combined_packages }}"
+      when: item not in ['winscp', 'trellix']     # already handled above
+      tags: [chocolatey]
+
+  post_tasks:
+    - name: Summary
+      ansible.builtin.debug:
+        msg:
+          - "Host:              {{ inventory_hostname }}"
+          - "Packages requested: {{ _combined_packages | length }}"
+          - "Packages: {{ _combined_packages }}"

@@ -1,0 +1,44 @@
+---
+# tasks file for generate_ca_keys — present
+
+##### Generate CA Certs
+# Create key pair for CA
+  - name: create self-signed SSL cert
+
+    become_user: app_admin
+    ansible.builtin.command: '{{keytool_path}}/keytool -genkeypair -alias {{CA_name}} -keysize 2048 -keyalg RSA -dname "CN={{CA_name}}, OU=STRATCOM, OU=PKI, OU=DoD, O=U.S. Government, C=US" -sigalg SHA256withRSA -keystore {{target_dir}}/{{CA_name}}/{{CA_name}}.jks -storepass {{cert_pass}} -keypass {{cert_pass}} -validity 3650 -noprompt'
+    args:
+      creates: '{{target_dir}}/{{CA_name}}/{{CA_name}}.jks'
+    tags:
+      - generate_cert
+
+# Convert (.jks) with test CA key pair to (.p12)
+  - name: Convert (.jks) with test CA key pair to (.p12)
+
+    become_user: app_admin
+    ansible.builtin.command: '{{keytool_path}}/keytool -importkeystore -srckeystore {{target_dir}}/{{CA_name}}/{{CA_name}}.jks -srcstoretype jks -destkeystore {{target_dir}}/{{CA_name}}/{{CA_name}}.p12 -deststoretype pkcs12 -srcstorepass {{cert_pass}} -deststorepass {{cert_pass}}'
+    args:
+      creates: '{{target_dir}}/{{CA_name}}/{{CA_name}}.p12'
+    tags:
+      - generate_cert
+
+# Extract (.cer) from (.p12)
+  - name: Extract (.cer) from (.p12)
+
+    become_user: app_admin
+    ansible.builtin.command: 'openssl pkcs12 -in {{target_dir}}/{{CA_name}}/{{CA_name}}.p12 -nokeys -out {{target_dir}}/{{CA_name}}/{{CA_name}}.cer -passin pass:{{cert_pass}}'
+    args:
+      creates: '{{target_dir}}/{{CA_name}}/{{CA_name}}.cer'
+    tags:
+      - generate_cert
+
+  - name: Extract (.key) from (.p12)
+
+    become_user: app_admin
+    ansible.builtin.command: 'openssl {{item}}'
+    loop:
+      - 'pkcs12 -in {{target_dir}}/{{CA_name}}/{{CA_name}}.p12 -nocerts -out {{target_dir}}/{{CA_name}}/{{CA_name}}.key -passin pass:{{cert_pass}} -passout pass:{{cert_pass}}'
+      - 'rsa -in {{target_dir}}/{{CA_name}}/{{CA_name}}.key -out {{target_dir}}/{{CA_name}}/{{CA_name}}.key -passin pass:{{cert_pass}}'
+    tags:
+      - generate_cert
+    # TODO: review changed_when for: openssl {{item}}

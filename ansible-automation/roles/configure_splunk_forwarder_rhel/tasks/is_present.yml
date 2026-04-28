@@ -1,0 +1,110 @@
+---
+# tasks file for configure_splunk_forwarder_rhel
+- block:
+    - set_fact:
+        splunk_dir: "/opt/splunkforwarder"
+        #splunk_dir: "/home/admin/"
+        splunk_forwarder_user: "splunkfwd"
+        splunk_forwarder_group: "splunkfwd"
+
+    - name: Create splunkfwd Group
+      ansible.builtin.group:
+        name: "splunkfwd"
+
+    - name: Add splunkfwd user to Group
+      ansible.builtin.user:
+        name: "splunkfwd"
+        groups: "splunkfwd"
+        password: "{{ splunk_admin_password }}"
+        ansible.builtin.shell: /bin/nologin
+
+        # TODO: review changed_when for: /bin/nologin
+    - name: Untar UF to {{ splunk_dir }}
+      ansible.builtin.unarchive:
+        remote_src: yes
+        src: "{{ splunk_forwarder_path_rhel }}/{{ splunk_rhel }}"
+        dest: "/opt"
+
+    - name: Edit Splunk User 
+      ansible.builtin.lineinfile:
+        path: "{{ splunk_dir }}/etc/splunk-launch.conf.default"
+        regexp: '^SPLUNK_OS_USER='
+        line: SPLUNK_OS_USER=splunkfwd
+
+    - name: Set file permissions
+      ansible.builtin.file:
+        path: "{{ splunk_dir }}"
+        state: directory
+        owner: "{{ splunk_forwarder_user }}"
+        ansible.builtin.group: "{{ splunk_forwarder_group }}"
+        recurse: yes
+
+    - name: Set Initial User Configuration
+
+      ansible.builtin.shell: "echo -e '[user_info]\nUSERNAME={{ splunk_forwarder_user }}\nPASSWORD={{ splunk_admin_password }}' > {{ splunk_dir }}/etc/system/local/user-seed.conf"
+
+
+      changed_when: false
+    - name: Add SplunkForwarder to fapolicy
+
+      ansible.builtin.shell: " fapolicyd-cli --file add /opt/splunkforwarder"
+      ignore_errors: True
+
+
+      # TODO: review changed_when for:  fapolicyd-cli --file add /opt/splunkforwarder
+    - name: Update fapolicyd
+
+      ansible.builtin.shell: " fapolicyd-cli --update"
+      ignore_errors: True
+
+
+      # TODO: review changed_when for:  fapolicyd-cli --update
+    - name: Enable Splunk Start on Boot
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk enable boot-start --accept-license --answer-yes --no-prompt"
+      ignore_errors: True
+
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk enable boot-start --accept-licen
+    - name: Start Splunk via Command Line
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk start --accept-license --answer-yes --no-prompt"
+      ignore_errors: True
+
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk start --accept-license --answer-
+    - name: Start SplunkForwarder
+
+      ansible.builtin.service:
+        name: SplunkForwarder
+        state: started
+
+    - name: Check Splunk Deployment service
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk list deploy-poll -auth {{ splunk_forwarder_user }}:{{ splunk_admin_password }}" 
+      register: deployment_server_check  
+           
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk list deploy-poll -auth {{ splunk
+    - name: Set Deployment Server
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk set deploy-poll SYSLOG01:8089 -auth {{ splunk_forwarder_user }}:{{ splunk_admin_password }}"
+      when: "not 'SYSLOG01:8089' in deployment_server_check.stdout" 
+
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk set deploy-poll SYSLOG01:8089 -a
+    - name: Check Splunk forwarder service
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk list forward-server -auth {{ splunk_forwarder_user }}:{{ splunk_admin_password }}"
+      register: forwarder_server_check
+
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk list forward-server -auth {{ spl
+    - name: Set Forwarding Server 
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk add forward-server SYSLOG01:9997 -auth {{ splunk_forwarder_user }}:{{ splunk_admin_password }}"
+      when: not 'SYSLOG01:9997' in forwarder_server_check.stdout_lines[1] and not 'SYSLOG01:9997' in forwarder_server_check.stdout_lines[3]
+      ignore_errors: true
+  become: true
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk add forward-server SYSLOG01:9997

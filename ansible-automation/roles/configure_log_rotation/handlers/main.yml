@@ -1,0 +1,4 @@
+- name: Restart Apache24
+  become: true
+  ansible.builtin.service: name=apache24 state=restarted
+

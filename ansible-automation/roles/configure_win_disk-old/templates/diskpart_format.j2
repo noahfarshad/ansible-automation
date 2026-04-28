@@ -1,0 +1,4 @@
+select disk {{ disk.disk_number }}
+create partition primary 
+format quick fs={{ disk.filesystem }} label="{{ disk.label }}"
+assign letter="{{ disk.letter }}"

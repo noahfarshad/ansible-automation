@@ -1,0 +1,611 @@
+---
+# tasks file for ipa_merge_group
+
+- name: Migrate un_tads-sysadmin into essadmin group
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin;
+    ipa user-find --in-netgroups un_tads-sysadmin | grep "User login" >> /tmp/essadmin.out;
+    ipa user-find --in-netgroups un_tads-essadmin | grep "User login" >> /tmp/essadmin.out;
+    ipa user-find --in-netgroups un_sems-sysadmin | grep "User login" >> /tmp/essadmin.out;
+    ipa user-find --in-netgroups un_sems-essadmin | grep "User login" >> /tmp/essadmin.out;
+    sort -u /tmp/essadmin.out >> /tmp/essadmin.clean;
+    sed -i 's/  User login: /,/g' /tmp/essadmin.clean;
+    tr -d '\n' < /tmp/essadmin.clean >> /tmp/essadmin.clean2;
+    sed -i 's/^\s*./ipa group-add-member essadmin --users={/g' /tmp/essadmin.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/essadmin.clean2;
+    sh /tmp/essadmin.clean2;
+    rm -rf /tmp/essadmin.*;
+  ignore_errors: true
+
+
+  changed_when: false
+- name: Add uniqueMember to essadmin users to allow vCenter access via vcenter group
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin;
+    ipa user-find --in-groups essadmin | grep "User login" >> /tmp/essadmin.out;
+    sed -i 's/  User login: /ipa group-mod vcenter --addattr="uniqueMember=uid=/g' /tmp/essadmin.out;
+    sed -i 's/$/,cn=users,cn=accounts,dc=afwa,dc=af,dc=mil";/' essadmin.out;
+    sh /tmp/essadmin.out;
+    rm -rf /tmp/essadmin.*;
+  ignore_errors: true
+
+
+  changed_when: false
+- name: Migrate +un_sems-cm,+un_sems-afwwebs,+un_sems-wdd,+un_tads-cm,+un_tads-afwwebs,+un_tads-wdd to boltgroup 
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sems-cm | grep "User login" >> /tmp/boltgroup.out;
+    ipa user-find --in-netgroups un_sems-afwwebs | grep "User login" >> /tmp/boltgroup.out;
+    ipa user-find --in-netgroups un_sems-wdd | grep "User login" >> /tmp/boltgroup.out;
+    ipa user-find --in-netgroups un_tads-cm | grep "User login" >> /tmp/boltgroup.out;
+    ipa user-find --in-netgroups un_tads-afwwebs | grep "User login" >> /tmp/boltgroup.out;
+    ipa user-find --in-netgroups un_tads-wdd | grep "User login" >> /tmp/boltgroup.out;
+    sort -u /tmp/boltgroup.out >> /tmp/boltgroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/boltgroup.clean;
+    tr -d '\n' < /tmp/boltgroup.clean >> /tmp/boltgroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member boltgroup --users={/g' /tmp/boltgroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/boltgroup.clean2;
+    sh /tmp/boltgroup.clean2;
+    rm -rf /tmp/boltgroup.*;
+  ignore_errors: true
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sems-cm | grep "User login" 
+- name: Migrate +un_21-ows-t,+un_sems-afwwebs,+un_tads-cm,+un_sems-cm,+un_tads-afwwebs,+un_wda4 to vwadmingroup 
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_21-ows-t | grep "User login" >> /tmp/vwadmingroup.out;
+    ipa user-find --in-netgroups un_sems-afwwebs | grep "User login" >> /tmp/vwadmingroup.out;
+    ipa user-find --in-netgroups un_tads-cm | grep "User login" >> /tmp/vwadmingroup.out;
+    ipa user-find --in-netgroups un_sems-cm | grep "User login" >> /tmp/vwadmingroup.out;
+    ipa user-find --in-netgroups un_tads-afwwebs | grep "User login" >> /tmp/vwadmingroup.out;
+    ipa user-find --in-netgroups un_wda4 | grep "User login" >> /tmp/vwadmingroup.out;
+    sort -u /tmp/vwadmingroup.out >> /tmp/vwadmingroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/vwadmingroup.clean;
+    tr -d '\n' < /tmp/vwadmingroup.clean >> /tmp/vwadmingroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member vwadmingroup --users={/g' /tmp/vwadmingroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/vwadmingroup.clean2;
+    sh /tmp/vwadmingroup.clean2;
+    rm -rf /tmp/vwadmingroup.*;
+  ignore_errors: true
+  
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_21-ows-t | grep "User login"
+- name: Migrate +un_sems-cm,+un_tads-cm to cmadmingroup 
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_tads-cm | grep "User login" >> /tmp/cmadmingroup.out;
+    ipa user-find --in-netgroups un_sems-cm | grep "User login" >> /tmp/cmadmingroup.out;
+    sort -u /tmp/cmadmingroup.out >> /tmp/cmadmingroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/cmadmingroup.clean;
+    tr -d '\n' < /tmp/cmadmingroup.clean >> /tmp/cmadmingroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member cmadmingroup --users={/g' /tmp/cmadmingroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/cmadmingroup.clean2;
+    sh /tmp/cmadmingroup.clean2;
+    rm -rf /tmp/cmadmingroup.*;
+  ignore_errors: true  
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_tads-cm | grep "User login" 
+- name: Migrate +un_sys-cm to cmgovgroup 
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-cm | grep "User login" >> /tmp/cmgovgroup.out;
+    sort -u /tmp/cmgovgroup.out >> /tmp/cmgovgroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/cmgovgroup.clean;
+    tr -d '\n' < /tmp/cmgovgroup.clean >> /tmp/cmgovgroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member cmgovgroup --users={/g' /tmp/cmgovgroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/cmgovgroup.clean2;
+    sh /tmp/cmgovgroup.clean2;
+    rm -rf /tmp/cmgovgroup.*;
+  ignore_errors: true  
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-cm | grep "User login" >
+- name: Migrate +un_sys-datarouting-d, +un_sys-datarouting-t to datasubsgroup 
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-datarouting-d | grep "User login" >> /tmp/datasubsgroup.out;
+    ipa user-find --in-netgroups un_sys-datarouting-t | grep "User login" >> /tmp/datasubsgroup.out;
+    sort -u /tmp/datasubsgroup.out >> /tmp/datasubsgroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/datasubsgroup.clean;
+    tr -d '\n' < /tmp/datasubsgroup.clean >> /tmp/datasubsgroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member datasubsgroup --users={/g' /tmp/datasubsgroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/datasubsgroup.clean2;
+    sh /tmp/datasubsgroup.clean2;
+    rm -rf /tmp/datasubsgroup.*;
+  ignore_errors: true    
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-datarouting-d | grep "Us
+- name: Migrate +un_sems-afwwebs,+un_sems-cm,+un_sems-scs,+un_sems-swafs-t,+un_sems-testers,+un_sems-wdd,+un_sys-datarouting-d,+un_sys-datarouting-t,+un_tads-afwwebs,+un_tads-cm,+un_tads-scs,+un_tads-swafs-t,+un_tads-testers,+un_tads-wdd,+un_wda4 to j2eeadmingroup
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sems-afwwebs | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_sems-cm | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_sems-scs | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_sems-swafs-t | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_sems-testers | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_sems-wdd | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_sys-datarouting-d | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_sys-datarouting-t | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_tads-afwwebs | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_tads-cm | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_tads-scs | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_tads-swafs-t | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_tads-testers| grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_tads-wdd | grep "User login" >> /tmp/j2eeadmingroup.out;
+    ipa user-find --in-netgroups un_wda4 | grep "User login" >> /tmp/j2eeadmingroup.out;
+    sort -u /tmp/j2eeadmingroup.out >> /tmp/j2eeadmingroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/j2eeadmingroup.clean;
+    tr -d '\n' < /tmp/j2eeadmingroup.clean >> /tmp/j2eeadmingroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member j2eeadmingroup --users={/g' /tmp/j2eeadmingroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/j2eeadmingroup.clean2;
+    sh /tmp/j2eeadmingroup.clean2;
+    rm -rf /tmp/j2eeadmingroup.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sems-afwwebs | grep "User lo
+- name: Migrate +un_sems-afwwebs,+un_tads-afwwebs to leadsgroup
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sems-afwwebs | grep "User login" >> /tmp/leadsgroup.out;
+    ipa user-find --in-netgroups un_tads-afwwebs | grep "User login" >> /tmp/leadsgroup.out;
+    sort -u /tmp/leadsgroup.out >> /tmp/leadsgroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/leadsgroup.clean;
+    tr -d '\n' < /tmp/leadsgroup.clean >> /tmp/leadsgroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member leadsgroup --users={/g' /tmp/leadsgroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/leadsgroup.clean2;
+    sh /tmp/leadsgroup.clean2;
+    rm -rf /tmp/leadsgroup.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sems-afwwebs | grep "User lo
+- name: Migrate +un_sems-afwwebs,+un_tads-afwwebs,+un_wda4,+un_tads-wdd to mwgroup
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sems-afwwebs | grep "User login" >> /tmp/mwgroup.out;
+    ipa user-find --in-netgroups un_tads-afwwebs | grep "User login" >> /tmp/mwgroup.out;
+    ipa user-find --in-netgroups un_wda4 | grep "User login" >> /tmp/mwgroup.out;
+    ipa user-find --in-netgroups un_tads-wdd | grep "User login" >> /tmp/mwgroup.out;
+    sort -u /tmp/mwgroup.out >> /tmp/mwgroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/mwgroup.clean;
+    tr -d '\n' < /tmp/mwgroup.clean >> /tmp/mwgroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member mwgroup --users={/g' /tmp/mwgroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/mwgroup.clean2;
+    sh /tmp/mwgroup.clean2;
+    rm -rf /tmp/mwgroup.*;
+  ignore_errors: true
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sems-afwwebs | grep "User lo
+- name: Migrate +un_sems-afwwebs,+un_tads-afwwebs,+un_sys-datarouting-t to processgroup
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sems-afwwebs | grep "User login" >> /tmp/processgroup.out;
+    ipa user-find --in-netgroups un_tads-afwwebs | grep "User login" >> /tmp/processgroup.out;
+    ipa user-find --in-netgroups un_tads-wdd | grep "User login" >> /tmp/processgroup.out;
+    ipa user-find --in-netgroups un_sys-datarouting-t | grep "User login" >> /tmp/processgroup.out;
+    sort -u /tmp/processgroup.out >> /tmp/processgroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/processgroup.clean;
+    tr -d '\n' < /tmp/processgroup.clean >> /tmp/processgroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member processgroup --users={/g' /tmp/processgroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/processgroup.clean2;
+    sh /tmp/processgroup.clean2;
+    rm -rf /tmp/processgroup.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sems-afwwebs | grep "User lo
+- name: Migrate +un_sys-sdo-t to sdogroup
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-sdo-t | grep "User login" >> /tmp/sdosgroup.out;
+    sort -u /tmp/sdosgroup.out >> /tmp/sdosgroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/sdosgroup.clean;
+    tr -d '\n' < /tmp/sdosgroup.clean >> /tmp/sdosgroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member sdosgroup --users={/g' /tmp/sdosgroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/sdosgroup.clean2;
+    sh /tmp/sdosgroup.clean2;
+    rm -rf /tmp/sdosgroup.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-sdo-t | grep "User login
+- name: Migrate +un_sems-cm,+un_sems-wdd,+un_tads-wdd to tdcftacgroup
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sems-wdd | grep "User login" >> /tmp/tdcftacgroup.out;
+    ipa user-find --in-netgroups un_tads-wdd | grep "User login" >> /tmp/tdcftacgroup.out;
+    ipa user-find --in-netgroups un_tads-wdd | grep "User login" >> /tmp/tdcftacgroup.out;
+    sort -u /tmp/tdcftacgroup.out >> /tmp/tdcftacgroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/tdcftacgroup.clean;
+    tr -d '\n' < /tmp/tdcftacgroup.clean >> /tmp/tdcftacgroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member tdcftacgroup --users={/g' /tmp/tdcftacgroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/tdcftacgroup.clean2;
+    sh /tmp/tdcftacgroup.clean2;
+    rm -rf /tmp/tdcftacgroup.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sems-wdd | grep "User login"
+- name: Migrate +un_sems-scs,+un_tads-scs,+un_sems-pais,+un_tads-pais,+un_sems-wdd,+un_sems-wdd-p,+un_tads-wdd,+un_sems-afwwebs,+un_tads-afwwebs,+un_sems-cm,+un_tads-cm to weblogicgroup
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sems-scs | grep "User login" >> /tmp/weblogicgroup.out;
+    ipa user-find --in-netgroups un_tads-scs | grep "User login" >> /tmp/weblogicgroup.out;
+    ipa user-find --in-netgroups un_sems-pais | grep "User login" >> /tmp/weblogicgroup.out;
+    ipa user-find --in-netgroups un_tads-pais | grep "User login" >> /tmp/weblogicgroup.out;
+    ipa user-find --in-netgroups un_sems-wdd | grep "User login" >> /tmp/weblogicgroup.out;
+    ipa user-find --in-netgroups un_tads-wdd | grep "User login" >> /tmp/weblogicgroup.out;
+    ipa user-find --in-netgroups un_sems-wdd-p | grep "User login" >> /tmp/weblogicgroup.out;
+    ipa user-find --in-netgroups un_sems-afwwebs | grep "User login" >> /tmp/weblogicgroup.out;
+    ipa user-find --in-netgroups un_tads-afwwebs | grep "User login" >> /tmp/weblogicgroup.out;
+    ipa user-find --in-netgroups un_sems-cm | grep "User login" >> /tmp/weblogicgroup.out;
+    ipa user-find --in-netgroups un_tads-cm | grep "User login" >> /tmp/weblogicgroup.out;
+    sort -u /tmp/weblogicgroup.out >> /tmp/weblogicgroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/weblogicgroup.clean;
+    tr -d '\n' < /tmp/weblogicgroup.clean >> /tmp/weblogicgroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member weblogicgroup --users={/g' /tmp/weblogicgroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/weblogicgroup.clean2;
+    sh /tmp/weblogicgroup.clean2;
+    rm -rf /tmp/weblogicgroup.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sems-scs | grep "User login"
+- name: Migrate +un_sems-afwwebs,+un_tads-afwwebs,+un_sems-scs,+un_tads-scs to jenkinsgroup
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sems-afwwebs | grep "User login" >> /tmp/jenkinsgroup.out;
+    ipa user-find --in-netgroups un_tads-afwwebs | grep "User login" >> /tmp/jenkinsgroup.out;
+    ipa user-find --in-netgroups un_sems-sc | grep "User login" >> /tmp/jenkinsgroup.out;
+    ipa user-find --in-netgroups un_tads-scs | grep "User login" >> /tmp/jenkinsgroup.out;
+    sort -u /tmp/jenkinsgroup.out >> /tmp/jenkinsgroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/jenkinsgroup.clean;
+    tr -d '\n' < /tmp/jenkinsgroup.clean >> /tmp/jenkinsgroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member jenkinsgroup --users={/g' /tmp/jenkinsgroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/jenkinsgroup.clean2;
+    sh /tmp/jenkinsgroup.clean2;
+    rm -rf /tmp/jenkinsgroup.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sems-afwwebs | grep "User lo
+- name: Migrate un_sys-dba to dba
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-dba | grep "User login" >> /tmp/dba.out;
+    sort -u /tmp/dba.out >> /tmp/dba.clean;
+    sed -i 's/  User login: /,/g' /tmp/dba.clean;
+    tr -d '\n' < /tmp/dba.clean >> /tmp/dba.clean2;
+    sed -i 's/^\s*./ipa group-add-member dba --users={/g' /tmp/dba.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/dba.clean2;
+    sh /tmp/dba.clean2;
+    rm -rf /tmp/dba.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-dba | grep "User login" 
+- name: Migrate un_16ws-specm to 16ws
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_16ws-specm | grep "User login" >> /tmp/16ws.out;
+    ipa user-find --in-netgroups un_16ws-prediction | grep "User login" >> /tmp/16ws.out;
+    ipa user-find --in-netgroups un_16ws-wxp | grep "User login" >> /tmp/16ws.out;
+    ipa user-find --in-netgroups un_sys-cdfs | grep "User login" >> /tmp/16ws.out;
+    sort -u /tmp/16ws.out >> /tmp/16ws.clean;
+    sed -i 's/  User login: /,/g' /tmp/16ws.clean;
+    tr -d '\n' < /tmp/16ws.clean >> /tmp/16ws.clean2;
+    sed -i 's/^\s*./ipa group-add-member 16ws --users={/g' /tmp/16ws.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/16ws.clean2;
+    sh /tmp/16ws.clean2;
+    rm -rf /tmp/16ws.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_16ws-specm | grep "User logi
+- name: Migrate +un_tads-swafs-t, +un_sems-swafs-t to swafsgroup
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sems-swafs-t | grep "User login" >> /tmp/swafs.out;
+    ipa user-find --in-netgroups un_tads-swafs-t | grep "User login" >> /tmp/swafs.out;
+    sort -u /tmp/swafs.out >> /tmp/swafs.clean;
+    sed -i 's/  User login: /,/g' /tmp/swafs.clean;
+    tr -d '\n' < /tmp/swafs.clean >> /tmp/swafs.clean2;
+    sed -i 's/^\s*./ipa group-add-member swafsgroup --users={/g' /tmp/swafs.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/swafs.clean2;
+    sh /tmp/swafs.clean2;
+    rm -rf /tmp/swafs.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sems-swafs-t | grep "User lo
+- name: Migrate un_sys-an to dvgroup
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-an | grep "User login" >> /tmp/dvgroup.out;
+    sort -u /tmp/dvgroup.out >> /tmp/dvgroup.clean;
+    sed -i 's/  User login: /,/g' /tmp/dvgroup.clean;
+    tr -d '\n' < /tmp/dvgroup.clean >> /tmp/dvgroup.clean2;
+    sed -i 's/^\s*./ipa group-add-member dvgroup --users={/g' /tmp/dvgroup.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/dvgroup.clean2;
+    sh /tmp/dvgroup.clean2;
+    rm -rf /tmp/dvgroup.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-an | grep "User login" >
+- name: Migrate un_16ws-wxnctune to 16ws-wxnctune
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_16ws-wxnctune | grep "User login" >> /tmp/16ws-wxnctune.out;
+    sort -u /tmp/16ws-wxnctune.out >> /tmp/16ws-wxnctune.clean;
+    sed -i 's/  User login: /,/g' /tmp/16ws-wxnctune.clean;
+    tr -d '\n' < /tmp/16ws-wxnctune.clean >> /tmp/16ws-wxnctune.clean2;
+    sed -i 's/^\s*./ipa group-add-member 16ws-wxnctune --users={/g' /tmp/16ws-wxnctune.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/16ws-wxnctune.clean2;
+    sh /tmp/16ws-wxnctune.clean2;
+    rm -rf /tmp/16ws-wxnctune.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_16ws-wxnctune | grep "User l
+- name: Migrate un_sys-cdfs to sys-cdfs
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-cdfs | grep "User login" >> /tmp/sys-cdfs.out;
+    sort -u /tmp/sys-cdfs.out >> /tmp/sys-cdfs.clean;
+    sed -i 's/  User login: /,/g' /tmp/sys-cdfs.clean;
+    tr -d '\n' < /tmp/sys-cdfs.clean >> /tmp/sys-cdfs.clean2;
+    sed -i 's/^\s*./ipa group-add-member sys-cdfs --users={/g' /tmp/sys-cdfs.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/sys-cdfs.clean2;
+    sh /tmp/sys-cdfs.clean2;
+    rm -rf /tmp/sys-cdfs.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-cdfs | grep "User login"
+- name: Migrate un_sys-cm to sys-cm
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-cm | grep "User login" >> /tmp/sys-cm.out;
+    sort -u /tmp/sys-cm.out >> /tmp/sys-cm.clean;
+    sed -i 's/  User login: /,/g' /tmp/sys-cm.clean;
+    tr -d '\n' < /tmp/sys-cm.clean >> /tmp/sys-cm.clean2;
+    sed -i 's/^\s*./ipa group-add-member sys-cm --users={/g' /tmp/sys-cm.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/sys-cm.clean2;
+    sh /tmp/sys-cm.clean2;
+    rm -rf /tmp/sys-cm.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-cm | grep "User login" >
+- name: Migrate un_sys-swafs to sys-swafs
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-swafs | grep "User login" >> /tmp/sys-swafs.out;
+    sort -u /tmp/sys-swafs.out >> /tmp/sys-swafs.clean;
+    sed -i 's/  User login: /,/g' /tmp/sys-swafs.clean;
+    tr -d '\n' < /tmp/sys-swafs.clean >> /tmp/sys-swafs.clean2;
+    sed -i 's/^\s*./ipa group-add-member sys-swafs --users={/g' /tmp/sys-swafs.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/sys-swafs.clean2;
+    sh /tmp/sys-swafs.clean2;
+    rm -rf /tmp/sys-swafs.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-swafs | grep "User login
+- name: Migrate un_16ws-swit to 16ws-swit
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_16ws-swit | grep "User login" >> /tmp/16ws-swit.out;
+    sort -u /tmp/16ws-swit.out >> /tmp/16ws-swit.clean;
+    sed -i 's/  User login: /,/g' /tmp/16ws-swit.clean;
+    tr -d '\n' < /tmp/16ws-swit.clean >> /tmp/16ws-swit.clean2;
+    sed -i 's/^\s*./ipa group-add-member 16ws-swit --users={/g' /tmp/16ws-swit.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/16ws-swit.clean2;
+    sh /tmp/16ws-swit.clean2;
+    rm -rf /tmp/16ws-swit.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_16ws-swit | grep "User login
+- name: Migrate un_16ws-wxet to 16ws-wxet
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_16ws-wxet | grep "User login" >> /tmp/16ws-wxet.out;
+    sort -u /tmp/16ws-wxet.out >> /tmp/16ws-wxet.clean;
+    sed -i 's/  User login: /,/g' /tmp/16ws-wxet.clean;
+    tr -d '\n' < /tmp/16ws-wxet.clean >> /tmp/16ws-wxet.clean2;
+    sed -i 's/^\s*./ipa group-add-member 16ws-wxet --users={/g' /tmp/16ws-wxet.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/16ws-wxet.clean2;
+    sh /tmp/16ws-wxet.clean2;
+    rm -rf /tmp/16ws-wxet.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_16ws-wxet | grep "User login
+- name: Migrate un_16ws-wxnc to 16ws-wxnc
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_16ws-wxnc | grep "User login" >> /tmp/16ws-wxnc.out;
+    sort -u /tmp/16ws-wxnc.out >> /tmp/16ws-wxnc.clean;
+    sed -i 's/  User login: /,/g' /tmp/16ws-wxnc.clean;
+    tr -d '\n' < /tmp/16ws-wxnc.clean >> /tmp/16ws-wxnc.clean2;
+    sed -i 's/^\s*./ipa group-add-member 16ws-wxnc --users={/g' /tmp/16ws-wxnc.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/16ws-wxnc.clean2;
+    sh /tmp/16ws-wxnc.clean2;
+    rm -rf /tmp/16ws-wxnc.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_16ws-wxnc | grep "User login
+- name: Migrate un_sys-analyst to sys-analyst
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-analyst | grep "User login" >> /tmp/sys-analyst.out;
+    sort -u /tmp/sys-analyst.out >> /tmp/sys-analyst.clean;
+    sed -i 's/  User login: /,/g' /tmp/sys-analyst.clean;
+    tr -d '\n' < /tmp/sys-analyst.clean >> /tmp/sys-analyst.clean2;
+    sed -i 's/^\s*./ipa group-add-member sys-analyst --users={/g' /tmp/sys-analyst.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/sys-analyst.clean2;
+    sh /tmp/sys-analyst.clean2;
+    rm -rf /tmp/sys-analyst.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-analyst | grep "User log
+- name: Migrate un_sys-datarouting-t to sys-datarouting-t
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-datarouting-t | grep "User login" >> /tmp/sys-datarouting-t.out;
+    sort -u /tmp/sys-datarouting-t.out >> /tmp/sys-datarouting-t.clean;
+    sed -i 's/  User login: /,/g' /tmp/sys-datarouting-t.clean;
+    tr -d '\n' < /tmp/sys-datarouting-t.clean >> /tmp/sys-datarouting-t.clean2;
+    sed -i 's/^\s*./ipa group-add-member sys-datarouting-t --users={/g' /tmp/sys-datarouting-t.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/sys-datarouting-t.clean2;
+    sh /tmp/sys-datarouting-t.clean2;
+    rm -rf /tmp/sys-datarouting-t.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-datarouting-t | grep "Us
+- name: Migrate un_wda4 to wda4
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_wda4 | grep "User login" >> /tmp/wda4.out;
+    sort -u /tmp/wda4.out >> /tmp/wda4.clean;
+    sed -i 's/  User login: /,/g' /tmp/wda4.clean;
+    tr -d '\n' < /tmp/wda4.clean >> /tmp/wda4.clean2;
+    sed -i 's/^\s*./ipa group-add-member wda4 --users={/g' /tmp/wda4.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/wda4.clean2;
+    sh /tmp/wda4.clean2;
+    rm -rf /tmp/wda4.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_wda4 | grep "User login" >> 
+- name: Migrate un_16ws-wxnm to un_16ws-wxnm
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_16ws-wxnm | grep "User login" >> /tmp/16ws-wxnm.out;
+    sort -u /tmp/16ws-wxnm.out >> /tmp/16ws-wxnm.clean;
+    sed -i 's/  User login: /,/g' /tmp/16ws-wxnm.clean;
+    tr -d '\n' < /tmp/16ws-wxnm.clean >> /tmp/16ws-wxnm.clean2;
+    sed -i 's/^\s*./ipa group-add-member 16ws-wxnm --users={/g' /tmp/16ws-wxnm.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/16ws-wxnm.clean2;
+    sh /tmp/16ws-wxnm.clean2;
+    rm -rf /tmp/16ws-wxnm.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_16ws-wxnm | grep "User login
+- name: Migrate un_21-ows-t to 21-ows
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_21-ows-t | grep "User login" >> /tmp/21-ows.out;
+    sort -u /tmp/21-ows.out >> /tmp/21-ows.clean;
+    sed -i 's/  User login: /,/g' /tmp/21-ows.clean;
+    tr -d '\n' < /tmp/21-ows.clean >> /tmp/21-ows.clean2;
+    sed -i 's/^\s*./ipa group-add-member 21-ows --users={/g' /tmp/21-ows.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/21-ows.clean2;
+    sh /tmp/21-ows.clean2;
+    rm -rf /tmp/21-ows.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_21-ows-t | grep "User login"
+- name: Migrate un_edhxfer to edhxfer
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_edhxfer | grep "User login" >> /tmp/edhxfer.out;
+    sort -u /tmp/edhxfer.out >> /tmp/edhxfer.clean;
+    sed -i 's/  User login: /,/g' /tmp/edhxfer.clean;
+    tr -d '\n' < /tmp/edhxfer.clean >> /tmp/edhxfer.clean2;
+    sed -i 's/^\s*./ipa group-add-member edhxfer --users={/g' /tmp/edhxfer.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/edhxfer.clean2;
+    sh /tmp/edhxfer.clean2;
+    rm -rf /tmp/edhxfer.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_edhxfer | grep "User login" 
+- name: Migrate un_sys-an to sys-an
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-an | grep "User login" >> /tmp/sys-an.out;
+    sort -u /tmp/sys-an.out >> /tmp/sys-an.clean;
+    sed -i 's/  User login: /,/g' /tmp/sys-an.clean;
+    tr -d '\n' < /tmp/sys-an.clean >> /tmp/sys-an.clean2;
+    sed -i 's/^\s*./ipa group-add-member sys-an --users={/g' /tmp/sys-an.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/sys-an.clean2;
+    sh /tmp/sys-an.clean2;
+    rm -rf /tmp/sys-an.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-an | grep "User login" >
+- name: Migrate un_sys-models to sys-models
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-models | grep "User login" >> /tmp/sys-models.out;
+    sort -u /tmp/sys-models.out >> /tmp/sys-models.clean;
+    sed -i 's/  User login: /,/g' /tmp/sys-models.clean;
+    tr -d '\n' < /tmp/sys-models.clean >> /tmp/sys-models.clean2;
+    sed -i 's/^\s*./ipa group-add-member sys-models --users={/g' /tmp/sys-models.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/sys-models.clean2;
+    sh /tmp/sys-models.clean2;
+    rm -rf /tmp/sys-models.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-models | grep "User logi
+- name: Migrate un_sys-sysa-apps-d to sys-sysa-apps-d
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_sys-sysa-apps-d | grep "User login" >> /tmp/sys-sysa-apps-d.out;
+    sort -u /tmp/sys-sysa-apps-d.out >> /tmp/sys-sysa-apps-d.clean;
+    sed -i 's/  User login: /,/g' /tmp/sys-sysa-apps-d.clean;
+    tr -d '\n' < /tmp/sys-sysa-apps-d.clean >> /tmp/sys-sysa-apps-d.clean2;
+    sed -i 's/^\s*./ipa group-add-member sys-sysa-apps-d --users={/g' /tmp/sys-sysa-apps-d.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/sys-sysa-apps-d.clean2;
+    sh /tmp/sys-sysa-apps-d.clean2;
+    rm -rf /tmp/sys-sysa-apps-d.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_sys-sysa-apps-d | grep "User
+- name: Migrate un_16ws-gvcm to 16ws-gvcm
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_16ws-gvcm | grep "User login" >> /tmp/16ws-gvcm.out;
+    sort -u /tmp/16ws-gvcm.out >> /tmp/16ws-gvcm.clean;
+    sed -i 's/  User login: /,/g' /tmp/16ws-gvcm.clean;
+    tr -d '\n' < /tmp/16ws-gvcm.clean >> /tmp/16ws-gvcm.clean2;
+    sed -i 's/^\s*./ipa group-add-member 16ws-gvcm --users={/g' /tmp/16ws-gvcm.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/16ws-gvcm.clean2;
+    sh /tmp/16ws-gvcm.clean2;
+    rm -rf /tmp/16ws-gvcm.*;
+  ignore_errors: true 
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_16ws-gvcm | grep "User login
+- name: Migrate un_16ws-gvcm-user to 16ws-gvcm-user
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_16ws-gvcm-user | grep "User login" >> /tmp/16ws-gvcm-user.out;
+    sort -u /tmp/16ws-gvcm-user.out >> /tmp/16ws-gvcm-user.clean;
+    sed -i 's/  User login: /,/g' /tmp/16ws-gvcm-user.clean;
+    tr -d '\n' < /tmp/16ws-gvcm-user.clean >> /tmp/16ws-gvcm-user.clean2;
+    sed -i 's/^\s*./ipa group-add-member 16ws-gvcm-user --users={/g' /tmp/16ws-gvcm-user.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/16ws-gvcm-user.clean2;
+    sh /tmp/16ws-gvcm-user.clean2;
+    rm -rf /tmp/16ws-gvcm-user.*;
+  ignore_errors: true 
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_16ws-gvcm-user | grep "User 

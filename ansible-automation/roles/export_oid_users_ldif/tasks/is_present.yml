@@ -1,0 +1,19 @@
+---
+# tasks file for export_oid_users_ldif — present
+
+- ansible.builtin.include_tasks: export_users_from_oid.yml
+  tags:
+    - export.ldif
+    - export.ldif.users
+
+- ansible.builtin.include_tasks: export_rhel_group.yml
+  tags:
+    - export.ldif
+    - export.ldif.rhel
+
+- ansible.builtin.include_tasks: export_role_users.yml
+  loop:
+     - "{{user_roles}}"
+  tags:
+    - export.ldif
+    - export.ldif.roles

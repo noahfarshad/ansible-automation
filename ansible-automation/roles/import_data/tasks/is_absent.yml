@@ -1,0 +1,18 @@
+---
+# tasks file for import_data — absent
+#
+# This role drives shell/command operations whose inverse is not
+# automatically derivable. Many shell-driven roles have no safe
+# inverse (data migrations, one-off setup, etc.).
+#
+# To implement removal: read tasks/is_present.yml and add tasks here
+# that undo the changes the present.yml made.
+#
+# Default behavior: no-op with explanatory debug message.
+
+- name: "import_data — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      The 'absent' state for role 'import_data' is intentionally not implemented.
+      This role performs operations whose inverse must be explicitly defined
+      per environment. Edit tasks/is_absent.yml to add removal logic.

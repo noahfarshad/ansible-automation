@@ -1,0 +1,70 @@
+---
+# playbooks/linux/configure_dbserver.yml
+#
+# Configures a Linux database server. Runs after build_linux_vm.yml.
+#
+# Usage:
+#   make linux-db HOST=db01.example.coach
+#
+# REQUIRED variables:
+#   db_engine, db_version, db_listen_port,
+#   db_admin_user, db_admin_password (vault),
+#   db_app_user, db_app_password (vault),
+#   db_shared_buffers, db_effective_cache_size, db_work_mem
+#
+# All defaults live in group_vars/dbservers/main.yml.
+# Per-host tuning lives in host_vars/<host>.yml.
+
+- name: Configure database server
+  hosts: dbservers
+  gather_facts: true
+  become: true
+  vars:
+    desired_state: present
+
+  pre_tasks:
+    - name: Confirm host is a Linux DB server
+      ansible.builtin.assert:
+        that:
+          - ansible_os_family == 'RedHat'
+          - inventory_hostname in groups['dbservers']
+
+    - name: Confirm DB credentials are loaded from vault
+      ansible.builtin.assert:
+        that:
+          - db_admin_password is defined
+          - db_app_password is defined
+        fail_msg: "DB passwords must come from vault.yml"
+
+  roles:
+    - { role: install_db,                 tags: [db, install] }
+    - { role: db_parameters,              tags: [db, tuning] }
+    - { role: db_enable_archive_log_mode, tags: [db, backup],
+        when: db_role | default('primary') == 'primary' }
+
+  post_tasks:
+    - name: Open firewall for DB port
+      ansible.posix.firewalld:
+        port: "{{ db_listen_port }}/tcp"
+        permanent: true
+        state: enabled
+        immediate: true
+      when: enable_firewall | bool
+      tags: [firewall]
+
+    - name: Ensure DB service is running
+      ansible.builtin.service:
+        name: "{{ 'postgresql-' + db_version if db_engine == 'postgres' else db_engine }}"
+        state: started
+        enabled: true
+      tags: [service]
+
+    - name: Schedule nightly backup
+      ansible.builtin.cron:
+        name: "{{ db_engine }} backup"
+        hour: "{{ db_backup_cron_hour | string }}"
+        minute: "{{ db_backup_cron_minute | string }}"
+        user: "{{ db_admin_user }}"
+        job: "/usr/local/bin/db_backup.sh >> /var/log/db_backup.log 2>&1"
+      when: db_role | default('primary') == 'primary'
+      tags: [backup, cron]

@@ -1,0 +1,13 @@
+---
+# tasks file for installing ansible modules
+- name: Extract ansible modules to remote host directory
+  become: true
+  ansible.builtin.unarchive:
+    src: files/{{item.name}}
+    dest: "{{item.dest}}"
+    owner: "{{item.owner}}"
+    ansible.builtin.group: "{{item.group}}"
+    mode: "{{item.mode}}"
+  loop: "{{ansible_files}}"
+  when: ansible_files is defined
+  tags: ansible_modules

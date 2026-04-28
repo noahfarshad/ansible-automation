@@ -1,0 +1,5 @@
+---
+# vars file for configure_winrm
+tstamp: { stdout: "" }
+date_command_format: "date +%Y-%m-%d-%H:%M%z"
+vm_annotation_msg: "VM was deployed with {{ template_name }} on {{ tstamp.stdout }} by Ansible."

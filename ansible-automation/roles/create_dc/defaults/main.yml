@@ -1,0 +1,21 @@
+---
+# defaults file for create_dc
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# disk_datastore: ""
+# disk_gb: ""
+# disk_type: ""
+# memory_allocated_mb: ""
+# number_of_cores_per_socket: ""
+# number_of_cpus: ""
+# short_hostname: ""
+# template_name: ""
+# vcenter_hostname: ""
+# vsphere_account: ""
+# vsphere_cluster: ""
+# vsphere_datacenter: ""
+# vsphere_datastore: ""
+# vsphere_folder: ""
+# vsphere_password: ""

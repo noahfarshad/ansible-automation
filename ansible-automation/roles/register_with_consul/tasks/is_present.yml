@@ -1,0 +1,17 @@
+---
+# tasks file for register_with_consul — present
+
+- name: "Assert that service_name and port_number have been specified"
+  ansible.builtin.assert:
+    that:
+      - service_name is defined
+      - port_number is defined
+
+#We assume that Consul is running on the local machine in order manage local processes
+- name: "Register {{service_name}} with Consul"
+  ignore_errors: "{{ignore_registration_errors|bool}}"
+  ansible.builtin.uri:
+    url: "http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:8500/v1/agent/service/register"
+    method: PUT
+    body_format: json
+    body: "{{ lookup('template', './registerPayload.json') }}"

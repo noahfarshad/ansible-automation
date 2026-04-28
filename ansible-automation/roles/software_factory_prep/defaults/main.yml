@@ -1,0 +1,13 @@
+---
+# defaults file for software_factory_prep
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# eksadmin: ""
+# string_name: ""
+sw_factory_dir: "/opt/software_factory_prep"
+# sw_factory_stage: ""
+# sw_factory_tar_gz: ""
+# sw_factory_yaml: ""
+# yaml_loc: ""

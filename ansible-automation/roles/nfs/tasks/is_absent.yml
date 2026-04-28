@@ -1,0 +1,28 @@
+- name: Update NFS Export confgiguration
+
+  ansible.builtin.lineinfile:
+    path: "{{ nfs_exports_file }}"
+    line: "{{ item.directory }} {{ item.client_ip }}({{ item.permissions }})"
+    regexp: "^{{ item.directory }}.*"
+    state: absent
+  loop: "{{  nfs_exports  }}"
+  register: nfs_export_configuration_state
+
+- name: Ensure shared directories are absent
+
+  ansible.builtin.file:
+    path: "{{ item.directory }}"
+    state: absent
+  loop: "{{ nfs_exports }}"
+
+- name: Remove NFS packages
+
+  ansible.builtin.yum:
+    name: ['rpcbind', 'nfs-utils']
+    state: absent
+
+- name: Disable NFS server service
+
+  ansible.builtin.systemd:
+    name: nfs
+    enabled: no

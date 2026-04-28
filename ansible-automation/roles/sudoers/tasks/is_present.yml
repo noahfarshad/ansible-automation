@@ -1,0 +1,35 @@
+---
+- name: Copy sudoers.d archive file to target host
+  remote_user: admin_local
+  become: true
+  become_method: sudo
+  become_user: root
+  ansible.builtin.copy:
+    src: "{{sudoers_src_file}}"
+    dest: /tmp/
+    owner: root
+    ansible.builtin.group: root
+    mode: 0750
+- name: Unarchive sudoers.d.tar.gz
+  remote_user: admin_local
+  become: true
+  become_method: sudo
+  become_user: root
+  ansible.builtin.unarchive:
+    src: /tmp/sudoers.d.tar.gz
+    dest: /etc/
+    owner: root
+    ansible.builtin.group: root
+    mode: 0755
+    remote_src: yes
+- name: Copy master sudoers file to etc
+  remote_user: admin_local
+  become: true
+  become_method: sudo
+  become_user: root
+  ansible.builtin.copy:
+    src: sudoers
+    dest: /etc/
+    owner: root
+    ansible.builtin.group: root
+    mode: 0440

@@ -1,0 +1,26 @@
+---
+# tasks file for query_service_status — present
+
+# This role tests various qualities of a Linux service to determine if it is running
+# The role is intended to fail if the specified service is not running, functioning as circuit breaker
+# service_name, service_dir (for pid_location), and port_number variables must be defined
+# Use optional tags to limit to a specific query:
+#   servicerunning - verify the service has a running status (most commonly used)
+#   servicepid     - verify the service pid file exists
+#   serviceport    - verify the service is responding on a specific port
+#   forcefail      - skip this tag to prevent playbook failure when a non-running service is detected, breaker off
+
+- name: "Check if {{service_name}} service has a status of running"
+  include: running_status.yml
+  tags:
+    - servicerunning
+
+- name: "Check if {{service_name}} has an existing .pid file"
+  include: pid_status.yml
+  tags:
+    - servicepid
+
+- name: "Check if {{service_name}} is responding on a port"
+  include: port_status.yml
+  tags:
+    - serviceport

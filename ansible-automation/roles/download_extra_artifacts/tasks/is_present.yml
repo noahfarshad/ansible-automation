@@ -1,0 +1,11 @@
+---
+# tasks file for download_extra_artifacts — present
+
+# This task will download the extra artifacts
+- name: Download the extra artifacts
+  ansible.builtin.get_url:
+    url: http://{{nexus_repo}}/{{nexus_development}}/{{item.1}}/{{version}}/{{item.1}}-{{version}}{{item.0.ext}}
+    dest: "{{standalone}}"
+  with_subelements:
+    - artifacts
+    - files

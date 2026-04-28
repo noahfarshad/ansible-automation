@@ -1,0 +1,53 @@
+---
+# tasks file for vsphere_vm
+- name: Create annotation text
+  ansible.builtin.set_fact:
+    annotation_text: |
+      Built by Ansible
+      Time: {{ lookup('pipe','date') }}
+      Type: {{ short_hostname }}
+      Source Template : {{ template_name }}
+      OS: {{ ansible_os_family }}
+
+- name: Clone a Virtual Machine from VMware Template
+  become: false
+  community.vmware.vmware_guest:
+    ansible.builtin.hostname: "{{vcenter_hostname}}"
+    username: "{{vsphere_account}}"
+    password: "{{vsphere_password}}"
+    validate_certs: no
+    datacenter: "{{vsphere_datacenter}}"
+    datastore: "{{vsphere_datastore}}"
+    state: powered-on
+    folder: "{{vsphere_folder}}"
+    ansible.builtin.template: "{{template_name}}"
+    name: "{{inventory_hostname}}"
+    annotation: "{{ annotation_text }}"
+    cluster: "{{vsphere_cluster}}"
+    disk:
+    - size_gb: "{{ disk_gb }}"
+      type: "{{ disk_type }}"
+      datastore: "{{ disk_datastore }}"      
+    hardware:
+      num_cpus: "{{ number_of_cpus }}"
+      num_cpu_cores_per_socket: "{{ number_of_cores_per_socket }}"
+      memory_mb: "{{ memory_allocated_mb }}"
+  retries: 5      
+  delegate_to: localhost
+
+- name: create scheduled task to delete WinRM listeners and shutdown
+  ansible.windows.win_scheduled_task:
+    name: sysprep-shutdown
+    username: SYSTEM
+    disallow_start_if_on_batteries: false
+    stop_if_going_on_batteries: false
+    actions:
+    - path: powershell.exe
+      arguments: Remove-Item -Path WSMan:\localhost\Listener\* -Recurse -Force
+    - path: C:\windows\system32\sysprep\sysprep.exe
+      arguments: /generalize /oobe /quiet /shutdown
+
+
+
+
+

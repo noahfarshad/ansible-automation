@@ -1,0 +1,175 @@
+---
+
+# Extends an existing domain to include OSB
+#
+# Usage:
+# ansible-playbook create_osb_domain.yml -i inventory/<target>
+
+- include: "configure_osb_db_schemas.yml"
+
+- hosts: osb_adminserver
+  become: true
+  vars:
+    oracle_middleware_home: "{{osb_mw_home}}"
+    mw_home: "{{osb_mw_home}}"
+    name_of_domain: "{{osb_domain_name}}"
+    db_schema_prefix: "{{osb_schema_prefix}}"
+    managed_server1: "{{osb_managed_server_name0}}"
+    managed_server2: "{{osb_managed_server_name1}}"
+    domain_name: "{{osb_domain_name}}"
+    gc2_weblogic_service: "{{osb_weblogic_service}}"
+    gc2_nodemanager_service: "{{osb_nodemanager_service}}"
+    ms_name: "{{osb_server_name}}"
+    gc2_weblogic_domain: "{{osb_weblogic_domain}}"
+  roles:
+    - installers/configure_osb_security_realm
+    - common/restart_weblogic_service
+    - installers/configure_osb_domain
+    - installers/configure_wl_domain_post_install
+
+- hosts: osb_adminserver:osb_managedservers
+  become: true
+  become_user: "{{wl_user}}"
+  vars:
+    template_dest: "/var/shares/cots/osb_dump/"
+  tasks:
+    - name: Delete previous template dump
+      file:
+        path: "{{template_dest}}"
+        state: absent
+
+- hosts: osb_adminserver
+  become: true
+  become_user: "{{wl_user}}"
+  vars:
+    template_dest: "/var/shares/cots/osb_dump/"
+  tasks:
+    - name: "Create {{ template_dest }}"
+      file:
+        path: /var/shares/cots/osb_dump
+        owner: "{{wl_user}}"
+        group: "{{wl_user}}"
+        state: directory
+
+- hosts: osb_adminserver
+  become: true
+  become_user: "{{wl_user}}"
+  vars:
+    domain_name: "{{osb_domain_name}}"
+    domain_home: "{{osb_domain_home}}"
+    template_dest: "/var/shares/cots/osb_dump/osb_template.jar"
+    template_name: "OSB Managed Server Template"
+  tasks:
+    - name: Pack Weblogic Server
+      shell: "{{osb_mw_home}}/oracle_common/common/bin/pack.sh -domain={{domain_home}} -managed=true -template={{template_dest}} -template_name={{template_name}}"
+
+- hosts: osb_managedservers
+  become: true
+  become_user: "{{wl_user}}"
+  vars:
+    domain_name: "{{osb_domain_name}}"
+    domain_home: "{{osb_domain_home}}"
+    template_src: "/var/shares/cots/osb_dump/osb_template.jar"
+    template_dest: "{{gc2_remote_dir}}/osb_template.jar"
+    template_name: "OSB Managed Server Template"
+  tasks:
+    - name: Copy template JAR
+      copy:
+        src: "{{ template_src }}"
+        dest: "{{ template_dest }}"
+        remote_src: yes
+      register: copy_result
+      retries: 10
+      delay: 3
+      until: copy_result is succeeded
+    - name: Unpack Managed Server
+      shell: "{{osb_mw_home}}/oracle_common/common/bin/unpack.sh -domain={{domain_home}} -template={{template_dest}} -app_dir={{domain_home}}/applications -overwrite_domain=true"
+
+- hosts: osb_adminserver:osb_managedservers
+  become: true
+  become_user: "{{wl_user}}"
+  vars:
+    template_src: "/var/shares/cots/osb_dump/"
+    template_dest: "{{gc2_remote_dir}}/osb_template.jar"
+  tasks:
+    - name: Delete the template share
+      file:
+        path: "{{template_src}}"
+        state: absent
+      run_once: yes
+    - name: Delete the template file
+      file:
+        path: "{{template_dest}}"
+        state: absent
+
+
+- hosts: osb_managedservers
+  become: true
+  vars:
+    oracle_middleware_home: "{{osb_mw_home}}"
+    mw_home: "{{osb_mw_home}}"
+    name_of_domain: "{{osb_domain_name}}"
+  roles:
+    - installers/configure_wl_domain_post_install
+
+
+- hosts: osb_managedservers
+  become: true
+  become_user: "{{wl_user}}"
+  vars:
+    domain_name: "{{osb_domain_name}}"
+    domain_home: "{{osb_domain_home}}"
+  tasks:
+    - name: Update NM properties
+      lineinfile:
+        dest: "{{domain_home}}/nodemanager/nodemanager.properties"
+        regexp: '^(.*)CustomIdentityAlias=(.*)$'
+        line: 'CustomIdentityAlias={{inventory_hostname}}.local'
+        backrefs: yes
+
+
+- hosts: osb_adminserver:osb_managedservers
+  become: true
+  become_user: "{{wl_user}}"
+  vars:
+    domain_name: "{{osb_domain_name}}"
+    domain_home: "{{osb_domain_home}}"
+    xquery_tag_start: '      <serviceInstance name="keystore.db" provider="keystore.provider">'
+    xquery_tag_end: '      </serviceInstance>'
+    xquery_content:    '         <propertySetRef ref="props.db.1"/>'
+    xquery_newcontent: '         <property name="ca.key.alias" value="customca"/>'
+  tasks:
+    - name: Remove DemoTrust from XML
+      replace:
+        path: "{{domain_home}}/config/fmwconfig/{{item}}"
+        regexp: "{{xquery_tag_start}}\n{{xquery_content}}"
+        replace: "{{xquery_tag_start}}\n{{xquery_newcontent}}\n{{xquery_content}}"
+      loop:
+        - "jps-config.xml"
+        - "jps-config-jse.xml"
+
+
+- hosts: osb_adminserver
+  gather_facts: no
+  become: true
+  vars:
+    domain_name: "{{osb_domain_name}}"
+    gc2_weblogic_service: "{{osb_weblogic_service}}"
+    gc2_nodemanager_service: "{{osb_nodemanager_service}}"
+    ms_name: "{{osb_server_name}}"
+    gc2_weblogic_domain: "{{osb_weblogic_domain}}"
+  roles:
+    - role: common/restart_weblogic_service
+
+
+- hosts: osb_managedservers
+  gather_facts: no
+  become: true
+  vars:
+    domain_name: "{{osb_domain_name}}"
+    gc2_weblogic_service: "{{osb_weblogic_service}}"
+    gc2_nodemanager_service: "{{osb_nodemanager_service}}"
+    ms_name: "{{osb_server_name}}"
+    gc2_weblogic_domain: "{{osb_weblogic_domain}}"
+  roles:
+    - role: common/restart_weblogic_service

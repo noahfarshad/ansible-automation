@@ -1,0 +1,49 @@
+---
+# tasks file for build_apache — present
+
+# These tasks build apache on the target system
+
+- name: Removing old build directory
+
+  ansible.builtin.file:
+    path: "{{apache_build_dir}}"
+    state: absent
+
+- name: Creating apache build directory
+
+  ansible.builtin.file:
+    path: "{{apache_build_dir}}"
+    state: directory
+
+- name: Copying apache source artifacts...
+
+  ansible.builtin.copy:
+    src: "{{staging}}/{{item.1}}-{{item.0.version}}.{{item.0.ext}}"
+    dest: "{{apache_build_dir}}"
+    mode: 0755
+  with_subelements:
+    - "{{apache_source}}"
+    - files
+
+- name: Copying apache build script
+
+  ansible.builtin.copy: src="{{apache_build_script}}" dest="{{apache_build_dir}}" mode=0755
+
+- name: Execute apache build
+
+  ansible.builtin.shell: ' {{apache_build_dir}}/{{apache_build_script}} 2.4'
+
+
+  # TODO: review changed_when for:  {{apache_build_dir}}/{{apache_build_script}} 2.4
+- name: Retrieve build artifact
+
+  ansible.builtin.fetch:
+    src: /root/apache_{{apache_version}}-OpenSSL-FIPS_{{openssl_fips_version}}-OpenSSL_{{openssl_version}}-Linux-x86_64-RHEL6.tar.gz
+    dest: "{{staging}}/apache-{{apache_version}}.tar.gz"
+    flat: yes
+
+- name: Generate artifact descriptor
+  ansible.builtin.copy:
+    src: "{{artifact_descriptor}}"
+    dest: "{{staging}}"
+    mode: 0755

@@ -1,0 +1,20 @@
+---
+- name: "Checking {{service_name}} service running status"
+  become: true
+  ansible.builtin.command: "service {{service_name}} status"
+  when: ansible_hostname == inventory_hostname
+  register: servicestatus
+  ignore_errors: true
+
+  # TODO: review changed_when for: service {{service_name}} status
+- name: "Status"
+  ansible.builtin.debug:
+    msg: "{{servicestatus.stdout}}"
+  when: servicestatus.stdout.find("running") == -1
+
+- name: "Halt if {{service_name}} service not running"
+  ansible.builtin.fail:
+    msg: "FAILED: {{service_name}} service is down on {{ansible_hostname}}. {{servicestatus.stdout}}"
+  when: servicestatus.stdout.find("running") == -1
+  tags:
+    - forcefail

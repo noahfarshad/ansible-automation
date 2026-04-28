@@ -1,0 +1,24 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.0.1             vmlb1.example.coach vmlb1 {{system}}.vmlb1.example.coach 
+192.168.0.2             vmlb2.example.coach vmlb2 {{system}}.vmlb2.example.coach
+192.168.0.10            vmlb.example.coach vmlb {{system}}.vm1b.example.coach trans.{{system}}.example.coach
+192.168.0.101           vm1.example.coach vm1 files.example.coach files names.example.coach names time.example.coach time repo.example.coach repo homedirs {{system}}.vm1.example.coach
+192.168.0.102           vm2.example.coach vm2 ldap.example.coach ldap axm.example.coach axm {{system}}.vm2.example.coach {{system}}.vm2.example.coach
+192.168.0.103           vm3.example.coach vm3 db.example.coach db {{system}}.vm3.example.coach 
+192.168.0.203           vm3i.example.coach vm3i dbit.example.coach dbit icewsdb icewsdb.example.coach {{system}}.vm3i.example.coach
+192.168.0.140           wl-admin.example.coach vm4 app.example.coach app appadm.example.coach appadm osb.example.coach osb app.2c14.dev {{system}}.wl-admin.example.coach
+192.168.0.141           vm41.example.coach vm41 appms1.example.coach appms1 appms3 appms3.example.coach {{system}}.vm41.example.coach
+192.168.0.142           vm42.example.coach vm42 appms2.example.coach appms2 appms4 appms4.example.coach {{system}}.vm42.example.coach
+192.168.0.241           vm4i.example.coach vm4i appit1.example.coach appit1 {{system}}.vm4i.example.coach
+192.168.0.151           wl-app51.example.coach vm51 portalms1.example.coach portalms1 portal.example.coach portal {{system}}.wl-app51.example.coach
+192.168.0.152           wl-app52.example.coach vm52 portalms2.example.coach portalms2 {{system}}.wl-app52.example.coach
+192.168.0.161           vm61.example.coach vm61 web1.example.coach web1 {{system}}.vm61.example.coach
+192.168.0.162           vm62.example.coach vm62 web2.example.coach web2 {{system}}.vm62.example.coach
+192.168.0.107           vm7.example.coach vm7 webrel.example.coach webrel portalrel.example.coach portalrel searchrel.example.coach searchrel alui-ldap-rel.example.coach alui-ldap-rel {{system}}.vm7.example.coach
+192.168.0.181           vm81.example.coach vm81 appwm1.example.coach appwm1 {{system}}.vm81.example.coach
+192.168.0.182           vm82.example.coach vm82 appwm2.example.coach appwm2 {{system}}.vm82.example.coach
+192.168.0.183           vm83.example.coach vm83 appwm3.example.coach appwm3 {{system}}.vm83.example.coach
+192.168.1.224           yumrepo 
+
+

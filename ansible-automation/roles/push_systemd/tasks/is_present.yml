@@ -1,0 +1,22 @@
+---
+# tasks file for push_systemd
+- name: verifying /etc/systemd/ files
+  become: true
+  ansible.builtin.copy:
+    src: files/{{item.src}}
+    dest: "{{item.dest}}"
+    owner: "root"
+    ansible.builtin.group: "root"
+    mode: "0644"
+  loop: "{{systemd_list}}"
+  when: systemd_list is defined
+  tags: push_systemd
+  notify:
+
+- name: restart systemd service
+  become: true
+  ansible.builtin.service:
+    name: "{{item.name}}"
+    state: restarted
+  when: systemd_list is defined
+  tags: push_systemd

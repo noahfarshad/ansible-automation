@@ -1,0 +1,51 @@
+---
+
+- name: Grep for ProxyPass in apache config files
+  ansible.builtin.shell: "docker exec {{apache_container}} grep -R ^[[:blank:]]*ProxyPass\\\\s {{apache_conf_d}}/httpd-ssl.conf"
+  register: proxy_result
+  ignore_errors: true
+  tags:
+    - apache.check.config
+        
+  changed_when: false
+- name: Output results of check
+  ansible.builtin.debug: 
+     msg: "{{proxy_result.stdout}}"
+     verbosity: 1
+  tags:
+    - apache.check.config
+
+# GC-31098.01: Apache is configured to proxy requests to keycloak
+# GC-31098.02: Apache is configured to use SSL
+- name: Check FIPS (fail if missing)
+  ansible.builtin.fail: 
+     msg: "'ProxyPass' not configured for keycloak"
+  when: 
+     - proxy_result.stdout.find("https://keycloak:8443/") == -1
+  tags:
+    - apache.check.config
+
+- name: Grep for ProxyPassReverse in apache config files
+  ansible.builtin.shell: "docker exec {{apache_container}} grep -R ^[[:blank:]]*ProxyPassReverse\\\\s {{apache_conf_d}}/httpd-ssl.conf"
+  register: proxy_result
+  ignore_errors: true
+  tags:
+    - apache.check.config
+        
+  changed_when: false
+- name: Output results of check
+  ansible.builtin.debug: 
+     msg: "{{proxy_result.stdout}}"
+     verbosity: 1
+  tags:
+    - apache.check.config
+
+# GC-31098.01: Apache is configured to proxy requests to keycloak
+# GC-31098.02: Apache is configured to use SSL
+- name: Check FIPS (fail if missing)
+  ansible.builtin.fail: 
+     msg: "'ProxyPassReverse' not configured for keycloak"
+  when: 
+     - proxy_result.stdout.find("https://keycloak:8443/") == -1
+  tags:
+    - apache.check.config

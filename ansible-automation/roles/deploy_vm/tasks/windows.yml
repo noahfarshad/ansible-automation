@@ -1,0 +1,88 @@
+---
+- name: Create Windows VM  
+  delegate_to: localhost
+  tags: [ deploy_windows ]
+  block:
+  - name: Get Current Timestamp
+    ansible.builtin.shell: "{{ date_command_format }}"
+    register: tstamp
+    changed_when: false
+
+  - name: Create vmware_guest List
+    ansible.builtin.set_fact:
+      vmware_guest_dict_custom_dict:
+        annotation: "{{ vm_annotation_msg }}"
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+        username: "{{ users.vcenter_admin_user }}"
+        password: "{{ users.vcenter_admin_password }}"
+        validate_certs: False
+        name: "{{ inventory_hostname }}"
+        ansible.builtin.template: "{{ parameters.template }}"
+        datacenter: "{{ vmware.datacenter }}"
+        folder: "{{ parameters.folder_name | default(omit) }}"
+        datastore: "{{ datastore | default(vmware.datastore_cluster) }}"       
+        hardware: "{{ hardware | default(omit) }}"
+        networks: "{{ networking.interfaces | default(omit) }}" 
+        customization:
+          autologon: "true"
+          autologoncount: 10
+          ansible.builtin.hostname: "{{ inventory_hostname_short }}"
+          dns_servers: "{{ networking.dns }}"
+          password: "{{ users.workgroup_local_admin.password }}"
+          ansible.builtin.timezone: "{{ parameters.windows_timezone_code | default(omit)}}" 
+        wait_for_ip_address: True
+        wait_for_customization: True
+        state: poweredon
+
+  - name: Dynamically Add esxi_hostname for Deploying to Specific ESXi Host
+    ansible.builtin.set_fact:
+      vmware_guest_dict_custom: "{{ vmware_guest_dict_custom_dict|combine({'esxi_hostname' : esxi_hostname }) }}"
+    when: "esxi_hostname is defined and esxi_hostname"
+
+  - name: Dynamically Add Cluster to Dict
+    ansible.builtin.set_fact:
+      vmware_guest_dict_custom: "{{ vmware_guest_dict_custom_dict|combine({'cluster' : vmware.system_cluster }) }}"
+    when: "(esxi_hostname is defined and not esxi_hostname) or (esxi_hostname is undefined)"
+
+
+#  - name: Validate that the netlogon service has started, before running the next task
+#    ansible.windows.win_reboot:
+#      test_command: 'exit (Get-Service -Name Netlogon).Status -ne "Running"'    
+
+  - name: Windows VMware Deploy (this is a depreciated task, will be removed in future revision)
+    community.vmware.vmware_guest:
+      "{{ vmware_guest_dict_custom }}"
+    register: deploy_vm_results
+    
+  - name: Pause for 180 seconds allowing the VM to start services
+    ansible.builtin.pause:
+      seconds: 180
+
+  - name: Wait for Confirmation of vmwareGuestTools Running
+    community.vmware.vmware_guest_info:
+      ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+      username: "{{ users.vcenter_admin_user }}"
+      password: "{{ users.vcenter_admin_password }}"
+      datacenter: "{{ vmware.datacenter }}"
+      validate_certs: no
+      name: "{{ inventory_hostname }}"
+    register: facts
+    delay: 60
+    retries: 5 
+    until: facts.instance.guest_tools_status == "guestToolsRunning"
+
+  - name: Remove Host Record from Active Directory 
+    microsoft.ad.computer:
+      name: "{{ inventory_hostname_short }}"
+      dns_hostname: "{{ inventory_hostname }}"
+      domain_username: "{{ users.domainadmin_user }}"
+      domain_password: "{{ users.domain_password }}"
+      state: absent
+    delegate_to: "dcserver01.{{ system.tld }}"
+    when:
+    - deploy_vm_results.changed
+    - 'inventory_hostname_short is not search("dcserver*")'
+    tags: [ active_directory_remove ]
+
+  
+  

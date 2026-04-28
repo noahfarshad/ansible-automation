@@ -1,0 +1,6 @@
+---
+# tasks file for gold_data_import_stage_dmp — present
+
+ 
+- ansible.builtin.include_tasks: reset_data_pump_dir.yml
+- ansible.builtin.include_tasks: extract_dmp.yml

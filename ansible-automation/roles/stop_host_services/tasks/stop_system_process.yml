@@ -1,0 +1,8 @@
+- name: "Stopping Service Process"
+  become: true
+  become_user: "{{ service_user }}"
+  ansible.builtin.command: "{{ item.service_location }} stop"
+  loop:
+    - "{{ service_processes }}"
+  when: service_processes is defined and service_processes is not none and service_processes|length>0 and item.service_location is defined
+  # TODO: review changed_when for: {{ item.service_location }} stop

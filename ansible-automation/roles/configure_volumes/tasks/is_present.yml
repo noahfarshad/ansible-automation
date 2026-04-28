@@ -1,0 +1,75 @@
+---
+# Configure local volumes
+- name: Create physical volumes and volume groups
+  remote_user: admin_local
+
+  become_method: sudo
+  become_user: root
+  lvg:
+    state: present
+    vg: "{{item.vg_name}}"
+    pvs: /dev/{{item.disk_id}}
+  loop: "{{volume_config}}"
+  when: volume_config is defined
+  tags: configure_volumes
+
+- name: Create logical volumes
+  remote_user: admin_local
+
+  become_method: sudo
+  become_user: root
+  lvol:
+    state: present
+    vg: "{{item.vg_name}}"
+    lv: "{{item.lv_name }}"
+    size: 100%FREE
+    shrink: no
+  loop: "{{volume_config}}"
+  when: volume_config is defined
+  tags: configure_volumes
+
+- name: Make filesystem on logical volumes
+  remote_user: admin_local
+
+  become_method: sudo
+  become_user: root
+  filesystem:
+    dev: /dev/{{item.vg_name}}/{{item.lv_name }}
+    fstype: "{{item.lv_fs}}"
+  loop: "{{volume_config}}"
+  when: volume_config is defined
+  tags: configure_volumes
+
+- name: Create mount point dirs for logical volumes
+  remote_user: admin_local
+
+  become_method: sudo
+  become_user: root
+  ansible.builtin.file:
+    path: "{{item.lv_mnt_dir}}"
+    state: directory
+    mode: '0755'
+  loop: "{{volume_config}}"
+  when: volume_config is defined
+  tags: configure_volumes
+
+- name: Add fstab lines
+  remote_user: admin_local
+
+  become_method: sudo
+  become_user: root
+  ansible.builtin.lineinfile:
+    state: present
+    path: /etc/fstab
+    line: /dev/mapper/{{item.vg_name}}-{{item.lv_name}}     {{item.lv_mnt_dir}}     {{item.lv_fs}}     defaults 0 0
+  loop: "{{volume_config}}"
+  when: volume_config is defined
+  tags: configure_volumes
+
+- name: Mount all in the FSTAB
+  ansible.builtin.command: mount -a
+  args:
+    warn: no
+
+  tags: configure_volumes
+  changed_when: false

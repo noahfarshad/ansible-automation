@@ -1,0 +1,12 @@
+# ansible/roles/common/dump_neo4j_store/vars/main.yml
+
+# vars used by ansible/roles/common/dump_neo4j_store
+user: app_admin
+neo4j_command: /opt/neo4j/neo4j-community-3.3.5/bin/neo4j
+neo4j_command_admin: /opt/neo4j/neo4j-community-3.3.5/bin/neo4j-admin
+JAVA_HOME: /opt/Oracle/java
+db_name: graph.db
+db_name_dump: "{{db_name}}.dump"
+db_name_version: "{{db_name_dump}}_{{version}}"
+backup_dir: /u01/neo4j_db_backup
+nexus_gold_repository: goldData_storage

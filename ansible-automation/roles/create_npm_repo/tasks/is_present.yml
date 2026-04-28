@@ -1,0 +1,15 @@
+---
+# tasks file for create_npm_repo — present
+
+- block:
+     - name: Create NPM Repo
+       ansible.builtin.uri:
+         url: http://{{reposerver}}/nexus/service/local/repositories
+         method: POST
+         ansible.builtin.user: admin
+         password: admin123
+         HEADER_Content-Type: "application/json"
+         body: '{"data":{"repoType":"hosted","id":"example2npm","name":"GAP CIE 2 NPM","writePolicy":"ALLOW_WRITE_ONCE","browseable":true,"indexable":false,"exposed":true,"notFoundCacheTTL":1440,"repoPolicy":"MIXED","provider":"npm-hosted","providerRole":"org.sonatype.nexus.proxy.repository.Repository","downloadRemoteIndexes":false,"checksumPolicy":"IGNORE"}}'
+         force_basic_auth: yes
+         status_code: 201
+  become: true

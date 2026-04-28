@@ -1,0 +1,65 @@
+---
+# tasks file for gather_recent_userids — present
+
+# Copy Sql to target
+  - name: Copy sql to target
+    ansible.builtin.template:
+      src: user_query.sql
+      dest: /tmp/user_query.sql
+      mode: 0755
+
+# Gather User List
+  - name: Gather user list
+
+    become_user: ora_rmt
+    ansible.builtin.shell: sqlplus / as sysdba < /tmp/user_query.sql
+    environment:
+      ORACLE_HOME: "{{ORACLE_HOME}}"
+      ORACLE_SID: vcieoid
+      PATH: "{{ORACLE_HOME}}/bin:.:$PATH"
+
+# Clean Up User List
+    # TODO: review changed_when for: sqlplus / as sysdba < /tmp/user_query.sql
+  - name: Remove whitespace
+
+    become_user: ora_rmt
+    ansible.builtin.replace:
+      dest: /tmp/dirty_user_list.lst
+      regexp: '[ ]'
+      ansible.builtin.replace: ''
+
+  - name: Get all KEEP lines
+
+    become_user: ora_rmt
+    ansible.builtin.shell: sed -n -e 's/^KEEP_\([^ ]*\)/\1/p' /tmp/dirty_user_list.lst > /tmp/user_list.lst
+
+# Get user list
+    changed_when: false
+  - name: Get the user list
+
+    become_user: ora_rmt
+    ansible.builtin.fetch:
+      src: /tmp/user_list.lst
+      dest: "{{staging}}"
+
+# Clean up workspace
+  - name: Remove dirty_user_list.lst
+
+    become_user: ora_rmt
+    ansible.builtin.file:
+      dest: /tmp/dirty_user_list.lst
+      state: absent
+
+  - name: Remove user_query.sql
+
+    become_user: root
+    ansible.builtin.file:
+      dest: /tmp/user_query.sql
+      state: absent
+
+  - name: Remove user_list.lst
+
+    become_user: ora_rmt
+    ansible.builtin.file:
+      dest: /tmp/user_list.lst
+      state: absent

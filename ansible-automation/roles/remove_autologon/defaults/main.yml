@@ -1,0 +1,14 @@
+---
+# defaults file for remove_autologon
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# dns_servers: ""
+# short_hostname: ""
+# vcenter_hostname: ""
+# vsphere_account: ""
+# vsphere_cluster: ""
+# vsphere_datacenter: ""
+# vsphere_datastore: ""
+# vsphere_password: ""

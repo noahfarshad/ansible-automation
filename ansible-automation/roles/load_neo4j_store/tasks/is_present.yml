@@ -1,0 +1,80 @@
+---
+# tasks file for load_neo4j_store — present
+
+# ansible/roles/common/load_neo4j_store/tasks/main.yml
+
+# called by playbook restore_neo4j_store.yml
+
+# this role calls tasks to stop the neo4j service,
+# download neo4j dump from nexus, invoke neo4j load command, 
+# and start the neo4j service
+---
+- block:
+    - name: stop neo4j service
+
+      become_user: "{{user}}"
+      ansible.builtin.command: "{{neo4j_command}} stop"
+      environment:
+        JAVA_HOME: "{{JAVA_HOME}}"
+      tags:
+      - load_neo4j_store
+
+      # TODO: review changed_when for: {{neo4j_command}} stop
+    - name: remove existing .dump directory/file
+
+      ansible.builtin.file:
+        path: "{{backup_dir}}"
+        state: absent
+      tags:
+      - load_neo4j_store
+
+    - name: create neo4j backup directory
+
+      ansible.builtin.file:
+        path: "{{backup_dir}}"
+        state: directory
+        owner: "{{user}}"
+        ansible.builtin.group: "{{user}}"
+        mode: 0744
+      tags:
+      - load_neo4j_store
+
+    - name: Download neo4j dump from nexus
+
+      become_user: "{{user}}"
+      ansible.builtin.get_url:
+        url: "http://{{nexus_host_qualified}}/repository/{{ nexus_gold_repository }}/{{ group }}/database/{{version}}/{{db_name_version}}"
+        dest: "{{backup_dir}}"
+        mode: 0744
+      tags:
+      - load_neo4j_store
+
+    - name: rename dump to remove version
+
+      ansible.builtin.command: mv {{backup_dir}}/{{db_name_version}} {{backup_dir}}/{{db_name_dump}}
+      tags:
+      - load_neo4j_store
+
+
+      # TODO: mv: not idempotent — gate with creates: <dest> or removes: <src>
+      # TODO: review changed_when for: mv {{backup_dir}}/{{db_name_version}} {{backup_dir}}/{{db_na
+    - name: invoke load command
+
+      become_user: "{{user}}"
+      ansible.builtin.command: "{{neo4j_command_admin}} load --from={{backup_dir}}/{{db_name_dump}} --database={{db_name}} --force"
+      environment:
+        JAVA_HOME: "{{JAVA_HOME}}"
+      tags:
+      - load_neo4j_store
+
+      # TODO: review changed_when for: {{neo4j_command_admin}} load --from={{backup_dir}}/{{db_name
+    - name: start neo4j service
+
+      become_user: "{{user}}"
+      ansible.builtin.command: "{{neo4j_command}} start"
+      environment:
+        JAVA_HOME: "{{JAVA_HOME}}"
+      tags:
+      - load_neo4j_store
+  become: true
+      # TODO: review changed_when for: {{neo4j_command}} start

@@ -1,0 +1,3 @@
+---
+# defaults file for install_winscp
+winscp_install_loc: "C:\\Program Files (x86)\\WinSCP"

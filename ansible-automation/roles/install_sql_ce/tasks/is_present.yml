@@ -1,0 +1,49 @@
+---
+# tasks file for install_sql_ce
+# - name: Uninstall SQLCE x86
+#   ansible.windows.win_package:
+#     path: "{{CE_install_loc}}{{CE_86_old}}"
+#     arguments: /qn /norestart
+#     state: absent
+#   become: true
+#   become_method: runas
+#   become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+#   vars:
+#     ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+#     ansible_become_password: '{{domain_password}}'
+#   ignore_errors: yes
+
+# - name: Uninstall SQLCE x64
+#   ansible.windows.win_package:
+#     path: "{{CE_install_loc}}{{CE_64_old}}"
+#     arguments: /qn /norestart
+#     state: absent
+#   become: true
+#   become_method: runas
+#   become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+#   vars:
+#     ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+#     ansible_become_password: '{{domain_password}}'
+#   ignore_errors: yes
+
+- name: Install SQLCE x86 without using the credentials
+  ansible.windows.win_package:
+    path: "{{artifact_staging}}{{ce86}}"
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'
+
+- name: Install SQLCE x64 without using the credentials
+  ansible.windows.win_package:
+    path: "{{artifact_staging}}{{ce64}}"
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

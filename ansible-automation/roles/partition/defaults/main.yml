@@ -1,0 +1,57 @@
+
+string_vm_partitions:
+  extra_large:
+    - device: '/dev/sdb'
+      path: '/opt'
+      opts: 'defaults'
+      fstype: 'ext4'
+      number: 1
+    - device: '/dev/sdc'
+      path: '/u01'
+      opts: 'defaults,nosuid,acl'
+      fstype: 'ext4'
+      number: 1
+    - device: '/dev/sdd'
+      path: '/u02'
+      opts: 'defaults,nosuid'
+      fstype: 'ext4'
+      number: 1
+  large:
+    - device: '/dev/sdb'
+      path: '/opt'
+      opts: 'defaults'
+      fstype: 'ext4'
+      number: 1
+    - device: '/dev/sdc'
+      path: '/u01'
+      opts: 'defaults,nosuid,acl'
+      fstype: 'ext4'
+      number: 1
+    - device: '/dev/sdd'
+      path: '/u02'
+      opts: 'defaults,nosuid'
+      fstype: 'ext4'
+      number: 1
+  medium:
+    - device: '/dev/sdb'
+      path: '/opt'
+      opts: 'defaults'
+      fstype: 'ext4'
+      number: 1
+    - device: '/dev/sdc'
+      path: '/u01'
+      opts: 'defaults,nosuid'
+      fstype: 'ext4'
+      number: 1
+  small:
+    - device: '/dev/sdb'
+      path: '/opt'
+      opts: 'defaults'
+      fstype: 'ext4'
+      number: 1
+    - device: '/dev/sdc'
+      path: '/u01'
+      opts: 'defaults,nosuid'
+      fstype: 'ext4'
+      number: 1
+      

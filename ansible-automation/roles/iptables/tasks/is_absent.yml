@@ -1,0 +1,25 @@
+- name: Stop and disable systemd iptables service instances
+  become: true
+  ansible.builtin.systemd:
+    name: iptables.service
+    state: stopped
+    enabled: no
+
+- name: Uninstall iptables services
+  become: true
+  ansible.builtin.yum:
+    name: "{{ supported_iptables_services_package }}"
+    state: absent
+
+- name: Start and enable firewalld service on applicable machines
+  become: true
+  ansible.builtin.systemd:
+    name: firewalld.service
+    state: started
+    enabled: yes
+
+- name: Remove iptables file
+  become: true
+  ansible.builtin.file:
+    path: "{{ iptables_file_target }}"
+    state: absent

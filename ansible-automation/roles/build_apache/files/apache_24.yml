@@ -1,0 +1,9 @@
+---
+upload_artifacts:
+  - name: "apache-{{apache_version}}.tar.gz"
+    ext: "tar.gz"
+    group: "apache"
+    artifact: "apache"
+    version: "{{apache_version}}"
+    compression: "tar"
+    repo: "thirdparty"

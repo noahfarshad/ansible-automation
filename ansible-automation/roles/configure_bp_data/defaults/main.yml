@@ -1,0 +1,11 @@
+---
+# defaults file for configure_bp_data
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# dcserver: ""
+# domain_password: ""
+# domainadmin_user: ""
+# string_name: ""
+# system_name: ""

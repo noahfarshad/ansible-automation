@@ -1,0 +1,16 @@
+---
+# defaults file for create_desktop_pool
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# bool: ""
+# connectionserver: ""
+# domain: ""
+# horizon_server_password: ""
+# horizon_server_username: ""
+# string_name: ""
+# system_name: ""
+# vcenter_hostname: ""
+# vcenter_password: ""
+# vsphere_account: ""

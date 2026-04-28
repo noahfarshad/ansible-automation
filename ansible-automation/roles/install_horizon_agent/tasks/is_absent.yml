@@ -1,0 +1,8 @@
+---
+# tasks file for install_horizon_agent — absent
+
+- name: Uninstall Windows package
+  ansible.windows.win_package:
+    product_id: "{{ product_id }}"
+    state: absent
+  when: product_id is defined

@@ -1,0 +1,13 @@
+#
+# Don't use sudo aliases - it messes up the Ansible validation command and is largely unneeded with Ansible doing the sudo management
+#  Just list the required sudo command
+#
+#
+
++un_sems-afwwebs  ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-afwwebs  ALL=(root) /bin/systemctl start httpd24-httpd, /bin/systemctl stop httpd24-httpd, /bin/systemctl restart httpd24-httpd, /bin/systemctl status httpd24-httpd, /bin/journalctl -u httpd24-httpd
+
++un_tads-afwwebs  ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-afwwebs  ALL=(root) /bin/systemctl start httpd24-httpd, /bin/systemctl stop httpd24-httpd, /bin/systemctl restart httpd24-httpd, /bin/systemctl status httpd24-httpd, /bin/journalctl -u httpd24-httpd
+
++fn_afwWebMisc,!+un_sems-testers,!+un_tads-testers  ALL = (afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL

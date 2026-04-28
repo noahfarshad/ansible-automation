@@ -1,0 +1,11 @@
+---
+# tasks file for dns_update — absent
+#
+# This role's removal logic is not auto-derivable from is_present.yml.
+# Default behavior: no-op with explanatory debug message.
+
+- name: "dns_update — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      The 'absent' state for role 'dns_update' is intentionally not implemented.
+      Edit tasks/is_absent.yml if a teardown is needed for your environment.

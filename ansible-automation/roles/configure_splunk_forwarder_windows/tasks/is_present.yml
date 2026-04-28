@@ -1,0 +1,25 @@
+---
+# tasks file for configure_splunk_forwarder_windows
+- name: Copy Splunk Forwarder to temp
+  ansible.windows.win_copy:
+    src: "{{ splunk_forwarder_path }}\\{{ splunk_win }}"
+    dest: C:\Windows\Temp\
+    remote_src: true
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'
+
+- name: Install Splunk Forwarder
+  ansible.windows.win_package:
+    path: "C:\\Windows\\Temp\\{{ splunk_win }}"
+    arguments: "AGREETOLICENSE=yes SPLUNKUSERNAME={{ splunk_admin_user }} SPLUNKPASSWORD={{ domain_password }} DEPLOYMENT_SERVER={{ splunk_deployment_server }} RECEIVING_INDEX={{ splunk_forwarder_server }} /quiet"
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

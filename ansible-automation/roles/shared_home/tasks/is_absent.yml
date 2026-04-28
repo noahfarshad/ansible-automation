@@ -1,0 +1,6 @@
+- name: Remove shared directories
+  become: true
+  ansible.builtin.file:
+    path: "{{ item.target }}/{{ item.name }}"
+    state: absent
+  loop: "{{ shared_homes_list }}"

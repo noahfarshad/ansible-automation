@@ -1,0 +1,51 @@
+---
+# tasks file for run_win_scripts — present
+
+# This will run scripts if the win_scripts host var is added, pulling them from the scippts_dir
+# It will default to using the users.domainadmin_user var unless you override with script_user_admin and script_user_pass vars
+- name: Set Var
+  ansible.builtin.set_fact:
+    default_become_user: "{{ system.tld }}\\{{ users.domainadmin_user }}"
+
+- name: Run Script
+  become: true
+  become_user: "{{ script_user_admin | default(default_become_user) }}"
+  become_method: runas
+  vars:
+    scripts_dir: ../scripts
+    ansible_become_password: "{{ script_user_pass | default(users.domain_password) }}"
+  block:
+  - name: Check if Office14 Installed
+    ansible.windows.win_stat:
+      path: C:\Program Files (x86)\Microsoft Office\Office14
+    register: folder_stat
+
+  - name: Throw Error if not found
+    ansible.builtin.fail:
+      msg: "C:\\Program Files (x86)\\Microsoft Office\\Office14 not found"
+    when: not folder_stat.stat.exists and patch_ospp
+
+  - name: Run OSPP Script
+    ansible.windows.win_copy:
+      src: "{{ scripts_dir }}//OSPP.vbs"
+      dest: C:\Program Files (x86)\Microsoft Office\Office14\
+      backup: Yes
+      force: yes
+    when: patch_ospp 
+ 
+  - name: Copy and Run if Defined
+    when: "win_scripts is defined"
+    block:
+    - name: Copy Scripts
+      ansible.windows.win_copy:
+        src: "{{ scripts_dir }}//{{ item }}"
+        dest: C:\Windows\   
+      loop: "{{ win_scripts }}"
+
+    - name: Run Script
+      ansible.windows.win_shell: "{{ item }}"
+      args:
+        chdir: C:\Windows      
+      loop: "{{ win_scripts }}"  
+
+      

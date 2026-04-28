@@ -1,0 +1,22 @@
+---
+# tasks file for manage_legacy_services — present
+
+# Tasks file for restarting legacy services on a string vm.
+# Uses services defined in host_vars
+- name: "Starting legacy services"
+  become: true
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: "{{ action }}"
+  loop:
+    - "{{ legacy_services}}"
+  when: "not action == 'stopped'"
+
+- name: "Stopping legacy services"
+  become: true
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: "{{ action }}"
+  loop:
+    - "{{ legacy_services|reverse|list }}"
+  when: "action == 'stopped'"

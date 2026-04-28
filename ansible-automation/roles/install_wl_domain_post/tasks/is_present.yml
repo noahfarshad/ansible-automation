@@ -1,0 +1,9 @@
+---
+# tasks file for install_wl_domain_post — present
+
+#
+#  Configures the Weblogic Security Realm Security Settings
+
+
+
+- ansible.builtin.include_tasks: add_security_settings.yml

@@ -1,0 +1,20 @@
+---
+# tasks file for create_dns — absent
+
+- name: Remove DNS A Record
+  community.windows.win_dns_record:
+    computer_name: '{{ dcserver }}'
+    name: '{{ inventory_hostname }}'
+    type: A
+    zone: '{{ domain }}'
+    state: absent
+  delegate_to: '{{ dcserver }}'
+
+- name: Remove PTR record
+  community.windows.win_dns_record:
+    computer_name: '{{ dcserver }}'
+    name: "{{ ip_public.split('.')[3] }}"
+    type: PTR
+    zone: "{{ ip_public.split('.')[2] }}.{{ ip_public.split('.')[1] }}.{{ ip_public.split('.')[0] }}.in-addr.arpa"
+    state: absent
+  delegate_to: '{{ dcserver }}'

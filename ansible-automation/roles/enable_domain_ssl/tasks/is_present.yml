@@ -1,0 +1,55 @@
+---
+# tasks file for enable_domain_ssl — present
+
+# Don't need to stop the node manager if it doesn't exist yet
+- block:
+    - name: Stop node managers
+
+      ansible.builtin.service: name=wlsnodman_gc2 state=stopped
+      ignore_errors: true
+
+    - name: Copy files into place
+
+      become_user: app_admin
+      ansible.builtin.copy: src="{{ssl_script}}" dest="{{domain_home}}"
+
+    - name: Backup cacerts file
+
+      become_user: app_admin
+      ansible.builtin.command: "mv /opt/Oracle/java/jre/lib/security/cacerts /opt/Oracle/java/jre/lib/security/cacerts.back"
+
+      # TODO: mv: not idempotent — gate with creates: <dest> or removes: <src>
+      # TODO: review changed_when for: mv /opt/Oracle/java/jre/lib/security/cacerts /opt/Oracle/jav
+    - name: Copy domain specific cacerts file to jre/lib/security
+
+      become_user: app_admin
+      ansible.builtin.command: "cp /opt/identity/cacerts /opt/Oracle/java/jre/lib/security/cacerts"
+
+      # TODO: cp: not idempotent — convert to ansible.builtin.copy with src/dest
+      # TODO: review changed_when for: cp /opt/identity/cacerts /opt/Oracle/java/jre/lib/security/c
+    - name: Update nodemanager.properties with SSL enabled
+
+      become_user: app_admin
+      ansible.builtin.template:
+       src: nodemanager.properties
+       dest: "{{domain_home}}/nodemanager/nodemanager.properties"
+       owner: app_admin
+       ansible.builtin.group: app_admin
+       mode: 0640
+
+    - name: Start nodemanagers
+
+      ansible.builtin.service: name=wlsnodman_gc2 state=started
+
+    - name: Start adminserver
+
+      ansible.builtin.service: name=wlsappadm_gc2 state=started
+      when: ansible_hostname == "vm4"
+
+    - name: Modify admin server to communicate with domain through SSL
+
+      become_user: app_admin
+      ansible.builtin.shell: "{{gc2_wlst_path}} {{domain_home}}/{{ssl_script}} {{wl_gc2_admin_password}} {{cert_pass}}"
+      when: ansible_hostname == "vm4"
+  become: true
+      # TODO: review changed_when for: {{gc2_wlst_path}} {{domain_home}}/{{ssl_script}} {{wl_gc2_ad

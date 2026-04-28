@@ -1,0 +1,9 @@
+---
+# tasks file for install_flyway — absent
+#
+# Removes the Flyway install directory.
+
+- name: Remove Flyway install directory
+  ansible.builtin.file:
+    path: '{{ flyway_install_dir | default("/opt/flyway") }}'
+    state: absent

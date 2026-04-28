@@ -1,0 +1,5 @@
+
+- template:
+    mode: 0755
+    src: consul-service.sh
+    dest: "/etc/init.d/consul"

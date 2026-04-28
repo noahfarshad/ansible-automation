@@ -1,0 +1,76 @@
+---
+# playbooks/linux/configure_webserver.yml
+#
+# Configures a Linux web server: Apache, modules, vhosts, TLS, monitoring.
+# Run AFTER build_linux_vm.yml — assumes baseline is already in place.
+#
+# Usage:
+#   make linux-web HOST=web01.example.coach
+#   # or:
+#   ansible-playbook -i inventory/hosts \
+#                    playbooks/linux/configure_webserver.yml \
+#                    --limit web01.example.coach
+#
+# REQUIRED variables (mostly set in group_vars/webservers/main.yml):
+#   apache_listen_port, apache_listen_port_ssl, apache_serveradmin,
+#   apache_document_root, apache_modules_enabled,
+#   apache_ssl_cert_path, apache_ssl_key_path
+
+- name: Configure Apache web server
+  hosts: webservers
+  gather_facts: true
+  become: true
+  vars:
+    desired_state: present
+
+  pre_tasks:
+    - name: Confirm host is a Linux web server
+      ansible.builtin.assert:
+        that:
+          - ansible_os_family == 'RedHat'
+          - inventory_hostname in groups['webservers']
+        fail_msg: "Host must be a RedHat-family member of [webservers]"
+
+    - name: Confirm SSL cert and key exist
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - "{{ apache_ssl_cert_path }}"
+        - "{{ apache_ssl_key_path }}"
+      register: ssl_files
+      failed_when: not ssl_files.results | map(attribute='stat.exists') | list | min
+      tags: [tls]
+
+  roles:
+    - { role: install_apache,             tags: [apache, install] }
+    - { role: change_apache_permissions,  tags: [apache, permissions] }
+    - { role: apache_verify_config,       tags: [apache, verify] }
+
+  post_tasks:
+    - name: Open firewall ports for Apache
+      ansible.posix.firewalld:
+        port: "{{ item }}/tcp"
+        permanent: true
+        state: enabled
+        immediate: true
+      loop:
+        - "{{ apache_listen_port }}"
+        - "{{ apache_listen_port_ssl }}"
+      when: enable_firewall | bool
+      tags: [firewall]
+
+    - name: Ensure Apache is running and enabled
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: true
+      tags: [service]
+
+    - name: Sanity-check the listening port
+      ansible.builtin.wait_for:
+        port: "{{ apache_listen_port_ssl }}"
+        host: "{{ inventory_hostname }}"
+        delay: 2
+        timeout: 30
+      delegate_to: localhost
+      tags: [verify]

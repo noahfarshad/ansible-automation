@@ -1,0 +1,62 @@
+---
+# tasks file for load_classification_data — present
+
+- block:
+    - name: "Check that the Neo4j service is running"
+
+      ansible.builtin.service:
+        name: "{{neo4j_service_name}}"
+        state: started
+        enabled: yes
+      tags:
+        - classification.load
+        
+    - name: Create neo4j directory if it is missing
+
+      ansible.builtin.file:
+        path: '{{cypher_file_dir}}'
+        state: directory
+        owner: app_admin
+        ansible.builtin.group: app_admin
+        mode: 0755
+      tags:
+        - classification.load
+
+    - name: Extract cypher scripts
+
+      become_user: app_admin
+      ansible.builtin.unarchive:
+        src: '{{staging}}/{{item}}'
+        dest: '{{cypher_file_dir}}'
+        mode: 0755
+      loop:
+      - '{{cypher_archive}}'
+      tags:
+        - classification.load
+
+    - name: Execute the cypher script to remove all values in the database and load SIPR data
+
+      become_user: app_admin
+      ansible.builtin.shell: cat {{cypher_file_dir}}/{{item}} | {{cypher_shell_path}} -u {{neo4j_username}} -p '{{app_db_user_db_password}}'
+      # TODO: review changed_when for: cypher load (state-changing if file has DDL)
+      environment:
+        JAVA_CMD: '{{java_install_directory}}/bin/java'
+      loop:
+        - DeleteAll.cyp
+        - SIPR.cyp
+      tags:
+        - classification.load
+
+      changed_when: false
+    - name: Execute the cypher script to load JWICS data
+
+      become_user: app_admin
+      ansible.builtin.shell: cat {{cypher_file_dir}}/JWICS.cyp | {{cypher_shell_path}} -u {{neo4j_username}} -p '{{app_db_user_db_password}}'
+      # TODO: review changed_when for: cypher load (state-changing if file has DDL)
+      environment:
+        JAVA_CMD: '{{java_install_directory}}/bin/java'
+      when: enclave=="JWICS"
+      tags:
+        - classification.load
+      
+  become: true

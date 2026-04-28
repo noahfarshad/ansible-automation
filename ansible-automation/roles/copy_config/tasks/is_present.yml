@@ -1,0 +1,11 @@
+# Copies the release configs from media to bootflash on switches
+# The timeout vars need to be set to 600 or greater, otherwise the trasnfer will fail on large files.
+- name: copy {{ cfg_name }}-{{ site }}-{{ ifc_next }}.txt to {{ name }}
+  cisco.nxos.nxos_file_copy:
+    local_file: /mnt/config/ansible-engineering/{{ site }}/network_configs/{{ ifc_next }}/{{ cfg_name }}-{{ site }}-{{ ifc_next }}.txt.txt
+    remote_file: '{{ cfg_name }}-{{ site }}-{{ ifc_next }}.txt'
+  vars:
+    ansible_command_timeout: 600
+    ansible_connect_timeout: 600
+
+

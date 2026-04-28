@@ -1,0 +1,5 @@
+---
+- name: Restart Splunk Forwarder
+  ansible.windows.win_shell: .\splunk restart
+  args:
+    chdir: C:\Program Files\SplunkUniversalForwarder\bin

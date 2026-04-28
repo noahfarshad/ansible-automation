@@ -1,0 +1,72 @@
+---
+# group_vars/linux/main.yml
+#
+# Variables for hosts in the [linux] group (which is a child group of
+# webservers, dbservers, appservers — set up in inventory/hosts).
+
+# ===========================================================================
+# Connection
+# ===========================================================================
+ansible_connection:           ssh
+ansible_python_interpreter:   /usr/bin/python3
+
+# ===========================================================================
+# OS family expectation (used by some role assertions)
+# ===========================================================================
+expected_os_family:           RedHat
+
+# ===========================================================================
+# Linux-specific filesystem layout
+# ===========================================================================
+# The configure_volumes role uses these to create LVM logical volumes.
+# Override per-host for non-standard layouts.
+linux_volume_groups:
+  - name: vg_data
+    pvs: [/dev/sdb]
+
+linux_logical_volumes:
+  - lv:        lv_app
+    vg:        vg_data
+    size:      40g
+    fstype:    xfs
+    mount:     /opt
+  - lv:        lv_log
+    vg:        vg_data
+    size:      10g
+    fstype:    xfs
+    mount:     /var/log
+  - lv:        lv_data
+    vg:        vg_data
+    size:      30g
+    fstype:    xfs
+    mount:     /var/lib/data
+
+# ===========================================================================
+# Default packages installed on every Linux host
+# ===========================================================================
+linux_baseline_packages:
+  - vim-enhanced
+  - bash-completion
+  - rsync
+  - curl
+  - wget
+  - net-tools
+  - bind-utils
+  - lsof
+  - tcpdump
+  - sysstat
+  - tmux
+  - unzip
+
+# ===========================================================================
+# Firewall — default outbound, default deny inbound except listed
+# ===========================================================================
+firewall_open_tcp_ports:
+  - 22                         # SSH
+firewall_open_udp_ports: []
+
+# ===========================================================================
+# SELinux — enforcing by default
+# ===========================================================================
+selinux_state:                enforcing
+selinux_policy:               targeted

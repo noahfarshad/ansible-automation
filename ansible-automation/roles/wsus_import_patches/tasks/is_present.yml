@@ -1,0 +1,56 @@
+---
+# tasks file for wsus_import_patches
+
+# !!Need role for staging to san from nexus
+# For now, assume \\san01\\software\WSUSExport\{{ patch_month_year }}\ is populated with
+# WsusContent and the export_XXXXXXXX.xml.gz file
+
+#. Maybe add task or role to expand disk size if its not already, to avoid sizing issues
+
+- name: Remove existing updates in WSUS
+  ansible.windows.win_shell: Get-WsusUpdate -Classification All -Approval Approved -Status Any | Deny-WsusUpdate
+
+- name: Run removal script to cleanup patches 
+  ansible.windows.win_shell: C:\scripts\wsus_removal_script.ps1
+
+- name: Remove existing WsusContent folder
+  ansible.windows.win_file:
+    path: C:\WSUS\WsusContent
+    state: absent
+    
+- name: Copy WsusContent folder recursively to local drive
+  ansible.windows.win_copy: 
+    src: \\san01.{{ vsphere_datacenter }}.local\software\WSUSExport\{{ patch_month_year }}\WsusContent\
+    dest: C:\WSUS\WsusContent\
+    remote_src: true
+
+- name: Copy latest export xml.gz file to local drive
+  ansible.windows.win_copy: 
+    src: \\san01.{{ vsphere_datacenter }}.local\software\WSUSExport\{{ patch_month_year }}\{{ patch_export_file }}  #\\san01.wcm1.local\software\WSUSExport\January_2024\export_01312024.xml.gz
+    dest: C:\WSUS\
+    remote_src: true
+
+- name: Import patches to WSUS using WsusUtil.exe
+  ansible.windows.win_command: 
+    cmd: .\WsusUtil.exe import C:\WSUS\{{ patch_export_file }} import_{{ ansible_date_time.date }}.log
+    chdir: C:\Program Files\Update Services\Tools
+    
+- name: Approve imported patches
+  ansible.windows.win_shell: Get-WsusUpdate -Classification All -Approval Unapproved -Status Any | Approve-WsusUpdate -Action Install -TargetGroupName "All Computers"
+
+- name: Force patches to download immediately 
+  ansible.windows.win_shell: |
+    Stop-Service WsusService
+    Start-Service WsusService
+    wsusutil reset
+    $Configuration=(Get-WSUSServer).GetConfiguration()
+    $Configuration.BitsDownloadPriorityForeground=$True
+    $Configuration.Save()
+    (get-wsusserver).GetConfiguration()
+
+- name: Message
+  ansible.builtin.debug:
+    msg: After this play, run patch_windows role on all windows machines
+
+# After this is done, the Check for Updates needs to be ran on all windows machines
+# as well as wuauclt.exe /reportnow

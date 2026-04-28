@@ -1,0 +1,5 @@
+---
+listener_name: DB_1210
+tmp_directory: /var/shares/cots/SQL
+decompressed_directory: /var/tmp/SQL/
+tmp_dmp_directory: /u02/data_dmp

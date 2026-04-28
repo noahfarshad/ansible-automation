@@ -1,0 +1,15 @@
+- name: Remove host_vars hosts from /etc/hosts
+  become: true
+  ansible.builtin.lineinfile:
+    path: "{{ hosts_file_target }}"
+    regexp: "^{{ hostvars[item]['host_internal_vlan_ip'] }}.*"
+    state: absent
+  loop: "{{ hostvars }}"
+
+- name: Remove additional references to /etc/hosts
+  become: true
+  ansible.builtin.lineinfile:
+    path: "{{ hosts_file_target }}"
+    regexp: "^{{ item['target'] }}.*"
+    state: absent
+  loop: "{{ hosts_file_additional_refs }}"

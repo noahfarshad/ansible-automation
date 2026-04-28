@@ -1,0 +1,38 @@
+---
+# tasks file for change_apache_permissions — present
+
+- name: Change OWNERSHIP - Directories and Files
+
+  ansible.builtin.command: chown -R root.midtier /opt/apache24
+
+
+  changed_when: false
+- name: Change Permissions - Directories
+
+  ansible.builtin.shell: find /opt/apache24 -type d -print0 | xargs -0 chmod 2770
+
+
+  changed_when: false
+- name: Change Permissions - Files
+
+  ansible.builtin.shell: find /opt/apache24 -type f -print0 | xargs -0 chmod 0660
+
+
+  changed_when: false
+- name: Allow service account access
+
+  ansible.builtin.command: chmod 2775 /opt/apache24
+
+
+  changed_when: false
+- name: Change Permissions - Directories
+
+  ansible.builtin.shell: find /opt/apache24/bin -type d -print0 | xargs -0 chmod 2550
+
+
+  changed_when: false
+- name: Change Permissions - Files
+
+  ansible.builtin.shell: find /opt/apache24/bin -type f -print0 | xargs -0 chmod 0550
+
+  changed_when: false

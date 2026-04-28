@@ -1,0 +1,9 @@
+---
+# tasks file for get_with_subelements — absent
+#
+# This role only performs checks/assertions (debug, fail, assert).
+# It makes no changes to the system, so 'absent' has no meaningful action.
+
+- name: "get_with_subelements — absent is a no-op (this role only performs checks)"
+  ansible.builtin.debug:
+    msg: "Role 'get_with_subelements' makes no system changes; nothing to undo."

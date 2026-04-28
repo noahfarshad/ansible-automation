@@ -1,0 +1,25 @@
+- name: Partition and Format
+  vars:
+    disk: "{{ virtual_disk.disk_partition }}"
+  block:
+  - name: Check if Disk has been initialized
+    ansible.windows.win_shell: 'get-disk | where number -eq "{{ disk.disk_number }}" | where partitionstyle -eq "raw"'
+    changed_when: false
+    register: disk_init_check
+
+  - name: initialize disk
+    ansible.windows.win_shell: "Initialize-Disk -Number {{ disk.disk_number }}"
+    when: disk_init_check.stdout
+
+  - name: "Partition Disks"
+    win_partition:
+      drive_letter: "{{ disk.letter }}"
+      partition_size: -1
+      disk_number: "{{ disk.disk_number }}"
+
+  - name: Format Disk
+    win_format:
+      drive_letter: "{{ disk.letter }}"
+      file_system: "{{ disk.filesystem }}"
+      new_label: "{{ disk.label | default(omit) }}"
+    when: disk_init_check.stdout

@@ -1,0 +1,3 @@
+Runas_Alias	WEBLOGIC_ADMIN = weblogic
+Host_Alias	APPADMIN_SNDBX = afw-appadmin-01x, afw-appadmin-02x, afw-appadmin-03x, afw-appadmin-04x
+SCS_TEAM	APPADMIN_SNDBX	= (WEBLOGIC_ADMIN) LOG_OUTPUT: LOG_INPUT: ALL

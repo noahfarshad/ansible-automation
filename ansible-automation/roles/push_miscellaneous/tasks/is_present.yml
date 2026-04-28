@@ -1,0 +1,13 @@
+---
+# tasks file for push_miscellaneous
+- name: verifying msicellaneous files
+  become: true
+  ansible.builtin.copy:
+    src: files/{{item.name}}
+    dest: "{{item.dest}}"
+    owner: "{{item.owner}}"
+    ansible.builtin.group: "{{item.group}}"
+    mode: "{{item.mode}}"
+  loop: "{{misc_files}}"
+  when: misc_files is defined
+  tags: push_miscellaneous

@@ -1,0 +1,6 @@
+---
+# tasks file for disable_db_remote_login — absent
+
+- name: Re-enable remote login (inverse of disable)
+  ansible.builtin.debug:
+    msg: "Run the enable_db_remote_login role with desired_state=present to invert this."

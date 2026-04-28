@@ -1,0 +1,13 @@
+---
+# Install neo4j
+ - hosts: neo4j
+   become: true
+   roles:
+     - installers/install_java8
+     - installers/neo4j/install_neo4j
+
+# Populate relationship neo4j instance with mock data
+ - name: Deploy mock relationship data
+   hosts: vm4i
+   roles:
+     - deployments/deploy_mock_relationship_data

@@ -1,0 +1,60 @@
+---
+# tasks file for import_certs — present
+
+# import any certs in the tmp dir
+- block:
+    - name: Make host tmp cert directory
+      ansible.builtin.file:
+        path: "{{cert_dir}}/certs"
+        state: directory
+      ignore_errors: yes
+      tags:
+        - certs
+
+    - name: Copy certs to host
+      ansible.builtin.copy:
+        src: "{{cert_repo}}"
+        dest: "{{cert_dir}}/certs/"
+        owner: services
+        ansible.builtin.group: docker
+      with_fileglob:
+        - "{{cert_repo}}/*.crt"
+      ignore_errors: yes
+      tags:
+        - certs
+
+    - name: Detect certs
+      ansible.builtin.find:
+        paths: "{{cert_dir}}/certs"
+        patterns: "*.crt"
+      register: certs
+      ignore_errors: yes
+      tags:
+        - certs
+
+    - name: Removing old certs from host truststore
+      ansible.builtin.shell: "/bin/keytool -delete -alias {{(item.path|basename|splitext)[0]}} -storepass {{cert_pass}} -keypass {{cert_pass}} -noprompt -keystore {{cert_dir}}/cacerts"
+      loop: "{{ certs.files }}"
+      when: (item.path|basename|splitext)[0] != inventory_hostname
+      ignore_errors: yes
+      tags:
+        - certs
+
+      # TODO: review changed_when for: /bin/keytool -delete -alias {{(item.path|basename|splitext)[
+    - name: Import new certs to host truststore
+      ansible.builtin.shell: "/bin/keytool -import -alias {{(item.path|basename|splitext)[0]}} -storepass {{cert_pass}} -keypass {{cert_pass}} -noprompt -keystore {{cert_dir}}/cacerts -trustcacerts -file {{item.path}}"
+      loop: "{{ certs.files }}"
+      when: (item.path|basename|splitext)[0] != inventory_hostname
+      ignore_errors: yes
+      tags:
+        - certs
+
+      # TODO: review changed_when for: /bin/keytool -import -alias {{(item.path|basename|splitext)[
+    - name: Delete host copied certs
+      ansible.builtin.file:
+        path: "{{cert_dir}}/certs"
+        state: absent
+      ignore_errors: yes
+      tags:
+        - certs
+  become: true

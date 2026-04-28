@@ -1,0 +1,10 @@
+---
+# defaults file for download_scanning_artifacts
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# docker_scans: ""
+# nexus_host: ""
+# nexus_public: ""
+# staging: ""

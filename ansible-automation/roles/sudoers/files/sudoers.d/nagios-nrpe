@@ -1,0 +1,14 @@
+Defaults:nagios !requiretty
+nagios      ALL=(ALL)   NOPASSWD:   /usr/lib64/nagios/plugins/
+nagios      ALL=(ALL)   NOPASSWD:    /usr/sbin/hpacucli
+# SA-27144-replace HPE storage check with new HPE utility
+nagios      ALL=(ALL)   NOPASSWD:    /usr/sbin/hpssacli
+nagios      ALL=(ALL)   NOPASSWD:    /usr/sbin/ssacli
+nagios      ALL=(ALL)   NOPASSWD:    /sbin/hpasmcli
+nagios      ALL=(ALL)   NOPASSWD:    /usr/sbin/dmidecode
+nagios      ALL=(ALL)   NOPASSWD:    /root/bin/decrypt-fence
+nagios      ALL=(ALL)   NOPASSWD:    /sbin/multipath -l
+nagios      ALL=(ALL)   NOPASSWD:    /usr/lib64/nagios/plugins/check_file.pl
+
+# Required for SCS Broker Checks, runs as j2eeadmin user
+nagios      ALL=(j2eeadmin)   NOPASSWD:   /opt/apps/jmxeval/jmx_master_script

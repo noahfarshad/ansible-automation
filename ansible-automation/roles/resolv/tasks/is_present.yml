@@ -1,0 +1,8 @@
+- name: Move resolv template
+  become: true
+  ansible.builtin.template:
+    src: "{{ resolv_template }}"
+    dest: "{{ resolv_template_target }}"
+    owner: root
+    ansible.builtin.group: root
+    mode: 0644

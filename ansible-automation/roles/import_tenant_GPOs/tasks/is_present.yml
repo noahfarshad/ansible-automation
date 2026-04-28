@@ -1,0 +1,268 @@
+---
+## This role needs to be ran as the primary DC to work properly. Either switch roles to dc1, or set hosts in the playbook to the primaryDC 
+
+# Remove unsupported IFC OU
+# - name: Ensure {{pre_ifc}} OU is absent #to delete if protected
+#   microsoft.ad.ou:
+#     name: '{{pre_ifc}}'
+#     state: absent
+
+# Verify tenant1 OUs are present
+- name: Verify {{tenant1}} OU exists
+  microsoft.ad.ou:
+    name: '{{tenant1}}'
+    protect_from_deletion: false
+    state: present 
+
+- name: Verify {{tenant1}} Servers OU exists
+  microsoft.ad.ou:
+    name: Servers
+    path: OU={{tenant1}},DC={{domain_ou}},DC=local
+    protect_from_deletion: false
+    state: present
+
+- name: Verify {{tenant1}} Workstations OU exists 
+  microsoft.ad.ou:
+    name: Workstations
+    path: OU={{tenant1}},DC={{domain_ou}},DC=local
+    protect_from_deletion: false
+    state: present
+
+- name: Verify {{tenant1}} VDI OU exists
+  microsoft.ad.ou:
+    name: VDI
+    path: OU={{tenant1}},DC={{domain_ou}},DC=local
+    protect_from_deletion: false
+    state: present
+
+- name: Verify {{tenant1}} RHEL OU exists
+  microsoft.ad.ou:
+    name: RHEL
+    path: OU={{tenant1}},DC={{domain_ou}},DC=local
+    protect_from_deletion: false
+    state: present
+
+# Verify Domain Controllers OU is present
+- name: Verify Domain Controllers OU exists
+  microsoft.ad.ou:
+    name: Domain Controllers
+    protect_from_deletion: false
+    state: present
+
+# Remove all GPOs
+# Commenting out cause Denise doesn't know if it will destroy anything yet
+# For now remove old GPOs manually
+# - name: Remove All GPOs
+#   win_shell: |
+#     $GPOList = Get-GPO -All -Domain {{system_name}}.local
+#     foreach ($GPO in $GPOList){
+#       $GPOName = $GPO.DisplayName
+#       $GPOID = $GPO.Id
+#       if ($GPOID -ne '31b2f340-016d-11d2-945f-00c04fb984f9' -and $GPOID -ne '6ac1786c-016f-11d2-945f-00c04fb984f9'){
+#         Remove-GPO -Name $GPOName  
+#       }else{
+#         Continue
+#       }
+#     }
+#   tags: remove-gpo
+
+# Import tenant1 GPOs
+- name: Import {{ tenant1 }} Domain GPOs
+  ansible.windows.win_shell: |
+    $name = "{{tenant1}} - {{item}}"
+    $exists = (Get-GPO -All).DisplayName
+    if ( $name -notin $exists )
+    {
+      New-GPO -Name "{{tenant1}} - {{item}}" -ErrorAction SilentlyContinue
+      Import-GPO -BackupGpoName "{{item}}" -TargetName "{{tenant1}} - {{item}}" -Path "C:\GPO_{{ tenant1 }}\{{item}}"
+    }
+  loop: "{{tenant1_domain_gpos}}"
+
+- name: Import {{ tenant1 }} VDI GPOs
+  ansible.windows.win_shell: |
+    $name = "{{tenant1}} - {{item}}"
+    $exists = (Get-GPO -All).DisplayName
+    if ( $name -notin $exists )
+    {
+      New-GPO -Name "{{tenant1}} - {{item}}" -ErrorAction SilentlyContinue
+      Import-GPO -BackupGpoName "{{item}}" -TargetName "{{tenant1}} - {{item}}" -Path "C:\GPO_{{ tenant1 }}\{{item}}"
+    }
+  loop: "{{tenant1_vdi_gpos}}"
+
+- name: Import {{ tenant1 }} Workstation GPOs
+  ansible.windows.win_shell: |
+    $name = "{{tenant1}} - {{item}}"
+    $exists = (Get-GPO -All).DisplayName
+    if ( $name -notin $exists )
+    {
+      New-GPO -Name "{{tenant1}} - {{item}}" -ErrorAction SilentlyContinue
+      Import-GPO -BackupGpoName "{{item}}" -TargetName "{{tenant1}} - {{item}}" -Path "C:\GPO_{{ tenant1 }}\{{item}}"
+    }
+  loop: "{{tenant1_workstations_gpos}}"
+
+- name: Import {{ tenant1 }} Common GPOs
+  ansible.windows.win_shell: |
+    $name = "{{tenant1}} - {{item}}"
+    $exists = (Get-GPO -All).DisplayName
+    if ( $name -notin $exists )
+    {
+      New-GPO -Name "{{tenant1}} - {{item}}" -ErrorAction SilentlyContinue
+      Import-GPO -BackupGpoName "{{item}}" -TargetName "{{tenant1}} - {{item}}" -Path "C:\GPO_{{ tenant1 }}\{{item}}"
+    }
+  loop: "{{tenant1_common_gpos}}"
+
+- name: Import {{ tenant1 }} DC GPOs
+  ansible.windows.win_shell: |
+    $name = "{{tenant1}} - {{item}}"
+    $exists = (Get-GPO -All).DisplayName
+    if ( $name -notin $exists )
+    {
+      New-GPO -Name "{{tenant1}} - {{item}}" -ErrorAction SilentlyContinue
+      Import-GPO -BackupGpoName "{{item}}" -TargetName "{{tenant1}} - {{item}}" -Path "C:\GPO_{{ tenant1 }}\{{item}}"
+    }
+  loop: "{{tenant1_dc_gpos}}" 
+
+# Link tenant1 GPOs
+- name: Link {{ tenant1 }} Domain GPOs 
+  ansible.windows.win_shell: |
+    $exists = (Get-GPO -All).DisplayName
+    $name = "{{tenant1}} - {{item}}"
+    foreach ($e in $exists)
+    {
+      if ($name -in $e)
+      {
+        $LinksPaths = ""
+        $LinksPath = ""
+        $LinksEnableds = ""
+        $LinkEnabled = ""
+
+        [xml]$gpocontent =  Get-GPOReport $e -ReportType xml
+  
+        $LinksPaths = $gpocontent.GPO.LinksTo #| %{$_.SOMPath}
+        $LinksEnableds = $gpocontent.GPO.LinksTo #| %{$_.Enabled}
+      
+        if (( -not $LinksPaths ) -and ( -not $LinksEnableds ))
+        {
+          New-GPLink -Name "{{tenant1}} - {{item}}" -Target "DC={{domain_ou}},DC=local" -LinkEnabled Yes -ErrorAction SilentlyContinue
+        }
+      }
+    }
+  loop: "{{tenant1_domain_gpos}}"
+
+- name: Link {{ tenant1 }} VDI GPOs 
+  ansible.windows.win_shell: |
+    $exists = (Get-GPO -All).DisplayName
+    $name = "{{tenant1}} - {{item}}"
+    foreach ($e in $exists)
+    {
+      if ($name -in $e)
+      {
+        $LinksPaths = ""
+        $LinksPath = ""
+        $LinksEnableds = ""
+        $LinkEnabled = ""
+
+        [xml]$gpocontent =  Get-GPOReport $e -ReportType xml
+  
+        $LinksPaths = $gpocontent.GPO.LinksTo #| %{$_.SOMPath}
+        $LinksEnableds = $gpocontent.GPO.LinksTo #| %{$_.Enabled}
+      
+        if (( -not $LinksPaths ) -and ( -not $LinksEnableds ))
+        {
+          New-GPLink -Name "{{tenant1}} - {{item}}" -Target "ou=VDI,ou={{tenant1}},DC={{domain_ou}},DC=local" -LinkEnabled Yes -ErrorAction SilentlyContinue
+        }
+      }
+    }   
+  loop: "{{tenant1_vdi_gpos}}"
+
+- name: Link {{ tenant1 }} Workstations GPOs 
+  ansible.windows.win_shell: |
+    $exists = (Get-GPO -All).DisplayName
+    $name = "{{tenant1}} - {{item}}"
+    foreach ($e in $exists)
+    {
+      if ($name -in $e)
+      {
+        $LinksPaths = ""
+        $LinksPath = ""
+        $LinksEnableds = ""
+        $LinkEnabled = ""
+
+        [xml]$gpocontent =  Get-GPOReport $e -ReportType xml
+  
+        $LinksPaths = $gpocontent.GPO.LinksTo #| %{$_.SOMPath}
+        $LinksEnableds = $gpocontent.GPO.LinksTo #| %{$_.Enabled}
+      
+        if (( -not $LinksPaths ) -and ( -not $LinksEnableds ))
+        {
+          New-GPLink -Name "{{tenant1}} - {{item}}" -Target "ou=VDI,ou={{tenant1}},DC={{domain_ou}},DC=local" -LinkEnabled Yes -ErrorAction SilentlyContinue
+          New-GPLink -Name "{{tenant1}} - {{item}}" -Target "ou=Workstations,ou={{tenant1}},DC={{domain_ou}},DC=local" -LinkEnabled Yes -ErrorAction SilentlyContinue
+        }
+      }
+    }  
+  loop: "{{tenant1_workstations_gpos}}"
+
+- name: Link {{ tenant1 }} Common GPOs 
+  ansible.windows.win_shell: |
+    $exists = (Get-GPO -All).DisplayName
+    $name = "{{tenant1}} - {{item}}"
+    foreach ($e in $exists)
+    {
+      if ($name -in $e)
+      {
+        $LinksPaths = ""
+        $LinksPath = ""
+        $LinksEnableds = ""
+        $LinkEnabled = ""
+
+        [xml]$gpocontent =  Get-GPOReport $e -ReportType xml
+  
+        $LinksPaths = $gpocontent.GPO.LinksTo #| %{$_.SOMPath}
+        $LinksEnableds = $gpocontent.GPO.LinksTo #| %{$_.Enabled}
+      
+        if (( -not $LinksPaths ) -and ( -not $LinksEnableds ))
+        {
+          New-GPLink -Name "{{tenant1}} - {{item}}" -Target "ou={{tenant1}},DC={{domain_ou}},DC=local" -LinkEnabled Yes -ErrorAction SilentlyContinue
+          New-GPLink -Name "{{tenant1}} - {{item}}" -Target "ou=Domain Controllers,DC={{domain_ou}},DC=local" -LinkEnabled Yes -ErrorAction SilentlyContinue
+        }
+      }
+    } 
+  loop: "{{tenant1_common_gpos}}"
+
+- name: Link {{ tenant1 }} DC GPOs 
+  ansible.windows.win_shell: |
+    $exists = (Get-GPO -All).DisplayName
+    $name = "{{tenant1}} - {{item}}"
+    foreach ($e in $exists)
+    {
+      if ($name -in $e)
+      {
+        $LinksPaths = ""
+        $LinksPath = ""
+        $LinksEnableds = ""
+        $LinkEnabled = ""
+
+        [xml]$gpocontent =  Get-GPOReport $e -ReportType xml
+  
+        $LinksPaths = $gpocontent.GPO.LinksTo #| %{$_.SOMPath}
+        $LinksEnableds = $gpocontent.GPO.LinksTo #| %{$_.Enabled}
+      
+        if (( -not $LinksPaths ) -and ( -not $LinksEnableds ))
+        {
+          New-GPLink -Name "{{tenant1}} - {{item}}" -Target "ou=Domain Controllers,DC={{domain_ou}},DC=local" -LinkEnabled Yes -ErrorAction SilentlyContinue
+        }
+      }
+    } 
+  loop: "{{tenant1_dc_gpos}}"
+
+- name: Message
+  ansible.builtin.debug:
+    msg: After this play, remove old IFC GPOs Manually
+
+- name: Message
+  ansible.builtin.debug:
+    msg: After this play, Manually move infra computers to new OU
+
+- name: Message
+  ansible.builtin.debug:
+    msg: After this play, manually remove the old IFC OU

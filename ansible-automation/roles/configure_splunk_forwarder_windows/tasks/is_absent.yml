@@ -1,0 +1,8 @@
+---
+# tasks file for configure_splunk_forwarder_windows — absent
+
+- name: Uninstall Windows package
+  ansible.windows.win_package:
+    product_id: "{{ product_id }}"
+    state: absent
+  when: product_id is defined

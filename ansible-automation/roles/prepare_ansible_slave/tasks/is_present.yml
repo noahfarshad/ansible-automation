@@ -1,0 +1,56 @@
+---
+# tasks file for prepare_ansible_slave — present
+
+# Playbook to provision CentOS 7 VM as an Ansible slave for Jenkins
+- block:
+    - name: ensure latest versions of packages are installed
+      ansible.builtin.yum: name=* state=latest
+
+      tags:
+        - skip_ansible_lint
+
+    - name: install needed packages
+      ansible.builtin.yum: name={{ item }}  state=latest
+      loop:
+        - open-vm-tools
+        - ansible-2.3*
+        - mercurial
+        - java-1.8.0-openjdk.x86_64
+        - cifs-utils
+        - rsync
+        - wget
+        - zip
+        - bzip2
+        - python2-pyvmomi
+
+      tags:
+        - skip_ansible_lint
+
+    - name: enable and start open-vm-tools
+      ansible.builtin.service: name=vmtoolsd enabled=yes state=started
+
+    - name: update sudoers to allow no tty
+      ansible.builtin.lineinfile: dest=/etc/sudoers state=present regexp='^Defaults    requiretty' line='Defaults    !requiretty' validate='visudo -cf %s'
+
+    - name: create artifact staging directory for jenkins
+      ansible.builtin.file: path=/var/artifact_staging state=directory mode=0755 group="admin" owner="admin"
+
+    - name: create working directory for jenkins
+      ansible.builtin.file: path=/jenkins_slave state=directory mode=0755 group="admin" owner="admin"
+
+    - name: copy Ansible passwords file
+      ansible.builtin.copy: src=/etc/ansible/passwords.txt dest=/etc/ansible/passwords.txt group="admin" owner="admin"
+
+    - name: copy cifs password file
+      ansible.builtin.copy: src=.secret.txt dest=/root/.secret.txt group="admin" owner="admin"
+
+    # /etc/ansible/userConfig must be populated on the system where this playbook runs from or it will fail. Grab a copy from an existing pansibleslave.
+    - name: copy wlst files
+      ansible.builtin.copy: src=/etc/ansible/userConfig dest=/etc/ansible group="admin" owner="admin"
+
+    - name: create directory for mount point
+      ansible.builtin.file: path=/var/GAP_CIE state=directory mode=0755 group="admin" owner="admin"
+
+    - name: Mount fileserver /GAP_CIE
+      ansible.builtin.mount: name=/var/GAP_CIE/ src=//fileserver/GAP_CIE fstype=cifs opts="credentials=/root/.secret.txt,_netdev,uid=admin,gid=admin" state=mounted
+  become: true

@@ -1,0 +1,7 @@
+---
+# defaults file for enable_fips
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# enable_fips_upgrade: ""

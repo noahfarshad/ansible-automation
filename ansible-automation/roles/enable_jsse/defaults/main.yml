@@ -1,0 +1,5 @@
+ssl_script: enable_jsse.py
+wlst_path: /opt/Oracle/Middleware/oracle_common/common/bin/wlst.sh
+target_ssl_script_path: /tmp
+domains:
+  - vcie_domain

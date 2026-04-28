@@ -1,0 +1,10 @@
+{
+  "Name": "{{service_name}}",
+  "Port": {{port_number}},
+  "Check": {
+    "ID": "{{service_name}}",
+    "Notes": "Ensure proper port is open",
+    "TCP": "{{ ansible_default_ipv4.address }}:{{port_number}}",
+    "Interval": "5s"
+  }
+}

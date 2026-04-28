@@ -1,0 +1,62 @@
+---
+# tasks file for configure_windows
+- block:
+    - name: Set Timezone to UTC
+      win_timezone:
+        ansible.builtin.timezone: UTC
+      tags: [ set_win_timezone ]
+
+    - name: Create baseline variable
+      ansible.builtin.set_fact:
+        baseline: {}
+
+    - name: Get installed software
+      ansible.windows.win_shell: |
+          $keynames = (get-childitem HKLM:\software\microsoft\windows\currentversion\uninstall `
+                       | select -ExpandProperty Name).replace("HKEY_LOCAL_MACHINE","HKLM:");
+          $keynames += (get-childitem `
+                        HKLM:\software\wow6432node\microsoft\windows\currentversion\uninstall `
+                         | select -ExpandProperty Name).replace("HKEY_LOCAL_MACHINE","HKLM:");
+          $display = foreach ($key in $keynames) `
+                  { get-itemproperty $key `
+                    | ? {$null -ne $_.displayname -and $null -ne $_.displayversion} `
+                    | select DisplayName, DisplayVersion}
+          $display_name = ''
+          $display_version = ''
+          foreach ($item in $display) `
+                  { $display_name += '"'+$item.DisplayName+'": ' + '///'
+                    $display_version += '"'+$item.DisplayVersion+'"'  + '///'}
+          $display_name = $display_name -split '///'
+          $display_version = $display_version -split '///'
+          $output = ''
+          for ($i=0; $i -lt $display_name.Length; $i++)
+                  {$output += $display_name[$i] + $display_version[$i] + '///'}
+          $output = $output -split '///'
+          echo $output
+      register: version
+      changed_when: false
+
+    - name: Set Software Baseline Dictionary
+      ansible.builtin.set_fact:
+        baseline: "{{ baseline | combine(version.stdout | from_yaml)}}"
+      when: version
+      
+    #- import_role:
+    #    name: patch_windows
+    #  tags: [ patch_windows ]
+
+    # Add GPU
+    - import_role:
+        name: vgpu_profile
+      when: hardware.shared_pci[0].device is defined and hardware.shared_pci[0].device
+      tags: [ vgpu_profile ]
+
+    #Add graceful shutdown before vmware parameters
+    - import_tasks: roles/vmware_common/tasks/vmware_guest_poweroff.yml    
+      when: parameters.vmware_adv_config_list is defined and parameters.vmware_adv_config_list 
+
+    - import_role:
+        name: configure_vmware_parameters
+      when: parameters.vmware_adv_config_list is defined and parameters.vmware_adv_config_list
+      tags: [ configure_vmware_parameters ]     
+  become: true

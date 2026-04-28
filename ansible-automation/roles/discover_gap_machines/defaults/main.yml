@@ -1,0 +1,6 @@
+start: 1
+end: 255
+network: 10.10.10
+ip_template: "{{network}}.{{item}}"
+ip_range: "start={{start}} end={{end}}"
+inventory_target: ./inventory/vm-list

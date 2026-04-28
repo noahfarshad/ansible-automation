@@ -1,0 +1,8 @@
+---
+# defaults file for configure_ns
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# infra_dns_server_01: ""
+# infra_dns_server_02: ""

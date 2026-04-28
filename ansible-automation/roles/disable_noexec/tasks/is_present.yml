@@ -1,0 +1,26 @@
+---
+# tasks file for disable_noexec — present
+
+# Check for noexec on /tmp
+- name: Check if noexec is set on tmp
+  become: true
+  ansible.builtin.shell: "cat /proc/mounts"
+  register: noexec_tmp_output
+  tags:
+    - noexec.tmp.check
+
+  changed_when: false
+- name: Check for noexec on tmp
+  ansible.builtin.set_fact: noexec_tmp="{{ 'noexec' in noexec_tmp_output.stdout }}"
+  tags:
+    - noexec.tmp.check
+
+- debug: msg="noexec tmp {{ noexec_tmp_output }}"
+
+- name: Remove noexec from tmp
+  become: true
+  ansible.builtin.shell: "mount -o remount,exec /tmp"
+  when: noexec_tmp
+  tags:
+    - noexec.tmp.off
+  # TODO: review changed_when for: mount -o remount,exec /tmp

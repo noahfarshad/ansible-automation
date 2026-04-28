@@ -1,0 +1,3 @@
+---
+# defaults file for reboot_windows
+vsphere_vm_vcenter_hostname: vcenter_hostname

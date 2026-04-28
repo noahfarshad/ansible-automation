@@ -1,0 +1,28 @@
+---
+# tasks file for install_notepad
+- name: Uninstall Notepad with PowerShell script
+  ansible.windows.win_shell: |
+    if (Test-Path "${env:ProgramFiles}\Notepad++\uninstall.exe") {
+        echo "Uninstalling Notepad++"
+        Start-Process -FilePath "${env:Program Files}\Notepad++\uninstall.exe" -ArgumentList '/s' -Verbose -Wait
+    }
+  register: result
+  changed_when: result.stdout
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'
+
+- name: Install Notepadd++ from a network share specifying the credentials
+  ansible.windows.win_package:
+    path: "{{artifact_staging}}{{notepad}}"
+    arguments: /S
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

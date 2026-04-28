@@ -1,0 +1,11 @@
+---
+# tasks file for install_db — absent
+#
+# Database uninstall is environment-specific (Oracle vs Postgres vs MySQL).
+# Real teardown should drop databases and run the vendor uninstaller.
+
+- name: install_db — absent requires environment-specific teardown
+  ansible.builtin.debug:
+    msg: >-
+      Database uninstall is vendor-specific. Drop databases first via the
+      vendor's tooling, then run the vendor's uninstaller.

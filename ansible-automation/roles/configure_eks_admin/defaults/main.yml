@@ -1,0 +1,20 @@
+---
+# defaults file for configure_eks_admin
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# home_map: ""
+# home_size: ""
+# root_map: ""
+# root_size: ""
+# sda_main: ""
+# system_name: ""
+# time_server: ""
+# tmp_map: ""
+# tmp_size: ""
+# var_map: ""
+# var_size: ""
+# vartmp_map: ""
+# vartmp_size: ""
+# vsphere_datacenter: ""

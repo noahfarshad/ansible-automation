@@ -1,0 +1,13 @@
+---
+
+- name: Copy the microservice_stack.yml.j2 file to target
+  become: true
+  ansible.builtin.template:
+    src: microservice_stack.yml.j2
+    dest: "{{microservices_dir}}/microservice_stack.yml.j2"
+    mode: 0750
+
+- name: Create the microservice stack
+  become: true
+  ansible.builtin.shell: "docker stack deploy -c {{microservices_dir}}/microservice_stack.yml.j2 {{microservices_stack_name}}"
+  # TODO: review changed_when for: docker stack deploy -c {{microservices_dir}}/microservice_st

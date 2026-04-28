@@ -1,0 +1,8 @@
+---
+# defaults file for change_portal_config_urls
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# source: ""
+# system: ""

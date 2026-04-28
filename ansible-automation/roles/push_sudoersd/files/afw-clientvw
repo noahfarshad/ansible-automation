@@ -1,0 +1,12 @@
+#  Don't use sudo aliases - it messes up the Ansible validation command and is largely unneeded with Ansible doing the sudo management
+#  Just list the required sudo command
+#
+#
+# Allow the un-sems-afwebs and un-tads-afwebs access to vwadmin
++un_sems-afwwebs        ALL=(vwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-afwwebs        ALL=(root) LOG_OUTPUT: LOG_INPUT: /usr/bin/killall -9 -u vwadmin
+
++un_tads-afwwebs        ALL=(vwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-afwwebs        ALL=(root) LOG_OUTPUT: LOG_INPUT: /usr/bin/killall -9 -u vwadmin
+
++fn_afwWebMisc,!+un_sems-testers,!+un_tads-testers  ALL = (vwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL

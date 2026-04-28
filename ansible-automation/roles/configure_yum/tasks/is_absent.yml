@@ -1,0 +1,10 @@
+---
+# tasks file for configure_yum — absent
+#
+# Removes the package(s) installed by is_present.yml.
+
+- name: Remove package(s)
+  ansible.builtin.package:
+    name: "{{ package_list | default([]) }}"
+    state: absent
+  when: (package_list | default([])) | length > 0

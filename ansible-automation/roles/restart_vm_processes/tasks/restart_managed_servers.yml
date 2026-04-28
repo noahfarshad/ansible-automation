@@ -1,0 +1,119 @@
+---
+- name: "Checking if OSB Managed Server 1 (wlsosbms1) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsosbms1
+  register: wlsosbms1_status
+  tags:
+    - managedservers
+    - wlsosbms1
+    - osb
+
+- name: "Restarting Oracle Service Bus (OSB) Managed Server 1 (wlsosbms1)"
+  become: true
+  ansible.builtin.service: name=wlsosbms1 state=restarted
+  when: wlsosbms1_status.stat.exists
+  tags:
+    - managedservers
+    - wlsosbms1
+    - osb
+
+- name: "Checking if OSB Managed Server 2 (wlsosbms2) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsosbms2
+  register: wlsosbms2_status
+  tags:
+    - managedservers
+    - wlsosbms2
+    - osb
+
+- name: "Restarting Oracle Service Bus (OSB) Managed Server 2 (wlsosbms2)"
+  become: true
+  ansible.builtin.service: name=wlsosbms2 state=restarted
+  when: wlsosbms2_status.stat.exists
+  tags:
+    - managedservers
+    - wlsosbms2
+    - osb
+
+- name: "Checking if Application Managed Server 1 (wlsappms1) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsappms1
+  register: wlsappms1_status
+  tags:
+    - managedservers
+    - wlsappms1
+    - vcie
+
+- name: "Restarting Application Managed Server 1 (wlsappms1)"
+  become: true
+  ansible.builtin.service: name=wlsappms1 state=restarted
+  when: wlsappms1_status.stat.exists
+  tags:
+    - managedservers
+    - wlsappms1
+    - vcie
+
+- name: "Checking if Application Managed Server 2 (wlsappms2) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsappms2
+  register: wlsappms2_status
+  tags:
+    - managedservers
+    - wlsappms2
+    - vcie
+
+- name: "Restarting Application Managed Server 2 (wlsappms2)"
+  become: true
+  ansible.builtin.service: name=wlsappms2 state=restarted
+  when: wlsappms2_status.stat.exists
+  tags:
+    - managedservers
+    - wlsappms2
+    - vcie
+
+- name: "Checking if Application Managed Server 3 (wlsappms3) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsappms3
+  register: wlsappms3_status
+  tags:
+    - managedservers
+    - wlsappms3
+    - vcie
+
+- name: "Restarting Application Managed Server 3 (wlsappms3)"
+  become: true
+  ansible.builtin.service: name=wlsappms3 state=restarted
+  when: wlsappms3_status.stat.exists
+  tags:
+    - managedservers
+    - wlsappms3
+    - vcie
+
+- name: "Checking if Application Managed Server 4 (wlsappms4) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsappms4
+  register: wlsappms4_status
+  tags:
+    - managedservers
+    - wlsappms4
+    - vcie
+
+- name: "Restarting Application Managed Server 4 (wlsappms4)"
+  become: true
+  ansible.builtin.service: name=wlsappms4 state=restarted
+  when: wlsappms4_status.stat.exists
+  tags:
+    - managedservers
+    - wlsappms4
+    - vcie
+
+- name: "Checking if Application Managed Server for iTrace 1 (wlsappit1) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsappit1
+  register: wlsappit1_status
+  tags:
+    - managedservers
+    - wlsappit1
+    - vcie
+
+- name: "Restarting Application Managed Server for iTrace (wlsappit1)"
+  become: true
+  ansible.builtin.service: name=wlsappit1 state=restarted
+  when: wlsappit1_status.stat.exists
+  tags:
+    - managedservers
+    - wlsappit1
+    - vcie

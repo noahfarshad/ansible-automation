@@ -1,0 +1,17 @@
+---
+# tasks file for populate_npm_repo — present
+
+# This task uploads the node modules
+- name: Identify all node_module folders
+  ansible.builtin.shell: find /tmp -type d -regex ".*node_modules\/[^\/]+$" 2>/dev/null | awk '{ print length, $0 }' | sort -n -s -r | cut -d" " -f2-
+  register: node_module_directories
+
+
+  changed_when: false
+- name: Upload Modules
+  become: true
+  become_user: root
+  ansible.builtin.shell: npm publish {{item}} --registry=http://10.160.208.204:7778/nexus/content/repositories/example2npm/
+  loop: 
+    - "{{node_module_directories.stdout_lines}}"
+  # TODO: review changed_when for: npm publish {{item}} --registry=http://10.160.208.204:7778/n

@@ -1,0 +1,10 @@
+#
+#	Changes per SA-5030 to allow cm account to be run on all RHEL6 servers
+#
+User_Alias CM_TEAM = +un_sems-cm,+un_tads-cm
+
+Runas_Alias CM_APPADMIN = cm
+Runas_Alias CM_APPADMINT = cmtest
+ 
+CM_TEAM ALL = (CM_APPADMIN) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+CM_TEAM ALL = (CM_APPADMINT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL

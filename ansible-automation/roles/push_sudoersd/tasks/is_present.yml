@@ -1,0 +1,11 @@
+---
+# tasks file for push_sudoersd
+- name: verifying /etc/sudoers.d/ files
+  become: true
+  ansible.builtin.copy:
+    src: files/
+    dest: /etc/sudoers.d/
+    owner: root
+    ansible.builtin.group: root
+    mode: "0644"
+  tags: push_sudoersd

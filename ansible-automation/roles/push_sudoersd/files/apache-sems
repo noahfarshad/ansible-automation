@@ -1,0 +1,52 @@
+#
+#	Changes per SA-17432 to allow  AFWWEBS and Core Services to manage Apache instances which they support.
+#
+# 2/13/19 - SA-18743 - Tom Polivka - Added Jenkins permissions to restart httpd as root with nopasswd on afw-metweb-01d
+# 06/06/2019 - SA-19108 - Daryl Rose - Added hosts, afw-webgate-01d and afw-webgate-02d to Host_Alias AFWWEBS_HTTPD_HOSTS.
+# 06/06/2019 - SA-19108 - Daryl Rose - Removed hsots, afw-webgate-01d and afw-webgate-02d from Host_Alias AFWWEBS_HTTPD_HOSTS, added to Host_Alias SCS_HTTPD_HOSTS
+# 08/26/2019 - SA-21567 - Chip Needham - removed duplicate hosts between AFWWEBS_HTTPD_HOSTS and SCS_HTTPD_HOSTS. Added AFWWEBS hosts to the SCS sudo list so they had no effective loss in access, and we have cleaner config.
+# 09/05/2019 - SA-21676 - Daryl Rose - Added hosts: afw-webproxy-01t and afw-webproxy-02t to SCS-HTTPD_HOSTS
+# 09/27/2019 - SA-22718 - Lee Burns - Remove sudoedit commmands for baselined files
+
+
+# User Aliases
+
+User_Alias AFWWEBS_TEAM = +un_sems-afwwebs,+un_tads-afwwebs
+
+User_Alias SCS_TEAM = +un_sems-scs,+un_tads-scs
+ 
+User_Alias JENKINS_ACCT = jenkins
+
+
+# Command Aliases
+
+Cmnd_Alias	AFWWEBS_HTTPD_CMD       =       /sbin/service httpd stop, /sbin/service httpd start, /sbin/service httpd restart, /sbin/service httpd status, sudoedit /etc/httpd/conf.d/vhosts.conf
+
+Cmnd_Alias	SCS_HTTPD_CMD       =       /sbin/service httpd stop, /sbin/service httpd start, /sbin/service httpd restart, /sbin/service httpd status
+
+Cmnd_Alias	JENKINS_HTTPD_CMD	=	/sbin/service httpd stop, /sbin/service httpd start, /sbin/service httpd restart, /sbin/service httpd status
+
+
+
+# Host Aliases
+
+Host_Alias      AFWWEBS_HTTPD_HOSTS	=	afw-php-01d,afw-php-02d,afw-php-01t,afw-php-02t,afw-php-01v,afw-php-02v,afw-metweb-01d,afw-metweb-01t,afw-metweb-02t
+
+Host_Alias      SCS_HTTPD_HOSTS		=	afw-oam-01d,afw-oam-02d,afw-oam-01t,afw-oam-02t,afw-oiam-01t,afw-oiam-02t,afw-webgate-01d,afw-webgate-02d,afw-webgate-01t,afw-webgate-02t,afw-webproxy-01t,afw-webproxy-02t
+
+Host_Alias	METWEB_HTTPD_HOSTS	=	afw-metweb-01d,afw-metweb-01t,afw-metweb-02t
+
+
+# Run-as Alias
+
+Runas_Alias APACHE_ADMIN = root
+
+ 
+# Entries
+
+AFWWEBS_TEAM      AFWWEBS_HTTPD_HOSTS = (APACHE_ADMIN) LOG_OUTPUT: LOG_INPUT: AFWWEBS_HTTPD_CMD
+
+# SCS manages the AFWWEBS hosts as well as their own
+SCS_TEAM          AFWWEBS_HTTPD_HOSTS,SCS_HTTPD_HOSTS     = (APACHE_ADMIN) LOG_OUTPUT: LOG_INPUT: SCS_HTTPD_CMD
+
+JENKINS_ACCT      METWEB_HTTPD_HOSTS  = (APACHE_ADMIN) LOG_OUTPUT: LOG_INPUT: NOPASSWD: JENKINS_HTTPD_CMD	

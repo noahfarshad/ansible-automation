@@ -1,0 +1,7 @@
+---
+java_tarball: "{{java_name}}-{{java_version}}.tar.gz"
+jce_zip: "jce_policy-{{jce_version}}.zip"
+jce_subfolder: UnlimitedJCEPolicyJDK8
+java_owner: app_admin
+java_group: app_admin
+java_perms: "0750"

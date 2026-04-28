@@ -1,0 +1,12 @@
+---
+# defaults file for dnsConfig
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# dcserver: ""
+# domain: ""
+# domain_password: ""
+# domainadmin_user: ""
+# hostname: ""
+# ip_public: ""

@@ -1,0 +1,25 @@
+---
+# tasks file for upgrade_vmware_tools
+- block:
+    - name: Get VM UUID
+      vmware_guest_info:
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vsphere_datastore }}"
+        folder: "{{ vsphere_folder }}"
+        name: "{{ inventory_hostname }}"
+        validate_certs: no
+      delegate_to: localhost
+      register: vm_facts
+
+    - name: Upgrade VMware Tools using uuid
+      community.vmware.vmware_guest_tools_upgrade:
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vsphere_datastore }}"
+        uuid: "{{ vm_facts.instance.hw_product_uuid }}"
+        validate_certs: no
+      delegate_to: localhost
+  become: true

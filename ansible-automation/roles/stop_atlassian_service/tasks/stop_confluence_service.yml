@@ -1,0 +1,6 @@
+- name: "stopping confluence"
+  become: true
+  ansible.builtin.service:
+    name: confluence
+    pattern: confluence
+    state: stopped

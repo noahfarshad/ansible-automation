@@ -1,0 +1,28 @@
+---
+- name: Remove any files from previous installation
+  become: true
+  ansible.builtin.file:
+    path: "{{userPresence_dir}}"
+    state: absent
+    
+- name: Create static directories if missing
+  become: true
+  ansible.builtin.file:
+    path: "{{userPresence_dir}}"
+    state: directory
+    mode: 0750 
+    
+- name: Copy the User Presence artifact
+  become: true
+  ansible.builtin.copy: 
+     src: "{{staging}}/userPresence-{{version}}.jar" 
+     dest: "{{userPresence_dir}}" 
+     mode: 0750
+
+- name: Copy the entrypoint.sh file to target
+  become: true
+  ansible.builtin.template:
+    src: userPresence/entrypoint.sh
+    dest: "{{userPresence_dir}}/entrypoint.sh"
+    mode: 0750
+   

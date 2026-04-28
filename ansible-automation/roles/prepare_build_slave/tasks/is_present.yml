@@ -1,0 +1,85 @@
+---
+# tasks file for prepare_build_slave — present
+
+# Playbook to provision CentOS 7 VM as a build slave for Jenkins
+- block:
+    - name: ensure latest versions of packages are installed
+      ansible.builtin.yum:
+        name: "*"
+        state: present  # use {{ prepare_build_slave_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+
+      tags:
+        - skip_ansible_lint
+
+    - name: install needed packages
+      ansible.builtin.yum:
+        name: "{{ item }}"
+        state: present  # use {{ prepare_build_slave_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+      loop:
+        - open-vm-tools
+        - java-1.8.0-openjdk.x86_64
+        - mercurial
+        - nodejs
+        - unzip
+        - bzip2
+
+      tags:
+        - skip_ansible_lint
+
+    - name: Ensure packages for chrome are installed
+      ansible.builtin.yum:
+        name: "{{ item }}"
+        state: present  # use {{ prepare_build_slave_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+
+      loop:
+        - libX11
+        - libXcomposite
+        - libXcursor
+        - libXdamage
+        - libXext
+        - libXi
+        - libXtst
+        - cups-libs
+        - libXScrnSaver
+        - libXrandr
+        - alsa-lib
+        - pango
+        - atk
+        - at-spi2-atk
+        - gtk3
+
+    - name: enable and start open-vm-tools
+      ansible.builtin.service:
+        name: vmtoolsd
+        enabled: yes
+        state: started
+
+    - name: create working directory for jenkins
+      ansible.builtin.file:
+        path: /jenkins_slave
+        state: directory
+        mode: 0755
+        ansible.builtin.group: "admin"
+        owner: "admin"
+
+    - name: ensure .m2 directory exists
+      ansible.builtin.file:
+        path: /root/.m2
+        state: directory
+        mode: 0755
+        ansible.builtin.group: "root"
+        owner: "root"
+
+    - name: Copy settings.xml into .m2 directory
+      ansible.builtin.copy:
+        src: "settings.xml"
+        dest: "/root/.m2/settings.xml"
+        ansible.builtin.group: "root"
+        owner: "root"
+
+    - name: Create symlink in /usr/local/bin for node
+      ansible.builtin.file:
+        path: /usr/local/bin/node
+        src: /bin/node
+        state: link
+  become: true

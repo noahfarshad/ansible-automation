@@ -1,0 +1,25 @@
+---
+# tasks file for add_rhel_mounts — present
+
+- name: Mount file systems
+  become: true
+  block:
+  - name: Add mounts
+    ansible.builtin.mount:
+      path: "{{ item.mount_path }}"
+      src: "{{ item.src }}"
+      fstype: "{{ item.fstype }}"
+      opts: "{{ item.opts }}"
+      state: mounted
+    loop:
+      "{{ parameters.mount_rhel_paths }}"
+    retries: 10
+    delay: 3
+    register: result
+    until: result is succeeded
+    tags: [ add_rhel_mounts ]
+
+  - name: Chmod 755 /san01 dir
+    ansible.builtin.file:
+      path: /san01
+      mode: '0755'

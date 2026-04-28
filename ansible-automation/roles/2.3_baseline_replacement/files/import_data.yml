@@ -1,0 +1,42 @@
+---
+# This playbook is used to import the database data from a directory on the remote machine.
+- hosts: vm3
+  vars_files:
+  - ../group_vars/all/all
+  - ../group_vars/all/vault.yml
+  - ../group_vars/all/ng
+  - ../group_vars/all/artifacts
+  tasks:
+    - name: Create /u02/oraadata
+      become: true
+      file:
+        path: "/u02/ordata"
+        owner: ora_rmt
+        group: dba
+        mode: 0754
+        state: directory
+    - name: Create /u02/oradata/example/dpdump
+      become: true
+      file:
+        path: "/u02/oradata/example/dpdump"
+        owner: ora_rmt
+        group: ora_rmt
+        mode: 0700
+        state: directory
+        recurse: yes
+
+- hosts: vm3
+  vars_files:
+  - ../group_vars/all/all
+  - ../group_vars/all/vault.yml
+  - ../group_vars/all/ng
+  - ../group_vars/all/artifacts
+  roles:
+    - deployments/move_database_scripts
+    - deployments/deploy_database_scripts
+    - data_migration/import_data
+    - deployments/cleanup_database_scripts
+  environment:
+    ORACLE_SID: example
+    ORACLE_BASE: /opt/oracle/app/ora_rmt
+    ORACLE_HOME: /opt/oracle/app/ora_rmt/product/12.1.0

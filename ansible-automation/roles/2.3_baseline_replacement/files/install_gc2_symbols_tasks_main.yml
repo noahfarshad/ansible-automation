@@ -1,0 +1,120 @@
+---
+# Remove the old symbols directory
+- name: "Clear out any old symbols directory"
+  become: true
+  become_user: ora_rmt
+  file:
+    path: "{{symbol_source_directory}}"
+    state: absent
+  tags:
+    - symbols
+
+# Recreate the symbols directory
+- name: "Create the remote symbols folder"
+  become: true
+  become_user: ora_rmt
+  file:
+    path: "{{symbol_source_directory}}"
+    state: directory
+    mode: 0777
+  tags:
+    - symbols
+
+# Extract the symbols from the zip
+- name: "Extract symbols zip"
+  become: true
+  become_user: ora_rmt
+  unarchive:
+    src: "{{symbol_zip_name}}"
+    mode: 0777
+    dest: "{{symbol_source_directory}}"
+  tags:
+    - symbols
+
+# Ensure the symbol import script is in place
+- name: "Ensure the symbol import procedure is in place"
+  become: true
+  become_user: ora_rmt
+  copy:
+    src: "CIE_IMG_SYMB_PKG.sql"
+    dest: "/tmp"
+    mode: 0755
+  tags:
+    - symbols
+
+# Import symbols
+- name: "Import symbol import procedure"
+  become: true
+  become_user: ora_rmt
+  shell: |
+    $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+    set serveroutput on;
+    @/tmp/CIE_IMG_SYMB_PKG.sql
+    exit;
+    EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  tags:
+    - symbols
+
+# Remove symbol procedure import script
+- name: "Remove symbol procedure import script"
+  become: true
+  become_user: ora_rmt
+  file:
+    path: "/tmp/CIE_IMG_SYMB_PKG.sql"
+    state: absent
+  tags:
+    - symbols
+
+# Ensure the symbol import script is in place
+- name: "Ensure the symbol import script is in place"
+  become: true
+  become_user: ora_rmt
+  template:
+    src: "install_Symbols_CP_Example_DATA.sql"
+    dest: "/tmp"
+    mode: 0755
+  tags:
+    - symbols
+
+# Import symbols
+- name: "Import symbols"
+  become: true
+  become_user: ora_rmt
+  shell: |
+    $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+    set serveroutput on;
+    @/tmp/install_Symbols_CP_Example_DATA.sql
+    exit;
+    EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  tags:
+    - symbols
+
+# Remove symbol import script
+- name: "Remove symbol import script"
+  become: true
+  become_user: ora_rmt
+  file:
+    path: "/tmp/install_Symbols_CP_Example_DATA.sql"
+    state: absent
+  tags:
+    - symbols
+
+# Clean up symbols directory
+- name: "Clean up symbols directory"
+  become: true
+  become_user: ora_rmt
+  file:
+    path: "{{symbol_source_directory}}"
+    state: absent
+  tags:
+    - symbols

@@ -1,0 +1,27 @@
+---
+# tasks file for uninstall_docker — present
+
+# Stops the Docker service
+- name: Stop the Docker daemon
+  become: true
+  ansible.builtin.service: 
+    name: docker 
+    state: stopped  
+  ignore_errors: yes  
+
+# This uninstalls docker on a host.
+- name: Uninstall Docker
+  become: true
+  ansible.builtin.yum:
+    name: "{{item}}"
+    state: removed
+  loop:
+     "{{docker_uninstall_list}}"
+     
+# Remove the Docker image/container/volume directory
+- name: Remove the Docker image/container/volume directory
+  become: true
+  ansible.builtin.file:
+    path: "{{docker_image_install_dir}}"
+    state: absent
+  ignore_errors: yes

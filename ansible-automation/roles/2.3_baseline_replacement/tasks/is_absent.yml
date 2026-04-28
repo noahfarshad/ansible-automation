@@ -1,0 +1,5 @@
+---
+- name: Remove ansible baseline copy
+  ansible.builtin.file:
+    path: "{{ replacement_baseline_destination }}"
+    state: absent

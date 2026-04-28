@@ -1,0 +1,78 @@
+---
+
+- set_fact: 
+    splunk_forwarder_path: "/mnt/software/COTS/splunk_software_9.0.4"
+
+- name: Verify Installer Exists
+  ansible.builtin.stat:
+    path: "{{ splunk_forwarder_path }}/splunkforwarder-9.0.4-de405f4a7979-x64-release.msi"
+  register: file_stat
+  delegate_to: localhost
+
+- name: Check if Splunk Forwarder is Installed
+  become: true
+  ansible.windows.win_stat:
+    path: 'C:\Program Files\SplunkUniversalForwarder\bin\splunk.exe'
+  register: splunk_path_return_msg
+
+- name: Install Splunk Forwarder
+  when: not splunk_path_return_msg.stat.exists
+  block: 
+  - name: Create Temp Folder for Installer
+    ansible.windows.win_tempfile: 
+      state: directory 
+      suffix: 'splunk'   
+    register: install_loc 
+
+  - name: Copy Installer to Temp Folder
+    ansible.windows.win_copy:
+      src: "{{ splunk_forwarder_path }}/splunkforwarder-9.0.4-de405f4a7979-x64-release.msi"
+      dest: "{{ install_loc.path }}\\"
+
+  - set_fact:
+      sw_to_install:
+        baselinename: Splunk Forwarder
+        installerpath: "{{ install_loc.path }}\\splunkforwarder-9.0.4-de405f4a7979-x64-release.msi"
+        productid: '{33CA063E-69FE-469C-9227-29C6DD6D14BB}'
+        installargs: "/quiet AGREETOLICENSE=Yes SPLUNKUSERNAME={{ splunk_admin.user }} SPLUNKPASSWORD={{ splunk_admin.password }}"
+  - name: Install Splunk
+    ansible.windows.win_package:
+      path: "{{ sw_to_install['installerpath'] }}"
+      arguments: "{{ sw_to_install['installargs'] }}"
+      product_id: "{{ sw_to_install['productid'] }}"
+      state: present
+
+  always:    
+  - name: Clear Temp Folder
+    changed_when: false
+    ansible.windows.win_file:
+      state: absent
+      path: "{{ install_loc.path }}"
+        
+  - name: Check Splunk Deployment service
+    become: true
+    ansible.windows.win_command: ".\\splunk list deploy-poll -auth {{ splunk_admin.user }}:{{ splunk_admin.password }}" 
+    args:
+      chdir: "C:\\Program Files\\SplunkUniversalForwarder\\bin"
+    register: deployment_server_check 
+
+  - name: Set Deployment Server
+    ansible.windows.win_shell: ".\\splunk set deploy-poll SYSLOG01:8089 -auth {{ splunk_admin.user }}:{{ splunk_admin.password }}"
+    args:
+      chdir: "C:\\Program Files\\SplunkUniversalForwarder\\bin"
+    when: "not 'SYSLOG01:8089' in deployment_server_check.stdout"
+      
+  - name: Check Splunk forwarder service
+    become: true
+    ansible.windows.win_command: ".\\splunk list forward-server -auth {{ splunk_admin.user }}:{{ splunk_admin.password }}"
+    args:
+      chdir: "C:\\Program Files\\SplunkUniversalForwarder\\bin"
+    register: forwarder_server_check
+        
+  - name: Set Forwarding Server
+    become: true
+    ansible.windows.win_shell: ".\\splunk add forward-server SYSLOG01:9997 -auth {{ splunk_admin.user }}:{{ splunk_admin.password }}"
+    args:
+      chdir: "C:\\Program Files\\SplunkUniversalForwarder\\bin"
+    register: result
+    when: not 'SYSLOG01:9997' in forwarder_server_check.stdout_lines[1] and not 'SYSLOG01:9997' in forwarder_server_check.stdout_lines[3]

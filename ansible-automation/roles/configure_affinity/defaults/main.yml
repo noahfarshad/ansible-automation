@@ -1,0 +1,15 @@
+---
+# defaults file for configure_affinity
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# affinity: ""
+# host_group_list: ""
+# rules_list: ""
+# vcenter_hostname: ""
+# vcenter_password: ""
+# vm_group_list: ""
+# vsphere_account: ""
+# vsphere_cluster: ""
+# vsphere_datacenter: ""

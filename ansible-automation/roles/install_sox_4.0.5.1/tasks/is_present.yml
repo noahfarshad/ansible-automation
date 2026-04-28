@@ -1,0 +1,77 @@
+---
+# tasks file for install_sox
+
+- block:
+    - name: Create Temp Folder for templates
+      ansible.windows.win_tempfile:
+        state: directory
+        suffix: 'sox'
+      register: install_loc
+
+    - name: Copy PostgreSQL template
+      ansible.windows.win_template:
+        src: files/GXP_Setup_PostgreSQL.template.j2
+        dest: "{{ install_loc.path }}\\GXP_Setup_PostgreSQL.template"
+
+    - name: Copy Sox template
+      ansible.windows.win_template:
+        src: files/GXP_Setup_SOCETGXP.template.j2
+        dest: "{{ install_loc.path }}\\GXP_Setup_SOCETGXP.template"
+
+    - name: Install ffmpeg plugin
+      ansible.windows.win_package:
+        path: "{{ artifact_staging }}{{ sox_ffmpeg_path }}"
+        arguments: "-i silent"
+        state: present
+        expected_return_code: [8000,0]
+      register: ffmpeg_result
+      become_method: runas
+      become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+      vars:
+        ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+        ansible_become_password: "{{domain_password}}"
+
+    - name: Install video filters plugin
+      ansible.windows.win_package:
+        path: "{{ artifact_staging }}{{ sox_video_filters_path }}"
+        arguments: "-i silent"
+        state: present
+        expected_return_code: [8000,0]
+      register: video_filters_result
+      become_method: runas
+      become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+      vars:
+        ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+        ansible_become_password: "{{domain_password}}"
+
+    - name: Install PostgreSQL Db
+      ansible.windows.win_package:
+        path: "{{ artifact_staging }}{{ sox_postgreSQL_path }}"
+        arguments: "-i silent -f {{ install_loc.path }}\\GXP_Setup_PostgreSQL.template"
+        state: present
+        expected_return_code: [8000,0]
+      register: PG_result
+      become_method: runas
+      become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+      vars:
+        ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+        ansible_become_password: "{{domain_password}}"
+
+    - name: Install SOX
+      ansible.windows.win_package:
+        path: "{{ artifact_staging }}{{ sox_main_path }}"
+        arguments: "-i silent -f {{ install_loc.path }}\\GXP_Setup_SOCETGXP.template"
+        state: present
+        expected_return_code: [8000,0]
+      register: Sox_result
+      become_method: runas
+      become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+      vars:
+        ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+        ansible_become_password: "{{domain_password}}"
+
+    - name: Clear Temp Folder
+      ansible.windows.win_file:
+        path: "{{ install_loc.path }}"
+        state: absent
+  become: true

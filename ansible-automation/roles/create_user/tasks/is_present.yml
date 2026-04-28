@@ -1,0 +1,13 @@
+---
+# tasks file for create_user — present
+
+- name: Removing old ansible user
+  become: true
+  ansible.builtin.user: name=ansible state=absent remove=yes
+- name: Creating user with groups WHEEL (sudo)
+  become: true
+  ansible.builtin.user: name=ansible password="$6$TlLKJdv0$A4HdMY4MJAjwj7zf5meXtCosY.IFfc0JYucDr/YPJqfgY2Zsg8BTE/zUGZFFSTC5lJgytWDFYv5hP2fpGujny1" groups=wheel
+- name: Disable ansible user password expiration
+  become: true
+  ansible.builtin.command: chage -E -1 -M -1 ansible
+  # TODO: review changed_when for: chage -E -1 -M -1 ansible

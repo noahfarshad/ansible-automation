@@ -1,0 +1,13 @@
+---
+# defaults file for update_scripts_sha256
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# vm2: ""
+# vm4: ""
+# vm41: ""
+# vm42: ""
+# vm51: ""
+# vm52: ""
+# vm7: ""

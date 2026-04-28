@@ -1,0 +1,43 @@
+# This sudo config file allows users to perform commands as vwadmin
+# 09 Apr 2020, DW, Removed old afwwebs netgroups that are gone. 
+# 		Removed GOV_NP Alias as it is no longer needed.
+#		 
+
+# User Aliases
+User_Alias      WDA4_DEV =              +un_wda4
+User_Alias      SEMS_NP  =              +un_sems-cm,+un_sems-afwwebs,+un_tads-afwwebs
+User_Alias      VWADMIN  =              +un_sems-afwwebs,+un_tads-afwwebs
+User_Alias      SEMS_VWADMIN  =         +un_sems-afwwebs,+un_tads-afwwebs
+User_Alias      OWS_T =                 +un_21-ows-t
+
+
+# These are the allowed commands, referenced later
+# Cmnd_Alias    SOME_CMD                /bin/bash,/bin/cat
+Cmnd_Alias KILLALL_VWADMIN = /usr/bin/killall -9 -u vwadmin,/usr/local/bin/clrHung
+Cmnd_Alias CLR_VWADMIN = /ess/VWShare_SBDevTest/sudo_scripts/clrHung
+
+# These define the possible application accounts (comma-separated)
+###### The VW_APPACCT alias is already defined by the afw-cm sudoers file
+# Runas_Alias   VW_APPACCT = vwadmin
+Runas_Alias     VW_OWS =     vw21ows
+
+# These define the possible hosts that users are allowed to run commands on
+Host_Alias      AFW_VWSB =              afw-vwingest-d01x,afw-vwproxy-d01x,afw-vwingest-a01x,afw-vwingest-a02x,afw-vwproxy-a01x,afw-vwproxy-a02x
+Host_Alias      AFW_VWDEV =             afw-vwingest-a01d,afw-vwingest-a02d,afw-vwingest-b01d,afw-vwingest-b02d,afw-vwingest-c01d,afw-vwingest-c02d,afw-vwingest-d01d,afw-vwingest-d02d, \
+                                        afw-vwproxy-a01d,afw-vwproxy-a02d,afw-vwproxy-b01d,afw-vwproxy-b02d,afw-vwproxy-c01d,afw-vwproxy-c02d,afw-vwproxy-d01d,afw-vwproxy-d02d
+Host_Alias      AFW_VWTEST =            afw-vwingest-a01t,afw-vwingest-a02t,afw-vwingest-b01t,afw-vwingest-b02t,afw-vwingest-c01t,afw-vwingest-c02t,afw-vwingest-d01t,afw-vwingest-d02t, \
+                                        afw-vwproxy-a01t,afw-vwproxy-a02t,afw-vwproxy-b01t,afw-vwproxy-b02t,afw-vwproxy-c01t,afw-vwproxy-c02t,afw-vwproxy-d01t,afw-vwproxy-d02t, \
+                                        afw-vwingest-a01v,afw-vwingest-b01v,afw-vwingest-c01v,afw-vwingest-d01v,afw-vwproxy-a02v,afw-vwproxy-b02v,afw-vwproxy-c02v,afw-vwproxy-d02v
+Host_Alias      AFW_OWSTEST =           afw-ows-01t,afw-ows-02t
+
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+VWADMIN           AFW_VWTEST,AFW_OWSTEST,AFW_VWDEV,AFW_VWSB = (root) LOG_OUTPUT: LOG_INPUT: NOPASSWD:   KILLALL_VWADMIN
+SEMS_NP           AFW_VWTEST,AFW_OWSTEST,AFW_VWDEV,AFW_VWSB = (root) LOG_OUTPUT: LOG_INPUT: CLR_VWADMIN
+SEMS_VWADMIN           AFW_VWTEST,AFW_OWSTEST,AFW_VWDEV,AFW_VWSB,PHP_TEST,PHP_DEV,TERRACOTTA_TEST,TERRACOTTA_DEV,METSAT_TEST,METSAT_DEV,WEBMISC_TEST,WEBMISC_DEV,WEBDAS_TEST,WEBDAS_DEV,PS-TEST,PS-DEV = (VW_APPACCT) LOG_OUTPUT: LOG_INPUT: ALL
+WDA4_DEV                AFW_VWSB,AFW_OWSTEST,AFW_VWDEV = (VW_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+SEMS_NP                 AFW_VWTEST,AFW_OWSTEST,AFW_VWDEV,AFW_VWSB = (VW_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+OWS_T                  AFW_OWSTEST = (VW_OWS) LOG_OUTPUT: LOG_INPUT: ALL

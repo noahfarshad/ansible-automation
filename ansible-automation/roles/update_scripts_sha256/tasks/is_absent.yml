@@ -1,0 +1,11 @@
+---
+# tasks file for update_scripts_sha256 — absent
+#
+# This role updates SHA256 hashes for tracked scripts. Removing the hashes
+# is environment-specific.
+
+- name: "update_scripts_sha256 — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      Role updates a hash registry. Reverting requires removing the
+      registry file or restoring a prior version manually.

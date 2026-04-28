@@ -1,0 +1,9 @@
+---
+# tasks file for enable_noexec — present
+
+- name: Turn noexec back on for tmp
+  become: true
+  ansible.builtin.command: mount -o remount,noexec /tmp
+  tags:
+    - noexec.tmp.off
+  # TODO: review changed_when for: mount -o remount,noexec /tmp

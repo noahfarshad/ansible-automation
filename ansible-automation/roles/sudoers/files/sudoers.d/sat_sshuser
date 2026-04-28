@@ -1,0 +1,2 @@
+sat_sshuser ALL = (root) NOPASSWD : ALL
+Defaults:sat_sshuser !requiretty

@@ -1,0 +1,22 @@
+---
+traffic_managers:
+  - vmlb1.example.coach
+  - vmlb2.example.coach
+passive_managers:
+  - vmlb2.example.coach
+external_ips:
+  - { name: "External IP", ip: "{{ external_ip }}"}
+  - { name: "External AOC IP", ip: "{{ external_aoc_ip }}"}
+
+
+# ITCC Midtier
+# Atz Note.  1/20/2019.  Due to a physical limitation of available IP addresses
+# at NG we are taking down REL so we can run SFA.
+#
+#external_ips:
+#  - { name: "External IP", ip: "{{ external_ip }}"}
+#  - { name: "External REL IP", ip: "{{ external_rel_ip }}"}
+#  - { name: "External AOC IP", ip: "{{ external_aoc_ip }}"}
+
+
+...

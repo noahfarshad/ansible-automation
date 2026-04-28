@@ -1,0 +1,23 @@
+---
+
+- name: Get the hash from the loaded image
+  become: true
+  ansible.builtin.shell: >-
+     docker inspect --format='{{'{{'}}index .Id{{'}}'}}' {{base_repo_url}}/{{item.name}}:{{item.tag}}
+  register: hash
+
+  changed_when: false
+- name: Check for the hash in the file
+  become: true
+  ansible.builtin.lineinfile: 
+     path: "{{image_dir}}/{{item.name | regex_replace('/','_')}}_{{item.tag}}.txt"
+     regexp: "^{{hash.stdout}}$"
+     state: absent
+  check_mode: yes
+  changed_when: false
+  register: out
+  
+- name: Verify the hash was found
+  ansible.builtin.fail: 
+     msg: "Matching Hash not found: {{item.name}}:{{item.tag}}"
+  when: not out.found

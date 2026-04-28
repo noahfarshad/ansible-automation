@@ -1,0 +1,70 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides: apache24
+# Required-Start: $network $syslog exampleagent
+# Required-Stop: $network $syslog
+# Default-Start: 2 3 5
+# Default-Stop: 0 1 6
+# Short-Description: Startup script for the Apache HTTP Server w/ FIPS
+### END INIT INFO
+# Source function library.
+. /etc/init.d/functions
+
+INSTALLDIR={{apache_dir}}
+BASENAME=apache24
+LOCKFILE=/var/lock/subsys/${BASENAME}
+PIDFILE=${INSTALLDIR}/bin/httpd.pid
+export LD_LIBRARY_PATH={{webgate_dir}}/webgate/apache/lib
+
+ARGV="$@"
+
+# the path to your httpd binary, including options if necessary
+HTTPD=${INSTALLDIR}/bin/httpd
+
+# pick up any necessary environment variables
+if test -f ${INSTALLDIR}/bin/envvars; then
+  . ${INSTALLDIR}/bin/envvars
+fi
+
+# Set this variable to a command that increases the maximum
+# number of file descriptors allowed per child process. This is
+# critical for configurations that use many file descriptors,
+# such as mass vhosting, or a multithreaded server.
+ULIMIT_MAX_FILES="ulimit -S -n `ulimit -H -n`"
+
+# Set the maximum number of file descriptors allowed per child process.
+if [ "x$ULIMIT_MAX_FILES" != "x" ] ; then
+    $ULIMIT_MAX_FILES
+fi
+
+ERROR=0
+if [ "x$ARGV" = "x" ] ; then
+    ARGV="-h"
+fi
+
+case $ARGV in
+start|restart|graceful)
+    touch ${LOCKFILE}
+    action $"Issuing ${ARGV} command to Apache 2.4 w/ FIPS: " bash -c "$HTTPD -k $ARGV 2> /dev/null"
+    ERROR=$?
+    ;;
+stop|graceful-stop)
+    action $"Issuing ${ARGV} command to Apache 2.4 w/ FIPS: " bash -c "$HTTPD -k $ARGV 2> /dev/null"
+    ERROR=$?
+    [[ "$(runlevel | cut -d' ' -f2)" =~ "[06]" ]] && rm -f ${LOCKFILE}
+    ;;
+configtest)
+    $HTTPD -t
+    ERROR=$?
+    ;;
+status)
+     status -p ${PIDFILE} ${BASENAME}
+     ERROR=$?
+     ;;
+*)
+    $HTTPD $ARGV
+    ERROR=$?
+esac
+
+exit $ERROR

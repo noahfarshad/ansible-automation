@@ -1,0 +1,16 @@
+---
+# tasks file for restart_vm_processes — present
+
+# Tasks file for restarting all of the vm processes on a string.
+# These playbooks were derived from the startAllVmProcesses.sh and shutDownAllVmsProcesses.sh admin scripts located in /var/shares/cots/midtier_share/admin_scripts
+- ansible.builtin.include_tasks: restart_load_balancers.yml
+- ansible.builtin.include_tasks: restart_nodemanagers.yml
+- ansible.builtin.include_tasks: restart_admin_servers.yml
+- ansible.builtin.include_tasks: restart_managed_servers.yml
+- ansible.builtin.include_tasks: restart_work_managers.yml
+- ansible.builtin.include_tasks: restart_portal.yml
+- ansible.builtin.include_tasks: restart_apache.yml
+- debug:
+    msg: "Arbitrary Jenkins tag. Ignore."
+  tags:
+    - jenkins-default

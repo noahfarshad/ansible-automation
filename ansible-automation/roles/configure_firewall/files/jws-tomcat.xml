@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>JWS-Tomcat-Service</short>
+  <description>For jws5-tomcat communication.</description>
+  <port protocol="tcp" port="443"/>
+  <port protocol="tcp" port="8443"/>
+  <port protocol="tcp" port="9009"/>
+  <port protocol="udp" port="3410"/>
+  <port protocol="udp" port="3010"/>
+</service>

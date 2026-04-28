@@ -1,0 +1,52 @@
+---
+# tasks file for binary_installer — present
+
+- block:
+    - name: Create {{binary_name}} program directory
+
+      ansible.builtin.file:
+        path: "{{binary_dir}}"
+        state: directory
+        owner: "{{app_user}}"
+        ansible.builtin.group: "{{app_group}}"
+        mode: 0755
+
+    - name: Extract {{binary_name}} archive without first directory
+
+      become_user: "{{app_user}}"
+      ansible.builtin.unarchive:
+        src: "{{staging}}/{{binary_archive}}"
+        dest: "{{binary_dir}}"
+        mode: 0755
+        extra_opts: [--strip-components=1]
+      when: remove_first_dir is defined
+
+    - name: Extract {{binary_name}} archive
+
+      become_user: "{{app_user}}"
+      ansible.builtin.unarchive:
+        src: "{{staging}}/{{binary_archive}}"
+        dest: "{{binary_dir}}"
+        mode: 0755
+      when: not remove_first_dir is defined
+
+    - name: Create {{binary_name}} data directory
+
+      ansible.builtin.file:
+        path: "{{binary_data_dir}}"
+        state: directory
+        owner: "{{app_user}}"
+        ansible.builtin.group: "{{app_group}}"
+        mode: 0755
+      when: binary_data_dir is defined
+
+    - name: Create {{binary_name}} log directory
+
+      ansible.builtin.file:
+        path: "{{binary_log_dir}}"
+        state: directory
+        owner: "{{app_user}}"
+        ansible.builtin.group: "{{app_group}}"
+        mode: 0755
+      when: binary_log_dir is defined
+  become: true

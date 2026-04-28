@@ -1,0 +1,14 @@
+---
+# tasks file for clear_staging — absent
+#
+# This role removes a directory; "absent" recreates it empty so callers
+# that depend on the directory existing don't break.
+
+- name: Recreate staging directory
+  ansible.builtin.file:
+    path: '{{ staging }}'
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: staging is defined

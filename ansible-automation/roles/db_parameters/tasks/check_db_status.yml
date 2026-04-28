@@ -1,0 +1,12 @@
+---
+
+# Check to ensure the database is running; if not, fail the script
+- name: Database is Running Check
+  become: true
+  ansible.builtin.command: service {{initd_script_name_example}} status
+  register: db_running_check
+
+  # TODO: review changed_when for: service {{initd_script_name_example}} status
+- name: Verify If Database is Running
+  ansible.builtin.fail: msg="Database process {{db_process_name}} is not running, terminating"
+  when: db_running_check.stdout.find('dead') == 1

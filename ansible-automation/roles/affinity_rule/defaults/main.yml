@@ -1,0 +1,3 @@
+---
+# defaults file for affinity_rule
+vsphere_vm_vcenter_hostname: vcenter_hostname

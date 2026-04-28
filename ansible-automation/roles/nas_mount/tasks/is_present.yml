@@ -1,0 +1,48 @@
+---
+
+- name: Add fstab entries for NAS mounts
+  remote_user: admin_local
+
+  become_method: sudo
+  become_user: root
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    state: present
+    line: "{{item.mount}}"
+  loop: "{{nas_fstab_lines}}"
+  when: nas_fstab_lines is defined
+
+- name: Check if Read Only Local Directories for EDH_Data Exist
+  remote_user: admin_local
+
+  become_method: sudo
+  become_user: root
+  ansible.builtin.stat:
+    path: "{{item.directory}}"
+  loop: "{{nas_fstab_lines}}"
+  when: nas_fstab_lines is defined
+  register: nas_exists
+
+- name: Create Local Directories for Mount Points
+  remote_user: admin_local
+
+  become_method: sudo
+  become_user: root
+  ansible.builtin.file:
+    path: "{{item.0.directory}}"
+    state: directory
+    mode: '0755'
+  with_together:
+  - "{{nas_fstab_lines}}"
+  - "{{nas_exists.results}}"
+  when: nas_fstab_lines is defined and not item.1.stat.exists
+
+- name: Mount all in the FSTAB
+  ansible.builtin.command: mount -a
+  args:
+    warn: no
+  remote_user: admin_local
+
+  become_method: sudo
+  become_user: root
+  changed_when: false

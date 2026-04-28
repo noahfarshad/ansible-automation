@@ -1,0 +1,11 @@
+---
+cli_location: /var/tmp/jenkins
+jenkins_war_identifier: "jenkins.war"
+jenkins_tar_dir_name: "jenkins_plugs"
+jenkins_tar_dir_path: "{{ cli_location }}/{{ jenkins_tar_dir_name }}"
+jenkins_plugins_list_name: "jenkins_plugins-list.out"
+jenkins_plugins_list_path: "{{ jenkins_tar_dir_path }}/{{ jenkins_plugins_list_name }}"
+
+# PS1 vars
+jenkins_repo_url: "https://updates.jenkins-ci.org/"
+remote_jenkins_update_url: "{{ jenkins_repo_url }}latest/"

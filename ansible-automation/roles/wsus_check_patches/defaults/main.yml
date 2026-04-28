@@ -1,0 +1,5 @@
+---
+# defaults file for wsus_check_patches
+
+# UNC share where hotfix reports are written
+wsus_report_share: "\\\\fileserver.example.coach\\software\\WSUSExport\\WSUS_Check_Patches"

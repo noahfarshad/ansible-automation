@@ -1,0 +1,7 @@
+{# This will find the server's own hostname within the inventory in order to determine its ID
+    Note that this method is used identically in zoo.cfg. If you change how the ID is created, you must change it there, as well.#}
+{% for hostname in hostvars[inventory_hostname].groups['zookeeper'] %}
+{% if hostname == inventory_hostname %}
+{{ loop.index }}
+{% endif %}
+{% endfor %}

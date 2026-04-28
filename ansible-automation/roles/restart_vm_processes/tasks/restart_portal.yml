@@ -1,0 +1,155 @@
+---
+- name: "Checking if Portal Managed Server 1 (wlsportms1) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsportms1
+  register: wlsportms1_status
+  tags:
+    - managedservers
+    - portal
+    - managedservers-portal
+
+- name: "Restarting Portal Managed Server 1 (wlsportms1) service"
+  become: true
+  ansible.builtin.service: name=wlsportms1 state=restarted
+  when: wlsportms1_status.stat.exists
+  tags:
+    - managedservers
+    - portal
+    - managedservers-portal
+
+- name: "Checking if Portal Managed Server 2 (wlsportms2) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsportms2
+  register: wlsportms2_status
+  tags:
+    - managedservers
+    - portal
+    - managedservers-portal
+
+- name: "Restarting Portal Managed Server 2 (wlsportms2) service"
+  become: true
+  ansible.builtin.service: name=wlsportms2 state=restarted
+  when: wlsportms2_status.stat.exists
+  tags:
+    - managedservers
+    - portal
+    - managedservers-portal
+
+- name: "Checking if Releasable Portal Managed Server 1 (wlsportrelms1) service exists"
+  ansible.builtin.stat: path=/etc/init.d/wlsportrelms1
+  register: wlsportrelms1_status
+  tags:
+    - managedservers
+    - portal
+    - portalrel
+    - managedservers-portalrel
+
+- name: "Restarting Releasable Portal Managed Server 1 (wlsportrelms1) service"
+  become: true
+  ansible.builtin.service: name=wlsportrelms1 state=restarted
+  when: wlsportrelms1_status.stat.exists
+  tags:
+    - managedservers
+    - portal
+    - portalrel
+    - managedservers-portalrel
+
+- name: "Checking if Portal aluiss service exists"
+  ansible.builtin.stat: path=/etc/init.d/aluiss
+  register: aluiss_status
+  tags:
+    - portal
+    - portalrel
+    - aluiss
+
+- name: "Restarting Portal aluiss service"
+  become: true
+  ansible.builtin.service: name=aluiss state=restarted
+  when: aluiss_status.stat.exists
+  tags:
+    - portal
+    - portalrel
+    - aluiss
+
+- name: "Checking if Portal aluicui service exists"
+  ansible.builtin.stat: path=/etc/init.d/aluicui
+  register: aluicui_status
+  tags:
+    - portal
+    - portalrel
+    - aluicui
+
+- name: "Restarting Portal aluicui service"
+  become: true
+  ansible.builtin.service: name=aluicui state=restarted
+  when: aluicui_status.stat.exists
+  tags:
+    - portal
+    - portalrel
+    - aluicui
+
+- name: "Checking if Portal aluias service exists"
+  ansible.builtin.stat: path=/etc/init.d/aluias
+  register: aluias_status
+  tags:
+    - portal
+    - portalrel
+    - aluias
+
+- name: "Restarting Portal aluias service"
+  become: true
+  ansible.builtin.service: name=aluias state=restarted
+  when: aluias_status.stat.exists
+  tags:
+    - portal
+    - portalrel
+    - aluias
+
+- name: "Checking if Portal aluiptdr service exists"
+  ansible.builtin.stat: path=/etc/init.d/aluiptdr
+  register: aluiptdr_status
+  tags:
+    - portal
+    - portalrel
+    - aluiptdr
+
+- name: "Restarting Portal aluiptdr service"
+  become: true
+  ansible.builtin.service: name=aluiptdr state=restarted
+  when: aluiptdr_status.stat.exists
+  tags:
+    - portal
+    - portalrel
+    - aluiptdr
+
+- name: "Checking if Portal aluiptul service exists"
+  ansible.builtin.stat: path=/etc/init.d/aluiptul
+  register: aluiptul_status
+  tags:
+    - portal
+    - portalrel
+    - aluiptul
+
+- name: "Restarting Portal aluiptul service"
+  become: true
+  ansible.builtin.service: name=aluiptul state=restarted
+  when: aluiptul_status.stat.exists
+  tags:
+    - portal
+    - portalrel
+    - aluiptul
+
+- name: "Checking if Portal aluiapi service exists"
+  ansible.builtin.stat: path=/etc/init.d/aluiapi
+  register: aluiapi_status
+  tags:
+    - portal
+    - portalrel
+    - aluiapi
+
+- name: "Restarting Portal aluiapi service"
+  become: true
+  ansible.builtin.service: name=aluiapi state=restarted
+  when: aluiapi_status.stat.exists
+  tags:
+    - portal
+    - portalrel
+    - aluiapi

@@ -1,0 +1,26 @@
+---
+- block: 
+  - name: Pull for any GPO Updates
+    ansible.windows.win_command: 'gpupdate /force /logoff'
+
+  - name: Wait Until SSH is Back Up on Host if Rebooted
+    ansible.windows.win_service:
+      name: 'sshd'
+      start_mode: 'delayed'
+
+  - name: Clear WSUS Patch Install Logs
+    ansible.windows.win_file:
+      path: C:\Ansible\WsusPatchesInstall.log
+      state: absent
+
+  - name: Get Updates
+    ansible.windows.win_shell: |
+      Get-WindowsUpdate -AcceptAll -Install -IgnoreReboot
+    ignore_errors: true
+    
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

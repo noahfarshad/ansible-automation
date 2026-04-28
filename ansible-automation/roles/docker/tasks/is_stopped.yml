@@ -1,0 +1,6 @@
+---
+- name: Stop Docker service
+  become: true
+  ansible.builtin.systemd:
+    name: docker
+    state: stopped

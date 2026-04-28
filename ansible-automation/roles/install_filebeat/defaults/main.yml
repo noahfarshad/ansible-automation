@@ -1,0 +1,3 @@
+---
+filebeat_config_dir: /etc/filebeat
+prospectors_config_dir: /etc/filebeat/conf.d

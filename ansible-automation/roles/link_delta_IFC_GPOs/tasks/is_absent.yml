@@ -1,0 +1,14 @@
+---
+# tasks file for link_delta_IFC_GPOs — absent
+#
+# This role runs Windows commands (win_shell / win_command). Determining
+# the correct rollback for shell-driven Windows operations requires
+# environment-specific knowledge.
+#
+# Default behavior: no-op with explanatory debug message.
+
+- name: "link_delta_IFC_GPOs — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      The 'absent' state for role 'link_delta_IFC_GPOs' is intentionally not implemented.
+      Edit tasks/is_absent.yml to add Windows rollback steps if needed.

@@ -1,0 +1,4 @@
+---
+download_url: "http://10.160.208.85/repository/gc2-binaries/traffic_manager/v19.2/"
+traffic_manager_artifact: "ZeusTM_192_Linux-x86_64"
+artifact_extension: ".tgz"

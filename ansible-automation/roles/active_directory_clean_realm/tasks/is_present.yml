@@ -1,0 +1,21 @@
+---
+# tasks file for active_directory_clean_realm — present
+
+# Remove from Active Directory realm
+- name: Remove from Active Directory realm
+  become: true
+  ansible.builtin.command: /sbin/realm leave "example.coach"
+  ignore_errors: yes  
+  
+  # TODO: review changed_when for: /sbin/realm leave "example.coach
+- name: Add to Active Directory
+  become: true
+  ansible.builtin.expect:
+    ansible.builtin.command: /sbin/realm join --verbose --user=realm_admin "example.coach"
+    responses:
+      Password for *: "{{ realm_admin_password }}"
+  ignore_errors: yes
+# you don't want to show passwords in your logs
+# no_log: true
+
+    # TODO: review changed_when for: /sbin/realm join --verbose --user=realm_admin "example.coach

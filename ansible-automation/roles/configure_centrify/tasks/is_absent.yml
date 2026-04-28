@@ -1,0 +1,14 @@
+---
+# tasks file for configure_centrify — absent
+#
+# This role runs Windows commands (win_shell / win_command). Determining
+# the correct rollback for shell-driven Windows operations requires
+# environment-specific knowledge.
+#
+# Default behavior: no-op with explanatory debug message.
+
+- name: "configure_centrify — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      The 'absent' state for role 'configure_centrify' is intentionally not implemented.
+      Edit tasks/is_absent.yml to add Windows rollback steps if needed.

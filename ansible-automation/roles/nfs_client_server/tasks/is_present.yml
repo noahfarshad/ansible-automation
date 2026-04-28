@@ -1,0 +1,10 @@
+---
+# tasks file for configure_windows
+- name: Install NFS client for windows
+  ansible.windows.win_feature:
+    name:
+    - NFS-Client
+  #  - ServicesForNFS-ClientOnly
+  #  - ClientForNFS-Infrastructure
+    state: present
+

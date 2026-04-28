@@ -1,0 +1,9 @@
+---
+# tasks file for persist_iptables — present
+
+#This role ensures the iptables are persisted during a reboot of the machine
+
+- name: Persist iptables changes
+  become: true
+  ansible.builtin.command: service iptables save
+  # TODO: review changed_when for: service iptables save

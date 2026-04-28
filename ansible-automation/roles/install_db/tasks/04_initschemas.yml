@@ -1,0 +1,64 @@
+---
+
+# Before doing anymore work verify the database software actually installed correctly
+- ansible.builtin.include_tasks: check_sw_install_status.yml
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+- name: "Test to see if schemas have been installed"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: |
+    $ORACLE_HOME/bin/sqlplus -s / as sysdba <<EOF
+    SET FEEDBACK OFF
+    SET HEADING OFF
+    SET VERIFY OFF
+    col x format a30
+    select to_char(count(*)) x from dba_users u where username in ('CP_Example_APP2','CP_Example_DBA','CP_Example_DATA');
+    exit;
+    EOF
+  register: usertest
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus -s / as sysdba <<EOF
+- name: "Execute initial creation script if all schemas aren't there"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: |
+    cd {{decompressed_directory}}example
+    ./create_CIE2.sh
+  when: usertest.stdout.1 != "3"
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+
+  # TODO: review changed_when for: cd {{decompressed_directory}}example
+- name: "Change passwords for newly created users"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: |
+    $ORACLE_HOME/bin/sqlplus -s / as sysdba <<EOF
+    alter user cp_example_data identified by "{{oracle_db_example_cp_example_data_password}}";
+    alter user cp_example_dba identified by "{{oracle_db_example_cp_example_dba_password}}";
+    alter user app_db_user identified by "{{oracle_db_example_app_db_user_password}}";
+    alter user cp_example_data account unlock;
+    alter user cp_example_dba account unlock;
+    alter user app_db_user account unlock;
+    alter user dagr identified by "{{oracle_db_example_app_db_user_password}}";
+    alter user dagr account unlock;
+    exit;
+    EOF
+  when: usertest.stdout.1 != "3"
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus -s / as sysdba <<EOF
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"

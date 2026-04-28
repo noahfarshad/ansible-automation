@@ -1,0 +1,11 @@
+---
+adauth_workgroup: "EXAMPLE"
+adauth_realm: "example.coach"
+adauth_pdc: "LDAP.example.coach"
+adauth_pdc_ip: "10.10.10.229"
+adauth_sdc: "DC02.example.coach"
+adauth_sdc_ip: "10.10.10.231"
+adauth_ldap_base: "DC=gaps,DC=cie,DC=ng,DC=local"
+adauth_username: "ad-add"
+adauth_server_ou: "Computers"
+adauth_access_filter: ""

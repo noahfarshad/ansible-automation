@@ -1,0 +1,15 @@
+---
+
+# Operating System user that the Weblogic software runs under
+os_user: app_admin
+
+# Name and directory location of the Weblogic Domain
+domains_home: '/u01/domains'
+domain_name: 'wl_domain'
+domain_home: '{{domains_home}}/{{domain_name}}'
+
+# Port for the Admin Server (HTTP)
+wl_port: 7201
+Delay_Value: 15
+Timeout_Value: 240
+

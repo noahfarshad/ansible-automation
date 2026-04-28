@@ -1,0 +1,6 @@
+---
+# defaults file for install_sql_ce
+
+CE_install_loc: "C:\\Windows\\Installer\\"
+CE_86_old: "16e833.msi"
+CE_64_old: "16e83b.msi"

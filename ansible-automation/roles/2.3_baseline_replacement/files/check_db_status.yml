@@ -1,0 +1,13 @@
+---
+
+# Check to ensure the database is running; if not, fail the script
+- name: Database is Running Check
+  become: true
+  command: "systemctl status {{initd_script_name_example}}"
+  register: db_running_check
+
+- name: Verify If Database is Running
+  fail: msg="Database process {{db_process_name}} is not running, terminating"
+  when: db_running_check.stdout.find('dead') == 1
+
+

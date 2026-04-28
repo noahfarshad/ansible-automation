@@ -1,0 +1,26 @@
+shared_cert_store: "{{ role_path }}/../shared_files"
+identity_store: "{{ shared_cert_store }}/identity.jks"
+new_string_cert_url: '{{ sub_domain }}.{{ system }}.{{ domain }}'
+temporary_store: '{{ role_path }}/temp'
+request_retrieve_script: "{{ role_path }}/files/requestRetrieveCert.sh"
+
+cert_request_output: "{{ temporary_store }}/{{ new_string_cert_url }}"
+signed_output_file: "{{ cert_request_output }}.cer"
+msca: mercury.{{ domain }}
+
+new_string_ou: 'NGIS'
+new_string_o: 'NGC'
+new_string_l: 'Bellevue'
+new_string_s: 'NE'
+new_string_c: 'US'
+new_string_cn: '{{ new_string_cert_url }}'
+new_string_dname: '"cn={{ new_string_cn }},ou={{ new_string_ou }},o={{ new_string_o }},l={{ new_string_l }},s={{ new_string_s }},c={{ new_string_c }}"'
+storepass: '{{ string_identity_storepass }}'
+keypass: '{{ string_identity_keypass }}'
+
+keytool_genkey_command: 'keytool -genkey -alias {{ new_string_cert_url }} -keyalg RSA -storepass {{ storepass }} -keypass {{ keypass }} -keysize 2048 -keystore {{ identity_store }} -validity 1825 -dname {{ new_string_dname }}'
+keytool_request_command: 'keytool -certreq -keyalg RSA -keysize 2048 -storepass {{ storepass }} -keypass {{ keypass }} -alias {{ new_string_cert_url }} -file {{ cert_request_output }} -keystore {{ identity_store }}'
+keytool_import_command: 'keytool -import -file {{ signed_output_file }} -alias {{ new_string_cert_url }} -storepass {{ storepass }} -keypass {{ keypass }} -keystore {{ identity_store }} -noprompt'
+request_retrieve_script_command: '/bin/bash {{ request_retrieve_script }} {{ cert_request_output }} {{ msca }} {{ msca_username }} {{ msca_password }} {{ signed_output_file }}'
+
+

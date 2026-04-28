@@ -1,0 +1,60 @@
+---
+# tasks file for vsphere_vm
+- name: Create annotation text
+  ansible.builtin.set_fact:
+    annotation_text: |
+      Built by Ansible
+      Time: {{ lookup('pipe','date') }}
+      Type: {{ short_hostname }}
+      Source Template : {{ template_name }}
+      OS: {{ ansible_os_family }}
+
+- name: Clone a Virtual Machine from VMware Template
+  become: false
+  community.vmware.vmware_guest:
+    ansible.builtin.hostname: "{{vcenter_hostname}}"
+    username: "{{vsphere_account}}"
+    password: "{{vsphere_password}}"
+    validate_certs: no
+    datacenter: "{{vsphere_datacenter}}"
+    datastore: "{{vsphere_datastore}}"
+    state: present
+    folder: "{{vsphere_folder}}"
+    ansible.builtin.template: "{{template_name}}"
+    name: "{{inventory_hostname}}"
+    annotation: "{{ annotation_text }}"
+    cluster: "{{vsphere_cluster}}"
+    networks:
+    - name: "{{nic_public}}"
+      ip: "{{ip_public}}"
+      netmask: "{{netmask_public}}"
+      gateway: "{{gateway_public}}"
+#    - name: "{{nic_storage}}"
+#      ip: "{{ip_storage}}"
+#      netmask: "{{netmask_storage}}"
+#    - name: "{{nic_private}}"
+#      ip: "{{ip_private}}"
+#      netmask: "{{netmask_private}}"
+#      gateway: "{{gateway_private}}"
+    wait_for_ip_address: True
+    customization:
+      autologon: "true"
+      autologoncount: 1
+      ansible.builtin.hostname: "{{ short_hostname }}"
+      dns_servers: "{{ dns_servers }}"
+      domain: "{{ domain }}"
+      password: "{{ domain_password }}"
+      domainadmin: "{{ domainadmin_user }}"
+      domainadminpassword: "{{ domain_password }}"
+      joindomain: "{{ domain }}"
+      runonce:
+      - powershell.exe -ExecutionPolicy Unrestricted -File C:\Windows\Temp\ConfigureRemotingForAnsible.ps1 -CertValidityDays 1825 -ForceNewSSLCert -SkipNetworkProfileCheck
+      - powershell.exe New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -PropertyType String -Force      
+    hardware:
+      num_cpus: "{{ number_of_cpus }}"
+      num_cpu_cores_per_socket: "{{ number_of_cores_per_socket }}"
+      memory_mb: "{{ memory_allocated_mb }}"
+    wait_for_customization: yes
+    wait_for_ip_address: yes
+  retries: 5     
+  delegate_to: localhost

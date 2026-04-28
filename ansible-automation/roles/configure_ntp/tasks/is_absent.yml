@@ -1,0 +1,17 @@
+---
+# tasks file for configure_ntp — absent
+#
+# Stops the service, removes the package.
+
+- name: Stop and disable service
+  ansible.builtin.service:
+    name: "ntpd"
+    state: stopped
+    enabled: false
+  failed_when: false
+
+- name: Remove package(s)
+  ansible.builtin.package:
+    name: "{{ package_list | default([]) }}"
+    state: absent
+  when: (package_list | default([])) | length > 0

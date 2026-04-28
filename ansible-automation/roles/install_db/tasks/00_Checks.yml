@@ -1,0 +1,72 @@
+---
+- name: "test for available disk space on /opt and /u01"
+  ansible.builtin.assert:
+    that:
+      - not {{ item.mount == '/opt' and ( item.size_available < 6442450944 ) }}
+      - not {{ item.mount == '/u01' and ( item.size_available < 42949672960) }}
+  loop:
+    - "{{ansible_mounts}}"
+  ignore_errors: yes
+  register: disk_free
+
+- name: "If there is not enough Disk space then fail playbook"
+  ansible.builtin.fail: msg="Not enough Disk space on /opt or /u01 /opt = {{ disk_free.results.7.item.size_available }} 6442450944  /u01 = {{ disk_free.results.8.item.size_available }} 42949672960"
+  when: disk_free|failed
+
+- name: "If there is not enough memory then fail the playbook"
+  ansible.builtin.fail: msg="Not enough memory.  Please have at least 24G configured.  Current memory is {{ansible_memtotal_mb}}"
+  when: ansible_memtotal_mb|int < 24000
+
+#Check for swap space on the vm
+- debug: msg="swap required {{swap_required}}"
+
+- name: Get swap output
+  become: true
+  ansible.builtin.shell: "free -k | grep -i swap | awk '{print $2}'"
+  register: swp_total
+
+  changed_when: false
+- name: "Set total swap space still needed"
+  ansible.builtin.set_fact: swap_needed={{swap_required|int - swp_total.stdout|int}}
+
+- debug: msg="current swap {{swp_total.stdout|int}}"
+
+- debug: msg="swap needed {{swap_needed}}"
+
+
+- name: Create swap file
+  become: true
+  ansible.builtin.command: dd if=/dev/zero of={{ swap_file_path }} bs=1024 count={{swap_needed}}
+           creates="{{swap_file_path}}"
+  when: swap_needed|int > 1024
+
+  # TODO: review changed_when for: dd if=/dev/zero of={{ swap_file_path }} bs=1024 count={{swap
+- name: Change swap file permissions
+  become: true
+  ansible.builtin.file: path="{{swap_file_path}}"
+        owner=root
+        group=root
+        mode=0600
+  when: swap_needed|int > 1024
+
+- name: Format swap file
+  become: true
+  ansible.builtin.command: "mkswap {{swap_file_path}}"
+  when: swap_needed|int > 1024
+
+  # TODO: review changed_when for: mkswap {{swap_file_path}}
+- name: Turn on created swap file
+  become: true
+  ansible.builtin.command: "swapon {{swap_file_path}}"
+  when: swap_needed|int > 1024
+
+  # TODO: review changed_when for: swapon {{swap_file_path}}
+- name: Turn on all swap
+  become: true
+  ansible.builtin.command: swapon -a
+  when: swap_needed|int > 1024
+
+  # TODO: review changed_when for: swapon -a
+- name: change permissions on sysctl.conf so that oracle can read it
+  become: true
+  ansible.builtin.file: path=/etc/sysctl.conf mode=0644

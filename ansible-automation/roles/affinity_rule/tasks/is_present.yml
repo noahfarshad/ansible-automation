@@ -1,0 +1,16 @@
+---
+- block:
+    - name: Create or Add VM to anti_affinity group
+      community.vmware.vmware_vm_vm_drs_rule:
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: False
+        cluster_name: "{{ vsphere_cluster }}"
+        vms: "{{ item['vms'] }}"
+        drs_rule_name: "{{ item['name'] }}"
+        enabled: true
+        affinity_rule: false
+        state: 'present'
+      loop: "{{ anti_affinity_rules }}"
+  become: true

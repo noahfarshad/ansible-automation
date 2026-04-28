@@ -1,0 +1,40 @@
+---
+
+- name: Authorize a Hostname to Mount a Point on the Isilon
+  throttle: 1
+  ansible.builtin.command: "isi nfs exports modify {{ item.id }}   --zone {{ isilon_zone }} --add-clients {{ inventory_hostname }}"
+  loop: "{{isilon_fstab_lines}}"
+  when: isilon_fstab_lines is defined
+  delegate_to: "{{isilon_hostname}}"
+  tags: isilon_mount
+
+  # TODO: review changed_when for: isi nfs exports modify {{ item.id }}   --zone {{ isilon_zone
+- name: Add fstab for nfs mounts
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    state: present
+    line: "{{item.mount}}"
+  loop: "{{isilon_fstab_lines}}"
+  when: isilon_fstab_lines is defined
+  tags: isilon_mount
+
+- name: Create Local Directories for Mount Points
+  become: true
+  ansible.builtin.file:
+    path: "{{item.directory}}"
+    state: directory
+    mode: '0755'
+  loop: "{{isilon_fstab_lines}}"
+  when: isilon_fstab_lines is defined
+  tags: isilon_mount
+
+#We specifically are not changing the ownership and group of the directories in this role as they vary greatly due to server profile type and apps loaded.
+
+- name: Mount all in the FSTAB
+  ansible.builtin.command: mount -a
+  args:
+    warn: no
+  become: true
+  tags: isilon_mount
+  changed_when: false

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>TCPChannels</short>
+  <description>This allows for inter-ingestvw server communications.</description>
+  <port protocol="tcp" port="12700"/>
+  <port protocol="tcp" port="12701"/>
+  <port protocol="tcp" port="12702"/>
+  <port protocol="tcp" port="12703"/>
+  <port protocol="tcp" port="12704"/>
+  <port protocol="tcp" port="12705"/>
+  <port protocol="tcp" port="12706"/>
+  <port protocol="tcp" port="12707"/>
+  <port protocol="tcp" port="12708"/>
+  <port protocol="tcp" port="12709"/>
+  <port protocol="tcp" port="12711"/>
+  <port protocol="tcp" port="12716"/>
+  <port protocol="tcp" port="12721"/>
+  <port protocol="tcp" port="12726"/>
+  <port protocol="tcp" port="12731"/>
+  <port protocol="tcp" port="12736"/>
+</service>

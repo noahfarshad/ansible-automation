@@ -1,0 +1,58 @@
+---
+# playbooks/windows/configure_baseline.yml
+#
+# Applies Windows server baseline AFTER domain join. Run after
+# build_windows_vm.yml (which handled VM creation, WinRM, and AD join).
+#
+# What this does:
+#   1. Apply common Windows configuration (configure_windows role)
+#   2. Install Windows server features from windows_features list
+#   3. Configure Splunk Universal Forwarder for event log shipping
+#   4. Optionally link baseline GPOs (if ad_link_baseline_gpos is true)
+#
+# Usage:
+#   make windows-baseline HOST=win01.example.coach
+#
+# Variables (group_vars/windows/main.yml):
+#   windows_features (list)
+#   splunk_forwarder_inputs (list of dicts)
+#   ad_link_baseline_gpos (bool, default false)
+
+- name: Apply Windows baseline configuration
+  hosts: windows
+  gather_facts: true
+  vars:
+    desired_state: present
+
+  pre_tasks:
+    - name: Confirm Windows host is domain-joined
+      ansible.builtin.assert:
+        that: ansible_facts.domain | default('') != ''
+        fail_msg: >-
+          Host does not appear to be domain-joined.
+          Run build_windows_vm.yml first.
+      tags: [verify]
+
+  roles:
+    - role: configure_windows
+      tags: [baseline]
+
+    - role: install_win_features
+      tags: [features]
+      vars:
+        parameters:
+          win_features: "{{ windows_features | default([]) }}"
+
+    - role: configure_splunk_forwarder_windows
+      tags: [logging, splunk]
+      when: enable_splunk_forwarder | default(true) | bool
+
+  post_tasks:
+    - name: Print summary
+      ansible.builtin.debug:
+        msg:
+          - "Host:           {{ inventory_hostname }}"
+          - "Domain:         {{ ansible_facts.domain }}"
+          - "OS:             {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}"
+          - "Features added: {{ windows_features | default([]) | length }}"
+      tags: [summary]

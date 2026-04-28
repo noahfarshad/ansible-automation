@@ -1,0 +1,39 @@
+---
+
+
+#-------------------------------------------------------------------
+#  Mail Session Variables
+#-------------------------------------------------------------------
+#
+#  These are all non-SSL parameter values
+Admin_Protocol: 't3'
+admin_host: 'vm4'
+admin_server_port: 7201
+
+weblogic_admin: wl_admin_user
+
+pickle_file_name: pickled_vars.p
+
+# Mail specific settings
+mail_session_name: "GC2MailSession"
+mail_Server: AdminServer
+mail_Cluster: app_cluster
+jndi_name: gc2.mail.session
+session_username: wl_admin_user
+
+os_user: app_admin
+os_group: app_admin
+
+ansible_os_user: ansible
+ansible_os_group: ansible
+
+gc2_remote_dir: /tmp
+gc2_wlst_path: "{{mw_home}}/oracle_common/common/bin/wlst.sh"
+
+# Mail session properties
+mail_host: '134.223.82.106'
+mail_user: 'app_admin.{{system}}@gapnet.com'
+mail_transport_protocol: 'smtps'
+mail_smtps_host: '134.223.82.106'
+mail_from: 'app_admin.{{system}}@gapnet.com'
+mail_debug: 'false'

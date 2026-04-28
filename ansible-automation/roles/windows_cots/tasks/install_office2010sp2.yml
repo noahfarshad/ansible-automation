@@ -1,0 +1,82 @@
+---
+
+- name: Create Temp Folder for Installer
+  ansible.windows.win_tempfile: 
+    state: directory 
+    suffix: 'office2010'
+  register: install_loc
+
+- no_log: true
+  ansible.builtin.include_vars:
+    ansible.builtin.file: roles/nexus_setup_server/vars/nexus_vars.yml
+    name: nexus_vars
+
+- name: Query Nexus For Installer
+  register: artifact_list
+  delegate_to: localhost
+  custom_nexus_query:
+    nexus_base_url: "{{ nexus_vars.nexus_rest_api }}"
+    nexus_repo_id: "{{ nexus_vars.raw_public_name }}"
+    nexus_search_repo: "{{ infra_ifc_version }}"
+    nexus_search_artifactid: "Microsoft/Office2010_ServicePack"
+    
+- name: Copy Artifact To Host
+  vars:
+    artifact: "{{ artifact_list.status.query_results[0] }}"
+  block:
+  - name: Copy Installer Zip
+    ansible.windows.win_get_url:
+      validate_certs: false
+      url: "{{ artifact.downloadUrl }}"
+      dest: "{{ install_loc.path }}\\{{ artifact.filename}}"
+
+  - name: Unzip Installer
+    ansible.windows.win_unzip:
+      delete_archive: yes
+      src: "{{ install_loc.path }}\\{{ artifact.filename}}"
+      dest: "{{ install_loc.path }}"
+
+- set_fact: 
+    sw_base_dir: "{{ install_loc.path }}\\Microsoft\\Office2010_ServicePacks"
+
+- set_fact:
+    office2010sp2:
+      baselinename: Microsoft Office 2010 SP2
+      requiredversion: 14.0.7015.1000
+      installerpath: "officesp2010-kb2687455-fullfile-x86-en-us.exe"
+      installargs: /passive /norestart
+      
+- set_fact:
+    sw_to_install: "{{ office2010sp2 }}"
+
+- name: Verify Installation Status
+  block:
+    #Will error if not installed. Won't show up in baseline variable
+    - name: Get {{ sw_to_install['baselinename'] }} version
+      ansible.builtin.set_fact:
+        installed_program_version: "{{ baseline['Microsoft Office Professional Plus 2010'] }}"
+  rescue:
+    - include_tasks: ../../roles/windows_cots/tasks/install_officeproplus2010.yml
+    - include_tasks: ../../roles/windows_cots/tasks/main.yml
+
+- set_fact:
+    sw_to_install: "{{ office2010sp2 }}"
+
+- name: Get Software Version
+  ansible.builtin.set_fact:
+    installed_program_version: "{{ baseline['Microsoft Office Professional Plus 2010'] }}"
+
+- name: Wait for Any Other Installation Processes to Complete
+  win_wait_for_process:
+    process_name_pattern: 'msiexec'
+    state: absent
+    timeout: 600
+
+- name: Install Office 2010 SP2
+  ansible.windows.win_shell: "{{ sw_base_dir }}\\{{sw_to_install['installerpath'] }} {{ sw_to_install['installargs'] }}"
+  when: installed_program_version is not search(sw_to_install['requiredversion'])
+
+- name: Clear Temp Folder
+  ansible.windows.win_file:
+    state: absent
+    path: "{{ install_loc.path }}"

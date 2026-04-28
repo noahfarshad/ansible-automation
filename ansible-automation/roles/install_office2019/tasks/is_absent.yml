@@ -1,0 +1,10 @@
+---
+# tasks file for install_office2019 — absent
+
+- name: Stop and disable Windows service
+  ansible.windows.win_service:
+    name: "{{ service_name }}"
+    state: stopped
+    start_mode: disabled
+  failed_when: false
+  when: service_name is defined

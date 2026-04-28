@@ -1,0 +1,18 @@
+---
+# tasks file for start_swarm — present
+
+- name: Create the Docker swarm
+  become: true
+  ansible.builtin.command: "docker swarm init --advertise-addr {{advertise_address}}"
+  ignore_errors: yes
+
+  # TODO: review changed_when for: docker swarm init --advertise-addr {{advertise_address}}
+- name: Get the swarm manager join token
+  become: true
+  ansible.builtin.command: "docker swarm join-token -q manager"
+  register: token_output
+  
+  # TODO: review changed_when for: docker swarm join-token -q manager
+- name: Set the join token fact
+  ansible.builtin.set_fact: join_token={{token_output.stdout}}
+  

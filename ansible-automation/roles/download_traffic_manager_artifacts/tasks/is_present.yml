@@ -1,0 +1,14 @@
+---
+# tasks file for download_traffic_manager_artifacts — present
+
+- name: Download traffic manager license
+  hg:
+    repo: "http://{{scm_username}}:{{scm_password}}@10.10.10.204:7777/scm/hg/environment/software_licenses"
+    dest: "{{traffic_manager_staging}}software_licenses"
+    clone: yes
+
+- name: Download Pulse Secure Traffic Manager 19.2
+  ansible.builtin.get_url:
+    url: "{{download_url}}{{traffic_manager_artifact}}{{artifact_extension}}"
+    dest: "{{traffic_manager_staging}}"
+    mode: '0755'

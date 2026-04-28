@@ -1,0 +1,19 @@
+shared_home_target: /u01/global_homes
+shared_home_bashrc_template: 'bashrc'
+shared_home_profile_template: 'bash_profile'
+
+shared_homes_list:
+  - name: app_admin
+    target: "{{ shared_home_target }}"
+    owner: app_admin
+    group: app_admin
+    mode: '0700'
+    secontext: 'nfs_t'
+    user_paths: $PATH
+  - name: ora_rmt
+    target: "{{ shared_home_target }}"
+    owner: ora_rmt
+    group: ora_rmt
+    mode: '0700'
+    secontext: 'nfs_t'
+    user_paths: $PATH

@@ -1,0 +1,48 @@
+- name: Power Off VM
+  delegate_to: localhost
+  block:
+    - name: Attempt Graceful Power Off
+      vmware_guest_powerstate:
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+        username: "{{ users.vcenter_admin_user }}"
+        password: "{{ users.vcenter_admin_password }}"
+        name: "{{ inventory_hostname }}"
+        state: shutdown-guest
+        validate_certs: false
+        state_change_timeout: 1200
+
+    - name: Wait for Confirmation of Power Off
+      community.vmware.vmware_guest_info:
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+        username: "{{ users.vcenter_admin_user }}"
+        password: "{{ users.vcenter_admin_password }}"
+        datacenter: "{{ vmware.datacenter }}"
+        name: "{{ inventory_hostname }}"
+        validate_certs: false
+      register: facts
+      delay: 15
+      retries: 5
+      until: facts.instance.hw_power_status == "poweredOff"
+  rescue:
+  - name: If Graceful Power Off Not Successful, Hard Power Off
+    vmware_guest_powerstate:
+      ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+      username: "{{ users.vcenter_admin_user }}"
+      password: "{{ users.vcenter_admin_password }}"
+      name: "{{ inventory_hostname }}"
+      validate_certs: false
+      state: powered-off
+      state_change_timeout: 1200
+
+  - name: Wait for Confirmation of Power Off
+    community.vmware.vmware_guest_info:
+      ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+      username: "{{ users.vcenter_admin_user }}"
+      password: "{{ users.vcenter_admin_password }}"
+      datacenter: "{{ vmware.datacenter }}"
+      name: "{{ inventory_hostname }}"
+      validate_certs: false
+    register: facts
+    delay: 15
+    retries: 5
+    until: facts.instance.hw_power_status == "poweredOff"

@@ -1,0 +1,16 @@
+---
+# tasks file for change_index_urls — present
+
+# This task is to update the urls for the index.html files after a clone.
+# This was previously done in the changeGapCieUrls.sh shell script
+
+- name: Update urls in index.html files
+  become: true
+  become_user: app_admin
+  ansible.builtin.replace:
+    dest: "{{ item }}"
+    regexp:  "{{ source }}"
+    ansible.builtin.replace:  "{{ system }}"
+  loop:
+    - "/u01/www/html/app_gsat/index.html"
+    - "/u01/www/html/app_main/index.html"

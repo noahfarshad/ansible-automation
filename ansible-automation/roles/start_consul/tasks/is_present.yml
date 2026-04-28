@@ -1,0 +1,12 @@
+---
+# tasks file for start_consul — present
+
+- name: Start up Consul Service
+  become: true
+  ansible.builtin.service:
+    name: consul
+    state: started
+  register: "consul_start"
+  
+- debug:
+    var: "consul_start"

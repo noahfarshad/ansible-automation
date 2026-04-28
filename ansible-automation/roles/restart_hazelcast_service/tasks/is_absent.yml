@@ -1,0 +1,11 @@
+---
+# tasks file for restart_hazelcast_service — absent
+#
+# Stops and disables the service. Does NOT uninstall the package.
+
+- name: Stop and disable service
+  ansible.builtin.service:
+    name: "hazelcast"
+    state: stopped
+    enabled: false
+  failed_when: false

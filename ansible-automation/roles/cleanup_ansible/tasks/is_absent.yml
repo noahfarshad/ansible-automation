@@ -1,0 +1,8 @@
+---
+# tasks file for cleanup_ansible — absent
+#
+# This role itself is a cleanup; "absent" is a no-op.
+
+- name: cleanup_ansible — absent is a no-op
+  ansible.builtin.debug:
+    msg: "Role cleanup_ansible only does cleanup; nothing to undo."

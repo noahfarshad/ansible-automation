@@ -1,0 +1,21 @@
+version: "3"
+services:
+  presence:
+    image: {{java_image}}
+    entrypoint: 
+       - {{userPresence_dir}}/entrypoint.sh
+    deploy:
+      replicas: 1
+      resources:
+         limits:
+            memory: 250MB
+    ports:
+      - 1337:1337
+    volumes:
+      - {{userPresence_dir}}:{{userPresence_dir}}
+    networks:
+      - {{microservice_network}}
+networks:
+   {{microservice_network}}:
+     driver_opts:
+       encrypted: "true"

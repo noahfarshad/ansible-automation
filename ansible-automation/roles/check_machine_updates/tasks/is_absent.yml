@@ -1,0 +1,10 @@
+---
+# tasks file for check_machine_updates — absent
+#
+# Removes the package(s) installed by is_present.yml.
+
+- name: Remove package(s)
+  ansible.builtin.package:
+    name: "{{ target_package | default([]) }}"
+    state: absent
+  when: (target_package | default([])) | length > 0

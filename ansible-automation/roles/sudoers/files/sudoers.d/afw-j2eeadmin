@@ -1,0 +1,93 @@
+# This sudo config file allows users to perform commands as AppAdmins (j2eeadmin)
+
+# User Aliases
+User_Alias	EDH_APPADMIN =		+un_sems-scs,+un_sems-cm,+un_sems-wdd,+un_sys-datarouting-d,+un_sys-datarouting-t,+un_wda4,+un_tads-scs,+un_tads-cm,+un_tads-wdd
+User_Alias	NEXRAD_APPADMIN =	+fn_nexrad,!+un_sems-testers,!+un_tads-testers
+User_Alias	SANDBOX_APPADMIN = 	+un_sems-wdd,+un_wda4,+un_sems-cm,+un_tads-cm,+un_tads-wdd
+User_Alias 	SEMS_APPADMIN = 	+un_sems-scs,+un_tads-scs
+User_Alias 	SWAFS_APPADMIN =	+un_tads-swafs-t,+un_sems-swafs-t,+un_sems-cm,+un_tads-cm
+User_Alias 	VIRAPP_APPADMIN = 	+fn_afwVA-t
+User_Alias 	VIRWEB_APPADMIN = 	+un_sems-cm,+un_tads-cm
+User_Alias      OIAM_APPADMIN =     	+un_sems-cm,+un_tads-cm
+User_Alias	PTEDH_APPADMIN = 	+un_sems-scs,+un_sems-wdd,+un_sems-cm,+un_wda4,+un_tads-cm,+un_tads-scs,+un_tads-wdd
+User_Alias      GFAPP_APPADMIN =        +un_sems-afwwebs,+un_sems-cm,+un_tads-afwwebs,+un_tads-cm
+# Standardizing below user aliases to use functional netgroups versus user netgroups, excluding un_sems-testers
+User_Alias	PS_APPADMIN = 		+fn_afwPS,!+un_sems-testers,!+un_tads-testers
+User_Alias      PHP_APPADMIN =          +fn_afwPHP,!+un_sems-testers,!+un_tads-testers
+User_Alias      TERRACOTTA_APPADMIN =   +fn_afwTerracotta,!+un_sems-testers,!+un_tads-testers
+User_Alias      WEBDAS_APPADMIN =       +fn_afwDAS,!+un_sems-testers,!+un_tads-testers
+User_Alias      WEBMISC_APPADMIN =      +fn_afwWebMisc,!+un_sems-testers,!+un_tads-testers
+User_Alias      METSAT_APPADMIN =       +fn_afwMETSAT,!+un_sems-testers,!+un_tads-testers
+User_Alias	METWEB_APPADMIN =	+fn_afwMETWEB,!+un_sems-testers,!+un_tads-testers
+User_Alias      WDDPADS_APPADMIN =      +un_sems-wdd,+un_tads-wdd
+
+# These are the allowed commands, referenced later
+# Cmnd_Alias	SOME_CMD		/bin/bash,/bin/cat
+Cmnd_Alias KILLALL_J2EEADMIN = /usr/bin/killall -9 -u j2eeadmin
+Cmnd_Alias TMPFIX = /root/bin/remount-tmp.sh
+Cmnd_Alias WDD_BROKERS = /opt/apps/init.d/brokers
+
+
+# These define the possible application accounts (comma-separated)
+Runas_Alias 	J2EE_APPACCT = 		j2eeadmin
+
+# These define the possible hosts that users are allowed to run commands on
+Host_Alias	EDH_DEV =		afw-edh-01d,afw-edh-02d,afw-edh-03d,afw-edh-04d,afw-edh-05d
+Host_Alias	EDH_TEST =		afw-edh-01t,afw-edh-02t,afw-edh-03t,afw-edh-04t,afw-edh-05t
+Host_Alias	MW_SANDBOX =		afw-mw-a01x,afw-mw-b01x,afw-mw-01x,afw-mw-02x,afw-mw-03x,afw-mw-04x
+Host_Alias	NEXRAD_DEV =		afw-nexrad-01d
+Host_Alias	NEXRAD_TEST =		afw-nexrad-01t,afw-nexrad-02t
+Host_Alias	SWAFS_DEV =		afw-swafs-01d,afw-swafs-02d,afw-swafs-b01d,afw-swafs-b02d
+Host_Alias	SWAFS_TEST =		afw-swafs-01t,afw-swafs-02t,afw-swafs-b01t,afw-swafs-b02t
+Host_Alias	VIRWEB_DEV = 		afw-virweb-01d,afw-virweb-02d
+Host_Alias	VIRWEB_TEST = 		afw-virweb-01t,afw-virweb-02t,afw-virweb-03t,afw-virweb-04t
+Host_Alias	VIRAPP_DEV = 		afw-virapp-01d,afw-virapp-02d
+Host_Alias	VIRAPP_TEST = 		afw-virapp-01t,afw-virapp-02t
+Host_Alias	PS_DEV = 		afw-ps-01d,afw-ps-02d
+Host_Alias	PS_TEST =		afw-ps-01t,afw-ps-02t,afw-ps-03t,afw-ps-04t,afw-ps-05t,afw-ps-06t,afw-ps-07t,afw-ps-08t,afw-ps-01v,afw-ps-02v,afw-ps-03v,afw-ps-04v
+Host_Alias      PHP_DEV =               afw-php-01d,afw-php-02d
+Host_Alias      PHP_TEST =              afw-php-01t,afw-php-02t,afw-php-01v,afw-php-02v
+Host_Alias      TERRACOTTA_TEST =       afw-terracotta-01t,afw-terracotta-02t,afw-terracotta-01v,afw-terracotta-02v
+Host_Alias      TERRACOTTA_DEV =        afw-terracotta-01d,afw-terracotta-02d
+Host_Alias      WEBDAS_DEV =            afw-webdas-01d
+Host_Alias      WEBDAS_TEST =           afw-webdas-01t,afw-webdas-01v
+Host_Alias      WEBMISC_DEV =           afw-webmisc-01d,afw-webmisc-02d
+Host_Alias      WEBMISC_TEST =          afw-webmisc-01t,afw-webmisc-02t,afw-webmisc-01v,afw-webmisc-02v
+Host_Alias      METSAT_DEV =            afw-metsat-01d,afw-metsat-02d
+Host_Alias      METSAT_TEST =           afw-metsat-01t,afw-metsat-02t,afw-metsat-03t,afw-metsat-04t,afw-metsat-05t,afw-metsat-06t,afw-metsat-01v,afw-metsat-02v,afw-metsat-03v,afw-metsat-04v,afw-metsat-05v,afw-metsat-06v
+Host_Alias	METWEB_DEV =		afw-metweb-01d
+Host_Alias	METWEB_TEST =		afw-metweb-01t,afw-metweb-02t
+Host_Alias      OIAM_TEST =           	afw-oiam-01t,afw-oiam-02t
+Host_Alias	PTEDH_TEST = 		afw-ptedh-01t,afw-ptedh-02t,afw-ptedh-03t
+Host_Alias	JMS_DEV = 		afw-jms-01d,afw-jms-02d,afw-jms-03d,afw-jms-04d
+Host_Alias      EARTH_DEV =             afw-earth-01d
+Host_Alias      EARTH_TEST =            afw-earth-01t,afw-earth-02t
+Host_Alias      GFAPP_TEST =            afw-gfapp-01d,afw-gfapp-02d,afw-gfapp-01t,afw-gfapp-02t
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+# 	If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+# 	to see the input/output of every command as it was being executed.
+
+# Allow j2eeadmin netgroup to sudo to their shared account everywhere
+SEMS_APPADMIN		ALL = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+SEMS_APPADMIN           ALL = (root) LOG_OUTPUT: LOG_INPUT: KILLALL_J2EEADMIN,TMPFIX
+
+# Group specific j2eeadmin permissions
+EDH_APPADMIN		EDH_DEV,EDH_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+NEXRAD_APPADMIN		NEXRAD_DEV,NEXRAD_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+SANDBOX_APPADMIN	MW_SANDBOX = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+SWAFS_APPADMIN		SWAFS_DEV,SWAFS_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+VIRAPP_APPADMIN		VIRAPP_DEV,VIRAPP_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+VIRWEB_APPADMIN		VIRWEB_DEV,VIRWEB_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+PS_APPADMIN		PS_DEV,PS_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+PHP_APPADMIN            PHP_DEV,PHP_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+TERRACOTTA_APPADMIN     TERRACOTTA_DEV,TERRACOTTA_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+WEBDAS_APPADMIN         WEBDAS_DEV,WEBDAS_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+WEBMISC_APPADMIN        WEBMISC_DEV,WEBMISC_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+METSAT_APPADMIN         METSAT_DEV,METSAT_TEST,JMS_DEV = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+METWEB_APPADMIN         METWEB_DEV,METWEB_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+OIAM_APPADMIN         	OIAM_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+PTEDH_APPADMIN		PTEDH_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+GFAPP_APPADMIN		GFAPP_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+WDDPADS_APPADMIN        VIRAPP_DEV,VIRAPP_TEST = (J2EE_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL

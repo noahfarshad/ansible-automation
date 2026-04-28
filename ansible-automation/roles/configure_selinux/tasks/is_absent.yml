@@ -1,0 +1,11 @@
+---
+# tasks file for configure_selinux — absent
+#
+# Disables the SELinux booleans this role enabled.
+
+- name: Disable SELinux booleans
+  ansible.posix.seboolean:
+    name: '{{ item.name }}'
+    state: false
+    persistent: true
+  loop: '{{ selinux_booleans | default([]) }}'

@@ -1,0 +1,56 @@
+---
+# group_vars/webservers/main.yml
+#
+# Apache web server tier defaults.
+
+# ===========================================================================
+# Apache config
+# ===========================================================================
+apache_listen_port:        80
+apache_listen_port_ssl:    443
+apache_serveradmin:        "{{ org_email }}"
+apache_document_root:      /var/www/html
+
+apache_modules_enabled:
+  - rewrite
+  - ssl
+  - headers
+  - proxy
+  - proxy_http
+  - status
+
+apache_modules_disabled:
+  - autoindex
+
+# ===========================================================================
+# TLS — these point at certs distributed by the certificates role
+# ===========================================================================
+apache_ssl_cert_path:      "/etc/pki/tls/certs/{{ inventory_hostname }}.crt"
+apache_ssl_key_path:       "/etc/pki/tls/private/{{ inventory_hostname }}.key"
+apache_ssl_chain_path:     "/etc/pki/tls/certs/internal-ca.crt"
+
+# ===========================================================================
+# Firewall — webservers expose 80 and 443 in addition to 22 from group_vars/linux
+# ===========================================================================
+firewall_open_tcp_ports:
+  - 22
+  - "{{ apache_listen_port }}"
+  - "{{ apache_listen_port_ssl }}"
+
+# ===========================================================================
+# Content directory ownership
+# ===========================================================================
+content_root:              /var/www/html
+content_owner:             apache
+content_group:             apache
+
+# ===========================================================================
+# Splunk forwarder — tail Apache logs
+# ===========================================================================
+splunk_forwarder_inputs:
+  - path:        /var/log/httpd/access_log
+    index:       "{{ splunk_index }}_web"
+    sourcetype:  access_combined
+  - path:        /var/log/httpd/error_log
+    index:       "{{ splunk_index }}_web"
+    sourcetype:  apache_error

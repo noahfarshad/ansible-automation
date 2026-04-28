@@ -1,0 +1,19 @@
+---
+# tasks file for install_7zip
+# This is not needed but will keep for ref
+# - name: Uninstall 7zip without specifying the path
+#   ansible.windows.win_package:
+#     product_id: 7-Zip
+#     arguments: /S
+#     state: absent
+
+- name: Install 7zip without using the credentials
+  ansible.windows.win_package:
+    path: "{{artifact_staging}}{{zip}}"
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

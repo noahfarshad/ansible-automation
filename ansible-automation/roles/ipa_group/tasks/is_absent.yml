@@ -1,0 +1,11 @@
+---
+# tasks file for ipa_group — absent
+#
+# Removes the user account. Does not remove home directory unless requested.
+
+- name: Remove user
+  ansible.builtin.user:
+    name: "{{ user_name | default(role_user_name) }}"
+    state: absent
+    remove: "{{ user_remove_home | default(false) }}"
+  when: (user_name | default(role_user_name | default(''))) | length > 0

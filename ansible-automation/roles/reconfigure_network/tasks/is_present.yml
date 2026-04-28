@@ -1,0 +1,73 @@
+---
+- name: Add New IP and Gateway
+  ansible.windows.win_powershell:
+    ansible.builtin.script: |
+      New-NetIPAddress -IPAddress {{ ip_public }} -PrefixLength 24 -InterfaceAlias 'Ethernet0 3' -DefaultGateway {{ gateway_public }} -ErrorAction SilentlyContinue
+      Remove-NetIPAddress -IPAddress {{ ip_public_old }} -DefaultGateway {{ gateway_public_old }} -Confirm:$false -ErrorAction SilentlyContinue
+  ignore_errors: true
+
+- name: Add VM Network
+  become: false
+  community.vmware.vmware_guest:
+    ansible.builtin.hostname: "{{vcenter_hostname}}"
+    username: "{{vsphere_account}}"
+    password: "{{vsphere_password}}"
+    validate_certs: no
+    datacenter: "{{vsphere_datacenter}}"
+    datastore: "{{vsphere_datastore}}"
+    state: present
+    folder: "{{vsphere_folder}}"
+    ansible.builtin.template: "{{template_name}}"
+    name: "{{inventory_hostname}}"
+    cluster: "{{vsphere_cluster}}"
+    networks:
+    - name: "{{ nic_public }}"
+  delegate_to: localhost    
+
+#Delete DNS Record
+- name: Remove Old DNS A Record
+  community.windows.win_dns_record:
+    computer_name: "{{ dcserver }}"
+    name: "{{inventory_hostname}}."
+    type: "A"
+    zone: "{{ domain }}"
+    state: absent
+  delegate_to: "{{ dcserver }}"
+
+- name: Delete Old matching PTR record
+  community.windows.win_dns_record:
+    computer_name: "{{ dcserver }}"
+    name: "{{ ip_public_old.split('.')[3] }}"
+    type: "PTR"
+    zone: "{{ip_public_old.split('.')[2]}}.{{ip_public_old.split('.')[1]}}.{{ip_public_old.split('.')[0]}}.in-addr.arpa"
+    state: absent
+  delegate_to: "{{ dcserver }}"
+
+#Add New DNS Record
+- name: Ensure New primary zone is present
+  community.windows.win_dns_zone:
+    name: "{{ip_public.split('.')[2]}}.{{ip_public.split('.')[1]}}.{{ip_public.split('.')[0]}}.in-addr.arpa" 
+    replication: domain
+    type: primary
+    state: present
+    dns_servers: '{{ dns_servers }}'
+  delegate_to: "{{ dcserver }}"
+
+- name: Add New DNS A Record
+  community.windows.win_dns_record:
+    computer_name: "{{ dcserver }}"
+    name: "{{inventory_hostname}}"
+    type: "A"
+    value: "{{ ip_public }}"
+    zone: "{{domain}}"
+  delegate_to: "{{ dcserver }}"
+
+- name: Create New matching PTR record
+  community.windows.win_dns_record:
+    computer_name: "{{ dcserver }}"
+    name: "{{ ip_public.split('.')[3] }}"
+    type: "PTR"
+    value: "{{inventory_hostname}}.{{ domain }}" 
+    zone: "{{ip_public.split('.')[2]}}.{{ip_public.split('.')[1]}}.{{ip_public.split('.')[0]}}.in-addr.arpa" 
+    state: present
+  delegate_to: "{{ dcserver }}"

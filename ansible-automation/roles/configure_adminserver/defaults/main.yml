@@ -1,0 +1,29 @@
+
+
+configure_script_name: configure_adminserver.py
+install_folder: "/var/tmp"
+
+
+# Oracle Base and Software home directory locations
+oracle_base: "/opt/Oracle"
+oracle_middleware_home: "{{oracle_base}}/Middleware_{{weblogic_version}}"
+weblogic_home: "{{oracle_middleware_home}}/wlserver"
+
+# Operating System users and Groups used to install the sofware
+os_group: app_admin
+os_user: app_admin
+
+jvm_args: 'CONFIG_JVM_ARGS="-Djava.security.egd=file:/dev/./urandom"'
+
+# Weblogic Domain name and directory location
+domains_home: '/u01/domains'
+domain_name: 'wl_domain'
+domain_home: '{{domains_home}}/{{domain_name}}'
+
+
+security_folder: '{{domains_home}}/{{domain_name}}/servers/{{admin_server}}/security'
+
+# Name of the Admin server and the host name the admin server is located on
+admin_server: 'AdminServer'
+httpsPort: 7202
+listen_address: wl-admin.example.coach

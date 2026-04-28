@@ -1,0 +1,23 @@
+---
+# Without caching and updating yum first, dnsmasq may fail to install on vms where it was not previously installed
+- name: "Update yum cache"
+  ansible.builtin.yum:
+    update_cache: yes
+    name: "{{dnsmasq_yum_name}}"
+    state: present  # use {{ manage_dnsmasq_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+- name: "Installing {{ dnsmasq_name }} via yum"
+  ansible.builtin.yum:
+    name: "{{dnsmasq_yum_name}}"
+    state: present
+
+- name: "Add {{ dnsmasq_name }} to resolve.conf"
+  ansible.builtin.template:
+    src: templates/resolv_dnsmasq.conf.j2
+    dest: /etc/resolv.conf
+    owner: root
+    ansible.builtin.group: root
+    mode: 0644
+
+- name: "Enable {{ dnsmasq_name }} auto startup via chkconfig"
+  ansible.builtin.command: chkconfig dnsmasq on
+  # TODO: review changed_when for: chkconfig dnsmasq on

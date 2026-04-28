@@ -1,0 +1,14 @@
+---
+
+- name: Remove existing stack if present
+  become: true
+  ansible.builtin.shell: "docker stack rm {{microservices_stack_name}}"
+  ignore_errors: true
+  
+  # TODO: review changed_when for: docker stack rm {{microservices_stack_name}}
+- name: Create microservice directory if missing
+  become: true
+  ansible.builtin.file:
+    path: "{{microservices_dir}}"
+    state: directory
+    mode: 0750 

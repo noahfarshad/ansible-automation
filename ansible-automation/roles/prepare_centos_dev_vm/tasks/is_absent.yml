@@ -1,0 +1,10 @@
+---
+# tasks file for prepare_centos_dev_vm — absent
+#
+# Removes the package(s) installed by is_present.yml.
+
+- name: Remove package(s)
+  ansible.builtin.package:
+    name: "{{ item | default([]) }}"
+    state: absent
+  when: (item | default([])) | length > 0

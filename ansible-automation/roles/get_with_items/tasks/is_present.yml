@@ -1,0 +1,20 @@
+---
+# tasks file for get_with_items — present
+
+- name: Create "{{ nexus_drop_local }}" if it does not exist.
+  ansible.builtin.file: 
+    path: "{{ nexus_drop_local }}" 
+    state: directory 
+    mode: 0755
+
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+- name: Downloading {{target_desc}} from nexus
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}/{{item.group}}/{{item.artifact}}/{{item.version}}/{{item.artifact}}-{{item.version}}.{{item.ext}}
+    dest: "{{ nexus_drop_local }}"
+    timeout: 30
+  loop:
+    - "{{ target_list }}"
+
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"

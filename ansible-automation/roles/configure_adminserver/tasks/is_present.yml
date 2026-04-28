@@ -1,0 +1,43 @@
+---
+# tasks file for configure_adminserver — present
+
+# Configures the Admin Server; this means setting configuring WLS settings, creating a boot.properties, and
+# managing certs
+
+- block:
+    - name: Copy configure Admin server script
+
+      become_user: '{{os_user}}'
+      ansible.builtin.template: src={{configure_script_name}} dest={{install_folder}} owner={{os_user}} group={{os_group}}
+
+    - name: Configure Admin server
+      ansible.builtin.shell: '{{jvm_args}} {{weblogic_home}}/common/bin/wlst.sh {{install_folder}}/{{configure_script_name}}'
+
+      become_user: '{{os_user}}'
+
+      # TODO: review changed_when for: {{jvm_args}} {{weblogic_home}}/common/bin/wlst.sh {{install_
+    - name: Create security folder in Admin Server
+      ansible.builtin.file: state=directory path={{security_folder}} owner={{os_user}} group={{os_group}}
+
+    - name: Copy boot.properties file
+
+      become_user: '{{os_user}}'
+      ansible.builtin.template: src=boot.properties dest={{security_folder}} owner={{os_user}} group={{os_group}}
+
+    - name: Remove Admin server configure script
+      ansible.builtin.file: path={{install_folder}}/{{configure_script_name}} state=absent
+
+    - name: Backup cacerts file
+
+      become_user: '{{os_user}}'
+      ansible.builtin.command: "mv /opt/Oracle/java/jre/lib/security/cacerts /opt/Oracle/java/jre/lib/security/cacerts.back"
+
+      # TODO: mv: not idempotent — gate with creates: <dest> or removes: <src>
+      # TODO: review changed_when for: mv /opt/Oracle/java/jre/lib/security/cacerts /opt/Oracle/jav
+    - name: Copy domain specific cacerts file to jre/lib/security
+
+      become_user: '{{os_user}}'
+      ansible.builtin.command: "cp /opt/identity/cacerts /opt/Oracle/java/jre/lib/security/cacerts"
+  become: true
+      # TODO: cp: not idempotent — convert to ansible.builtin.copy with src/dest
+      # TODO: review changed_when for: cp /opt/identity/cacerts /opt/Oracle/java/jre/lib/security/c

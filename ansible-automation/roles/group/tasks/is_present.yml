@@ -1,0 +1,8 @@
+- name: Add provided groups
+  become: true
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    gid: "{{ item.gid }}"
+    state: present
+  loop: "{{ group_list }}"
+  when: group_list is defined

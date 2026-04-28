@@ -1,0 +1,11 @@
+---
+# tasks file for load_config — absent
+#
+# This role pushes configuration. Reverting requires the prior config snapshot,
+# which is not retained automatically.
+
+- name: "load_config — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      Role 'load_config' pushes configuration. To revert, push a known-good
+      prior snapshot. The role does not retain a snapshot automatically.

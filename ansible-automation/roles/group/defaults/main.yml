@@ -1,0 +1,5 @@
+group_list:
+  - name: app_admin
+    gid: 602
+  - name: ora_rmt
+    gid: 601

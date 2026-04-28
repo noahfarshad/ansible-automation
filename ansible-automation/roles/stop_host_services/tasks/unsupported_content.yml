@@ -1,0 +1,3 @@
+- debug:
+    var: unsupported_content
+  when: unsupported_content is defined

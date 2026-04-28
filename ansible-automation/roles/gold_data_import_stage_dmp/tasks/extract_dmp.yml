@@ -1,0 +1,14 @@
+---
+#  Ansible suggests to use unarchive instead of command. Even with remote_src: yes, unarchive was unable to manage this extract event.
+- name: Extract Archived Database Dump into Data Pump directory
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.command: "tar xzvf {{dmp_transfer_dir}}/{{dmp_archive}} -C {{ import_gd_stage_dir }}"
+
+  # TODO: review changed_when for: tar xzvf {{dmp_transfer_dir}}/{{dmp_archive}} -C {{ import_g
+- name: Remove Archived Database dump
+  become: true
+  become_user: app_admin
+  ansible.builtin.file:
+    path="{{dmp_transfer_dir}}"
+    state=absent

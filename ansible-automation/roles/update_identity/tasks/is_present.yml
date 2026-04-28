@@ -1,0 +1,126 @@
+---
+# tasks file for update_identity — present
+
+# Copy cacerts to /opt/identity
+- block:
+      - name: Copy cacerts to string
+
+        ansible.builtin.copy:
+          src: '{{cacerts_path}}'
+          dest: /opt/identity/
+          owner: app_admin
+          ansible.builtin.group: midtier
+          mode: 0644
+
+    # Copy identity.jks to /opt/identity
+      - name: Copy identity.jks to string
+
+        ansible.builtin.copy:
+          src: '{{identity_path}}'
+          dest: /opt/identity/
+          owner: app_admin
+          ansible.builtin.group: midtier
+          mode: 0644
+
+    # Copy cacerts to wlst cert location
+      - name: Copy cacerts to wlst cert location
+
+        ansible.builtin.copy:
+          src: '{{cacerts_path}}'
+          dest: /opt/Oracle/java/jre/lib/security/cacerts
+          owner: app_admin
+          ansible.builtin.group: midtier
+          mode: 0644
+        when: "'gc2weblogic' in group_names"
+        tags:
+          - java
+
+    # Copy apache_cas to /opt/identity
+      - name: Copy apache_cas to string
+
+        ansible.builtin.copy:
+          src: '{{apache_cas_path}}'
+          dest: /opt/identity/
+          owner: app_admin
+          ansible.builtin.group: midtier
+          mode: 0644
+        when: "'webservers' in group_names"
+
+    # Create wlwallet directory
+      - name: Create wlwallet on webservers
+
+        ansible.builtin.file:
+          dest: /opt/identity/wlwallet
+          state: directory
+          owner: root
+          ansible.builtin.group: midtier
+        when: "'webservers' in group_names"
+
+    # Copy cwallet to wlwallet directory
+      - name: Copy cwallet to wlwallet directory
+
+        ansible.builtin.copy:
+          src: '{{wlwallet_sso_path}}'
+          dest: /opt/identity/wlwallet
+          owner: root
+          ansible.builtin.group: midtier
+          mode: 0644
+        when: "'webservers' in group_names"
+
+    # Copy ewallet to wlwallet directory
+      - name: Copy ewallet to wlwallet directory
+
+        ansible.builtin.copy:
+          src: '{{wlwallet_p12_path}}'
+          dest: /opt/identity/wlwallet
+          owner: root
+          ansible.builtin.group: midtier
+          mode: 0644
+        when: "'webservers' in group_names"
+
+    # REL String webservers stuff
+    # Ideally we would not be duplicating code like this, but this will work for now
+
+    # Copy apache_cas to /opt/identity in REL
+      - name: Copy apache_cas to REL string
+
+        ansible.builtin.copy:
+          src: '{{apache_cas_path}}'
+          dest: /opt/identity/
+          owner: app_admin
+          ansible.builtin.group: midtier
+          mode: 0644
+        when: "'webserversrel' in group_names"
+
+    # Create wlwallet directory in REL
+      - name: Create wlwallet on REL webservers
+
+        ansible.builtin.file:
+          dest: /opt/identity/wlwallet
+          state: directory
+          owner: root
+          ansible.builtin.group: midtier
+        when: "'webserversrel' in group_names"
+
+    # Copy cwallet to wlwallet directory on REL
+      - name: Copy cwallet to wlwallet directory in REL
+
+        ansible.builtin.copy:
+          src: '{{wlwallet_sso_path}}'
+          dest: /opt/identity/wlwallet
+          owner: root
+          ansible.builtin.group: midtier
+          mode: 0644
+        when: "'webserversrel' in group_names"
+
+    # Copy ewallet to wlwallet directory in REL
+      - name: Copy ewallet to wlwallet directory in REL
+
+        ansible.builtin.copy:
+          src: '{{wlwallet_p12_path}}'
+          dest: /opt/identity/wlwallet
+          owner: root
+          ansible.builtin.group: midtier
+          mode: 0644
+        when: "'webserversrel' in group_names"
+  become: true

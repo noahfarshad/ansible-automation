@@ -1,0 +1,97 @@
+---
+# tasks file for configure_splunk_forwarder — present
+
+- block:
+    - set_fact:
+        splunk_forwarder_san_path: "/mnt/software/COTS/splunk_software_9.0.4"
+
+    - set_fact:
+        splunk_dir: "/opt/splunkforwarder"
+
+    - name: Create Temp Folder for Installer
+      ansible.builtin.tempfile: 
+        state: directory 
+        suffix: 'splunk'
+      register: install_loc 
+
+    #  - no_log: true
+    #    include_vars:
+    #      file: roles/nexus_setup_server/vars/nexus_vars.yml
+    #      name: nexus_vars
+      
+    #  - name: Query Nexus For Installer
+    #    register: artifact_list
+    #    delegate_to: localhost
+    #    custom_nexus_query:
+    #      nexus_base_url: "{{ nexus_vars.nexus_rest_api }}"
+    ##      nexus_repo_id: "{{ nexus_vars.raw_public_name }}"
+     #     nexus_search_repo: "{{ infra_ifc_version }}"
+     #     nexus_search_artifactid: "Splunk"
+
+    - name: Copy Installer to Temp Folder
+
+      ansible.builtin.copy:
+        src: "{{ splunk_forwarder_san_path }}/splunkforwarder-9.0.4-de405f4a7979-linux-2.6-x86_64.rpm"
+        dest: "{{ install_loc.path }}" 
+        
+    - name: Install Splunk Forwarder
+
+      ansible.builtin.yum: 
+        name: "{{ install_loc.path }}/splunkforwarder-9.0.4-de405f4a7979-linux-2.6-x86_64.rpm"
+        state: present
+        disable_gpg_check: yes
+
+    - name: Set Initial User Configuration
+
+      ansible.builtin.shell: "echo -e '[user_info]\nUSERNAME={{ users.splunk_admin.user }}\nPASSWORD={{ users.splunk_admin.password }}' > {{ splunk_dir }}/etc/system/local/user-seed.conf"
+
+
+      changed_when: false
+    - name: Start Splunk
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk start --accept-license --answer-yes --no-prompt;"
+
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk start --accept-license --answer-
+    - name: Enable Splunk Start on Boot
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk enable boot-start;"
+      ignore_errors: True
+
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk enable boot-start;
+    - name: Clear Temp Folder
+
+      ansible.builtin.file:
+        path: "{{ install_loc.path }}"
+        state: absent 
+
+    - name: Check Splunk Deployment service
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk list deploy-poll -auth {{ users.splunk_admin.user }}:{{ users.splunk_admin.password }}" 
+      register: deployment_server_check  
+           
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk list deploy-poll -auth {{ users.
+    - name: Set Deployment Server
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk set deploy-poll SYSLOG01:8089 -auth {{ users.splunk_admin.user }}:{{ users.splunk_admin.password }}"
+      when: "not 'SYSLOG01:8089' in deployment_server_check.stdout" 
+
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk set deploy-poll SYSLOG01:8089 -a
+    - name: Check Splunk forwarder service
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk list forward-server -auth {{ users.splunk_admin.user }}:{{ users.splunk_admin.password }}"
+      register: forwarder_server_check
+
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk list forward-server -auth {{ use
+    - name: Set Forwarding Server 
+
+      ansible.builtin.shell: "{{ splunk_dir }}/bin/splunk add forward-server SYSLOG01:9997 -auth {{ users.splunk_admin.user }}:{{ users.splunk_admin.password }}"
+      when: not 'SYSLOG01:9997' in forwarder_server_check.stdout_lines[1] and not 'SYSLOG01:9997' in forwarder_server_check.stdout_lines[3]
+      ignore_errors: true
+  become: true
+
+      # TODO: review changed_when for: {{ splunk_dir }}/bin/splunk add forward-server SYSLOG01:9997

@@ -1,0 +1,45 @@
+---
+# tasks file for start_traffic_manager — present
+
+- block:
+    - name: Check if legacy traffic manager is installed on machine
+
+      ansible.builtin.stat:
+        path: "{{legacy_traffic_manager}}"
+      register: legacy_traffic_manager_dir
+
+    - name: Check if newest traffic manager is installed on machine
+
+      ansible.builtin.stat:
+        path: "{{new_traffic_manager}}"
+      register: new_traffic_manager_dir
+
+    - name: Stop traffic manager
+
+      ansible.builtin.service:
+        name: zeus
+        state: stopped
+
+    - name: Copy legacy zeus service file back to init.d dir
+
+      ansible.builtin.copy:
+        src: "{{role_path}}/files/zeus_legacy"
+        dest: /etc/init.d/zeus
+        mode: 0755
+      when: traffic_mngr == "L" and new_traffic_manager_dir.stat.exists
+
+    - name: Copy zeus service file back to init.d dir
+
+      ansible.builtin.copy:
+        src: "{{role_path}}/files/zeus"
+        dest: /etc/init.d/zeus
+        mode: 0755
+      when: traffic_mngr == "N" and legacy_traffic_manager_dir.stat.exists
+
+    #Starts from init.d zeus file
+    - name: Start traffic manager
+
+      ansible.builtin.service:
+        name: zeus
+        state: restarted
+  become: true

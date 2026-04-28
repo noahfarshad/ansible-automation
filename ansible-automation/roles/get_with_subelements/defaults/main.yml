@@ -1,0 +1,3 @@
+nexus_drop_local: "{{ staging }}"
+subelement_name: "files"
+target_desc: "files"

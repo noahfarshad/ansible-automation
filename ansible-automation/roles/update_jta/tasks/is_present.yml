@@ -1,0 +1,13 @@
+---
+# tasks file for update_jta — present
+
+- name: Move script into place
+  become: true
+  become_user: app_admin
+  ansible.builtin.copy: src="{{update_script}}" dest="{{domain_home}}"
+
+- name: Connect to adminserver to update jta
+  become: true
+  become_user: app_admin
+  ansible.builtin.command: "{{gc2_wlst_path}} {{domain_home}}/{{update_script}}"
+  # TODO: review changed_when for: {{gc2_wlst_path}} {{domain_home}}/{{update_script}}

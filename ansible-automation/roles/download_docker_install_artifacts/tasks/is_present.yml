@@ -1,0 +1,17 @@
+---
+# tasks file for download_docker_install_artifacts — present
+
+# These tasks download the necessary artifacts for Docker
+- name: Create string staging directory if it does not exist.
+  ansible.builtin.file: 
+    path: "{{staging}}" 
+    state: directory 
+    mode: 0755
+
+- name: Download Third Party Dependencies
+  ansible.builtin.get_url:
+    url: "{{yum_repo}}/{{item}}"
+    dest: "{{staging}}"
+    timeout: 30
+  loop:
+    - "{{ docker_install_list }}"   

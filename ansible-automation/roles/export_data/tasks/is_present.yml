@@ -1,0 +1,58 @@
+---
+# tasks file for export_data — present
+
+- block:
+    - name: Exporting CP_Example_DATA schema....
+      become_user: ora_rmt
+
+      ansible.builtin.shell: "{{decompressed_directory}}example/db_backup_schema.sh {{oracle_db_example_system_password}} CP_Example_DATA"
+      tags:
+        - export_data
+        
+
+      # TODO: review changed_when for: {{decompressed_directory}}example/db_backup_schema.sh {{orac
+    - name: Exporting DAGR schema....
+      become_user: ora_rmt
+
+      ansible.builtin.shell: "{{decompressed_directory}}example/db_backup_schema.sh {{oracle_db_example_system_password}} DAGR"
+      tags: 
+        - export_data
+        
+
+      # TODO: review changed_when for: {{decompressed_directory}}example/db_backup_schema.sh {{orac
+    - name: Create tmp dmp file folder
+
+      ansible.builtin.file:
+        path: "{{tmp_dmp_directory}}"
+        owner: ora_rmt
+        ansible.builtin.group: ora_rmt
+        state: directory
+        mode: 0755
+      tags:
+        - move_dmp_files
+        - export_data
+        
+    - name: Move dmp files
+      become_user: ora_rmt
+
+      ansible.builtin.shell: "mv /u02/oradata/example/dpdump/*.dmp {{tmp_dmp_directory}}"
+      tags:
+        - move_dmp_files
+        - export_data
+
+
+      # TODO: mv: not idempotent — gate with creates: <dest> or removes: <src>
+      # TODO: review changed_when for: mv /u02/oradata/example/dpdump/*.dmp {{tmp_dmp_directory}}
+    - name: Generate Version File
+
+      become_user: ora_rmt
+      ansible.builtin.copy:
+        mode: 0755
+        dest: "{{ tmp_dmp_directory }}/export_version"
+        content: |
+          ---
+          export_version: {{version}}
+      tags:
+        - move_dmp_files
+        - export_data
+  become: true

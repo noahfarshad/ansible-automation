@@ -1,0 +1,65 @@
+---
+# This is the master playbook for NG GC2
+- hosts: vm3
+  roles:
+    - deployments/move_database_scripts
+    - deployments/deploy_database_scripts
+
+# Set the database parameters to the required values
+- include: configure_db_parameters.yml
+
+- hosts: fileserver
+  roles:
+    - deployments/deploy_fileserver
+
+#- hosts: webservers:gc2relwebservers
+#  roles:
+#    - deployments/deploy_gems_static_assets
+#    - deployments/deploy_apache_config
+#    - deployments/restart_apache
+
+- hosts: adminserver
+  roles:
+    - deployments/configure_relationship_service
+    - deployments/configure_asset_service
+    - deployments/configure_ldap_service
+    - deployments/build_deployed_artifacts
+    - deployments/deploy_gc2_artifacts
+    - common/restart_weblogic_service
+
+- hosts: hazelcast
+  roles:
+    - deployments/deploy_hazelcast_config
+    - common/restart_hazelcast_service
+
+# Uninstall/Install ecms
+- hosts: vm83
+  roles:
+    - uninstallers/microservices/ecms/uninstall_ecms
+    - installers/microservices/ecms/install_ecms
+
+- hosts: vm82
+  roles:
+    - installers/neo4j/load_classification_data
+
+# Uninstall/Install mdmw_collector
+- hosts: vm82
+  gather_facts: yes
+  roles:
+    - { role: uninstallers/microservices/mdmw_collector/uninstall_mdmw_collector, when: install_mdmw_collector }
+    - { role: installers/microservices/mdmw_collector/install_mdmw_collector, when: install_mdmw_collector }
+
+- hosts: managedservers:managedserversrelsfa
+  roles:
+    - deployments/add_cache_files
+    - common/restart_weblogic_service
+
+# Update oam_policy
+#- hosts: ldap
+#  roles:
+#    - installers/import_oam_policy
+
+# Configure weblogic mail session
+- hosts: adminserver
+  roles:
+      - common/configure_mail_session

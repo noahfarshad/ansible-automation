@@ -1,0 +1,9 @@
+---
+# tasks file for clear_staging — present
+
+# This role clears the staging directory of artifacts
+---
+- name: Clear staging directory
+  ansible.builtin.file: path='{{staging}}' state=absent
+  tags:
+    - clear_staging

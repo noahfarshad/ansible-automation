@@ -1,0 +1,39 @@
+---
+- block:
+    - name: Install versioned packages
+
+      ansible.builtin.yum:
+        name: "{{ docker_present_packages }}"
+        state: present
+        allow_downgrade: yes
+
+    - name: Install latest packages
+
+      ansible.builtin.yum:
+        name: "{{ docker_latest_packages }}"
+        state: "{{ docker_latest_state }}"
+
+    - name: Create the Docker directory if necessary
+
+      ansible.builtin.file:
+        path: "{{ docker_daemon_target_dir }}"
+        state: directory
+        owner: root
+        ansible.builtin.group: root
+        mode: 0755
+
+    - name: Deploy the daemon.json template
+
+      ansible.builtin.template:
+        src: "{{ docker_daemon_template_name }}"
+        dest: "{{ docker_daemon_target_dir }}/{{ docker_daemon_target_filename }}"
+        owner: root
+        ansible.builtin.group: root
+        mode: 0644
+
+    - name: Enable Docker service
+
+      ansible.builtin.systemd:
+        name: docker
+        enabled: yes
+  become: true

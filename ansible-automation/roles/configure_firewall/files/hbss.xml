@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>HBSS</short>
+  <description>This allows for the HBSS ePO server to connect to this system for HBSS management requirements.  HBSS is required per the DISA STIG.</description>
+  <port protocol="tcp" port="8081"/>
+  <port protocol="tcp" port="591"/>
+  <port protocol="udp" port="8082"/>
+</service>

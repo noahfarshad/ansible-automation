@@ -1,0 +1,24 @@
+---
+# tasks file for install_flyway — present
+
+#This task is to deploy Oracle Weblogic 10.3.6 patch
+
+#Download the artifacts from Nexus
+- name: Download Regular Artifacts
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}&g={{example_group}}&a={{item.1}}&v={{version}}&e={{item.0.ext}}&c={{item.0.classifier}}
+    dest: "{{ dest_dir }}"
+  with_subelements:
+    - flyway
+    - files
+
+- name: Unarchive flyway .tar.gz
+  become: true
+  ansible.builtin.shell: "tar -zxf {{ dest_dir }}{{item.1}}-{{version}}-{{item.0.classifier}}.{{item.0.ext}}"
+  with_subelements:
+    - flyway
+    - files
+
+  # TODO: review changed_when for: tar -zxf {{ dest_dir }}{{item.1}}-{{version}}-{{item.0.class

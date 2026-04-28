@@ -1,0 +1,19 @@
+---
+# tasks file for install_winscp
+# - name: Uninstall WinSCP 
+#   ansible.windows.win_package:
+#     path: "{{winscp_install_loc}}\\unins000.exe"
+#     arguments: /SILENT /NORESTART
+#     state: absent
+
+- name: Install WinSCP from a network share specifying the credentials
+  ansible.windows.win_package:
+    path: "{{artifact_staging}}{{winscp}}"
+    arguments: /SILENT
+    state: present
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

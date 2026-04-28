@@ -1,0 +1,12 @@
+dn: cn={{plugin_name}},cn=plugin,cn=subconfigsubentry
+orclpluginname: {{plugin_name}}-{{version}}.jar
+orclpluginenable: 1
+orclpluginkind: java
+objectclass: orclPluginConfig
+objectclass: top
+orclpluginisreplace: 0
+orclpluginldapoperation: ldapadd
+orclplugintype: operational
+orclplugintiming: post
+cn: {{plugin_name}}-{{version}}.jar
+cn: {{plugin_name}}

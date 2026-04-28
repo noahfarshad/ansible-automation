@@ -1,0 +1,22 @@
+---
+- name: Create the dagr images directory if missing
+  become: true
+  ansible.builtin.file:
+    path: "{{images_dir}}"
+    state: directory
+    mode: 0750
+    
+- name: Copy the User Presence image tar files to target
+  become: true
+  ansible.builtin.copy:
+    src: "{{staging}}/{{item.name | regex_replace('/','_')}}_{{item.tag}}.tar"
+    dest: "{{images_dir}}"
+  loop:
+    - "{{microservice_images}}"
+    
+- name: Load images into local docker repo
+  become: true
+  ansible.builtin.shell: "docker load -i {{images_dir}}/{{item.name | regex_replace('/','_')}}_{{item.tag}}.tar"
+  loop:
+    - "{{microservice_images}}"  
+  # TODO: review changed_when for: docker load -i {{images_dir}}/{{item.name | regex_replace('/

@@ -1,0 +1,9 @@
+---
+# default log to read in
+target_log: '/u01/domains/wl_domain/servers/app_ms6/logs/app_ms6.out'
+
+# default output log
+output_log: '/tmp/output_log.log'
+
+# default input log owner
+log_owner: 'app_admin'

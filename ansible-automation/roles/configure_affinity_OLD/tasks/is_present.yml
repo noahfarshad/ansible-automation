@@ -1,0 +1,139 @@
+---
+# task file for configure_affinity/tasks/is_present.yml
+#affinity groups
+- block:
+    - name: Set Variables
+      ansible.builtin.set_fact:
+        context: "{% if string_name is defined %}{{ string_name | upper }}{% else %}INFRA{% endif %}"
+        vm_group_list: []
+        host_group_list: []
+
+    - name: Get All Affinity VM Groups Applicable to Play Hosts
+      ansible.builtin.set_fact:
+        vm_group_list: "
+          {%- set applicable_group_list = vm_group_list -%}
+          {%- for member in item['members'] -%}
+            {%- set member_fqdn = [member, domain] | join('.') -%}
+            {%- if member_fqdn in ansible_play_hosts -%}
+              {%- do applicable_group_list.append(item) -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ applicable_group_list }}
+      "
+      loop: "{{ affinity['groups'] }}"
+      when:
+      - item['members'] | length > 0
+      - item['type'] == 'VM Group'
+
+    - name: Convert Groups List to Group Set
+      ansible.builtin.set_fact:
+        vm_group_list: "{{ vm_group_list | unique | list }}"
+
+    - name: Create Affinity VM Groups
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "{{ [context | replace('_', '-') | upper, item.name | replace(' ', '-') | lower, item.type | replace (' ', '-') | lower] | join('_') }}"
+        vms: "{{ item.members | map('regex_replace', '$', '.' + domain) | list }}"
+        state: present
+      loop: "{{ vm_group_list }}"
+      when:
+      - vm_group_list | length > 0 
+      delegate_to: localhost
+      ignore_errors: True
+
+    - name: Get All Affinity Host Groups
+      ansible.builtin.set_fact:
+        host_group_list: "{{ host_group_list + [item] }}"
+      loop: "{{ affinity['groups'] }}"
+      when:
+      - item['type'] == 'Host Group'
+
+    - name: Create Affinity Host Groups
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account  }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "{{ [context | replace('_', '-') | upper, item.name | replace(' ', '-') | lower, item.type | replace (' ', '-') | lower] | join('_') }}"
+        hosts: "{{ item.members | map('regex_replace', '$', '.' + domain) | list }}"
+        state: present
+      loop: "{{ host_group_list }}"
+      when:
+      - host_group_list | length > 0
+      delegate_to: localhost
+      ignore_errors: True
+
+    #affinity rules
+
+    - name: Set Variables
+      ansible.builtin.set_fact:
+        context: "{% if string_name is defined %}{{ string_name | upper }}{% else %}INFRA{% endif %}"
+        rules_list: []
+
+    - name: Get All Affinity Rules Applicable to Play Hosts
+      ansible.builtin.set_fact:
+        rules_list: "
+          {%- set applicable_rules_list = rules_list -%}
+          {%- for member in item['members'] -%}
+            {%- set member_fqdn = [member, domain] | join('.') -%}
+            {%- if member_fqdn in ansible_play_hosts -%}
+              {%- do applicable_rules_list.append(item) -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {{ applicable_rules_list }}
+        "
+      loop: "{{ affinity['rules'] }}"
+      when:
+      - item['members'] | length > 0 
+
+    - name: Convert Rules List to Rules Set
+      ansible.builtin.set_fact:
+        rules_list: "{{ rules_list | unique | list }}"
+        
+    - name: Create VM-to-VM Affinity Rules
+      vmware_vm_vm_drs_rule:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{  vsphere_account}}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        vms: "{{ item['members'] | map('regex_replace', '$', '.' + domain) | list }}"
+        affinity_rule: "{{ item['affinity'] }}"
+        drs_rule_name: "{{ [context | replace('_', '-') | upper, item.name | replace(' ', '-') | lower, 'affinity' if item.affinity else 'anti-affinity'] | join('_') }}"
+        enabled: True
+        mandatory: True
+        state: present
+      delegate_to: localhost
+      loop: "{{ rules_list }}"
+      when:
+      - rules_list | length > 0
+      - item['type'] == 'Separate Virtual Machines'
+      failed_when: False
+
+    - name: Create VM-to-Host Affinity Rules
+      vmware_vm_host_drs_rule:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{  vsphere_account}}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        vm_group_name: "{{ item['host_rules']['vm_group'] }}"
+        host_group_name: "{{ item['host_rules']['host_group'] }}"
+        affinity_rule: "{{ item['affinity'] }}"
+        drs_rule_name: "{{ [context | replace('_', '-') | upper, item.name | replace(' ', '-') | lower, 'affinity' if item.affinity else 'anti-affinity'] | join('_') }}"
+        enabled: True
+        mandatory: True
+        state: present
+      delegate_to: localhost
+      loop: "{{ affinity['rules'] }}"
+      when:
+      - item['type'] == 'Virtual Machines to Hosts'
+      failed_when: False
+  become: true

@@ -1,0 +1,4 @@
+---
+# defaults file for install_ipa_rhel6
+#
+# ansible_hostname is built-in; this role takes no user-facing variables.

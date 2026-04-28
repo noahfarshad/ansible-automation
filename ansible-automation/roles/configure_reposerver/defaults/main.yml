@@ -1,0 +1,11 @@
+---
+# defaults file for configure_reposerver
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# appstream_repo: ""
+# baseline__local_repos: ""
+# baseline_local_repos: ""
+# baseos_repo: ""
+# delta_repos: ""

@@ -1,0 +1,3 @@
+---
+# defaults file for join_domain
+vsphere_vm_vcenter_hostname: vcenter_hostname

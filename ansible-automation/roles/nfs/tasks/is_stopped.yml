@@ -1,0 +1,11 @@
+- name: Stop RPCBind
+  become: true
+  ansible.builtin.systemd:
+    name: rpcbind
+    state: stopped
+
+- name: Stop NFS
+  become: true
+  ansible.builtin.service:
+    name: nfs
+    state: stopped

@@ -1,0 +1,8 @@
+---
+
+#  This role starts the Node Managers for each of the Managed Servers.
+
+
+- name: "Start the Node Manager instance"
+  become: true
+  command: "/etc/init.d/{{gc2_nodemanager_service}} start"

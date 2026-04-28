@@ -1,0 +1,12 @@
+---
+# tasks file for remove_consul_from_dns — present
+
+- block:
+    - name: Update resolve.conf to revert entries to nameservers and search domains
+      ansible.builtin.template:
+        src: templates/resolv.conf.j2
+        dest: /etc/resolv.conf
+        owner: root
+        ansible.builtin.group: root
+        mode: 0644
+  become: true

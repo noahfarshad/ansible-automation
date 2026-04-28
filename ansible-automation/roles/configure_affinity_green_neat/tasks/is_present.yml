@@ -1,0 +1,49 @@
+---
+# task file for configure_affinity/tasks/is_present.yml
+# This roles requires all the vGPU machines to exist, it will fail it they don't
+
+# Create affinity host groups for vmservers 
+- block:
+    - name: Create Affinity Host Group 1
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account  }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "vmserver_group1_graphics_host_group"
+        hosts: "{{ host_group_1 }}"
+        state: present
+      delegate_to: localhost
+
+    # NEAT Affinity groups and rules
+    - name: Create GREEN NEAT Affinity VM Groups
+      vmware_drs_group:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        datacenter_name: "{{ vsphere_datacenter }}"
+        group_name: "GREEN_neat_graphics_vm_group"
+        vms: "{{ groups['neat'] }}"
+        state: present
+      delegate_to: localhost
+
+    - name: Create VM-to-Host Affinity Rules for NEAT
+      community.vmware.vmware_vm_host_drs_rule:
+        validate_certs: no
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{  vsphere_account}}"
+        password: "{{ vcenter_password }}"
+        cluster_name: "{{ vsphere_cluster }}"
+        vm_group_name: "GREEN_neat_graphics_vm_group"
+        host_group_name: "vmserver_group1_graphics_host_group"
+        affinity_rule: true
+        drs_rule_name: "GREEN-neat_affinity_rule"
+        enabled: True
+        mandatory: True
+        state: present
+      delegate_to: localhost
+  become: true

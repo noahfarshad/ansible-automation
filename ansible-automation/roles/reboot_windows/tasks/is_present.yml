@@ -1,0 +1,13 @@
+---
+# tasks file for reboot_windows
+- block:
+    - name: Reboot Windows VM's
+      community.vmware.vmware_guest_powerstate:
+        ansible.builtin.hostname: "{{vcenter_hostname}}"
+        username: "{{vsphere_account}}"
+        password: "{{vsphere_password}}"
+        validate_certs: no
+        name: "{{inventory_hostname}}"
+        state: reboot-guest
+      delegate_to: localhost
+  become: true

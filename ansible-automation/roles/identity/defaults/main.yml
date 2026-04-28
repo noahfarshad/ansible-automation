@@ -1,0 +1,24 @@
+identity_directory_target:
+  path: /opt/identity
+  mode: '3755'
+  owner: root
+  group: midtier
+
+identity_files_list:
+  - src: cacerts
+    mode: '0644'
+    owner: app_admin
+    group: midtier
+  - src: client.cer
+    mode: '0600'
+    owner: app_admin
+    group: midtier
+  - src: identity.jks
+    mode: '0644'
+    owner: app_admin
+    group: midtier
+  - src: key_dump
+    mode: '0600'
+    owner: app_admin
+    group: midtier
+  

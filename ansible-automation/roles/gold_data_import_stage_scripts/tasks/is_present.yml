@@ -1,0 +1,17 @@
+---
+# tasks file for gold_data_import_stage_scripts — present
+
+#Not removing {{staging}} first, to avoid potentially wiping previously staged content.
+- name: Create Staging Directory
+  ansible.builtin.file:
+    path="{{staging}}"
+    state=directory
+    mode=0755
+
+- name: Create dump Directory
+  ansible.builtin.file:
+    path="{{staging}}/dpdump"
+    state=directory
+    mode=0755
+
+- ansible.builtin.include_tasks: dl_scripts.yml

@@ -1,0 +1,91 @@
+---
+# tasks file for configure_av_client_rhel
+- block:
+    - name: Check Installation Status
+
+      ansible.builtin.stat:
+        path: /usr/local/bin/uvscan
+      register: mcafee_status
+
+    - name: Install McAfee
+      when: not mcafee_status.stat.exists
+      block:  
+      - name: Create Temporary Directory 
+
+        ansible.builtin.tempfile:
+          state: directory
+          suffix: 'mcafee_uvscan'
+        register: install_loc
+     
+      - no_log: true
+        ansible.builtin.include_vars:
+          ansible.builtin.file: roles/nexus_setup_server/vars/nexus_vars.yml
+          name: nexus_vars
+      
+      - name: Query Nexus For Installer
+        register: artifact_list
+        delegate_to: localhost
+        custom_nexus_query:
+          nexus_base_url: "{{ nexus_vars.nexus_rest_api }}"
+          nexus_repo_id: "{{ nexus_vars.raw_public_name }}"
+          nexus_search_repo: "{{ infra_ifc_version }}"
+          nexus_search_artifactid: "McAfee/McAfee_UVScan"
+          
+      - name: Copy Artifact To Host
+        vars:
+          artifact: "{{ artifact_list.status.query_results[0] }}"
+        block:
+        - name: Copy Installer Zip
+          ansible.builtin.get_url:
+            validate_certs: false
+            url: "{{ artifact.downloadUrl }}"
+            dest: "{{ install_loc.path }}/{{ artifact.filename}}"
+
+        - name: Unzip Installer 
+          ansible.builtin.unarchive:
+            src: "{{ install_loc.path }}/{{ artifact.filename}}"
+            dest: "{{ install_loc.path }}"   
+            remote_src: yes
+     
+      - name: Unpack Installer 
+        ansible.builtin.unarchive:
+          src: "{{ install_loc.path }}/McAfee_UVScan/CM-238095-vscl-l64-612-l.tar.gz"
+          dest: "{{ install_loc.path }}"
+      
+      - name: Unpack Binaries    
+        ansible.builtin.unarchive:
+          src: "{{ install_loc.path }}/McAfee_UVScan/CM-242008-avvdat-9378.tar"
+          dest: "{{ install_loc.path }}"
+      
+      - name: Locate Binaries 
+        ansible.builtin.find:
+          paths: "{{ install_loc.path }}"
+          patterns: 'avv*'
+        register: binary_list
+      
+      - name: Run Installer Script
+        ansible.builtin.shell: ./install-uvscan -y
+        args:
+          chdir: "{{ install_loc.path }}"
+        register: install_dump
+
+      - name: Copy Binaries 
+        ansible.builtin.copy:
+          src: "{{ item }}"
+          dest: /usr/local/uvscan/
+          remote_src: yes
+        loop: "{{ binary_list.files | map(attribute='path') | list  }}"
+
+      - name: Check Installation Status
+        ansible.builtin.stat:
+          path: /usr/local/bin/uvscan
+        register: mcafee_status_post
+        failed_when: not mcafee_status_post.stat.exists
+      always:
+      - name: Clear Temp Folder
+
+        ansible.builtin.file:
+          path: "{{ install_loc.path }}"
+          state: absent
+  become: true
+        # TODO: review changed_when for: ./install-uvscan -y

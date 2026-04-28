@@ -1,0 +1,40 @@
+---
+# task file for configure_win_disk/tasks/is_present.yml
+- name: "Partition Windows Disks"
+  connection: ssh
+  community.windows.win_partition:
+    drive_letter: "{{ drive_letter }}"
+    partition_size: -1
+    partition_number: "{{ partition_number }}"
+    disk_number: 0
+  delegate_to: "{{ hostname }}"
+  ignore_errors: true 
+
+- name: Initialize a disk
+  community.windows.win_initialize_disk:
+    disk_number: "{{ item.disk_number }}"
+  loop: "{{ disks }}"
+  ignore_errors: true 
+  when: disks is defined
+
+- name: "Partition additional Windows Disks"
+  connection: ssh
+  community.windows.win_partition:
+    drive_letter: "{{ item.drive_letter }}"
+    partition_size: -1
+    disk_number: "{{ item.disk_number }}"
+  delegate_to: "{{ hostname }}"
+  ignore_errors: true
+  loop: "{{ disks }}"
+  when: disks is defined
+
+- name: Full format the newly created partition as NTFS and label it
+  community.windows.win_format:
+    drive_letter: "{{ item.drive_letter }}"
+    file_system: NTFS
+    new_label: "{{ item.new_label }}"
+    full: no
+  delegate_to: "{{ hostname }}"
+  ignore_errors: true
+  loop: "{{ disks }}"  
+  when: disks is defined

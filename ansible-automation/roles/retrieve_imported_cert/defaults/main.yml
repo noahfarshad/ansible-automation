@@ -1,0 +1,12 @@
+---
+string_cert_alias: '{{ sub_domain }}.{{ system }}.{{ domain }}'
+shared_cert_store: "{{ role_path }}/../shared_files"
+generated_cert_store: '{{ staging }}/certs'
+identity_store: "{{ shared_cert_store }}/identity.jks"
+regexp_expression: "{{ string_cert_alias }}_.*b64"
+files_dir: '{{ role_path }}/files'
+pem_name: '{{ string_cert_alias }}.pem'
+storepass: '{{ string_identity_storepass }}'
+keypass: '{{ string_identity_keypass }}'
+
+cert_extraction_script: '{{ role_path }}/files/extractKeyAndCert.sh {{ string_cert_alias }} {{ storepass }} {{ keypass }} {{ generated_cert_store }} {{ identity_store }}'

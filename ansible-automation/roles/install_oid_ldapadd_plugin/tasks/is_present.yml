@@ -1,0 +1,112 @@
+---
+# tasks file for install_oid_ldapadd_plugin — present
+
+# To maintain idempotence first check to see if the plugin is already installed
+- name: "search ldap for plugin"
+
+  become_user: app_admin
+  ansible.builtin.shell: "{{ldap_bin}}/ldapsearch -h localhost -p 3060 -D cn={{ldap_user}} -w {{ldap_password}} -L \"(cn={{plugin_name}})\""
+  register: plugin_status
+  environment:
+    ORACLE_HOME: "{{idm_oracle_home}}"
+
+# If this is a replace rather than an add, delete the existing plugin from ldap and plugins folder
+  # TODO: review changed_when for: {{ldap_bin}}/ldapsearch -h localhost -p 3060 -D cn={{ldap_us
+- name: "remove plugin from ldap"
+
+  become_user: app_admin
+  ansible.builtin.command: "{{ldap_bin}}/ldapdelete -h localhost -p 3060 -D cn={{ldap_user}} -w {{ldap_password}} cn=NewUserPlugin,cn=plugin,cn=subconfigsubentry"
+  when:
+    - "plugin_name in plugin_status.stdout"
+    - "force_replace == 'true'"
+  environment:
+    ORACLE_HOME: "{{idm_oracle_home}}"
+
+##### NOT ANSIBLE 1.9 COMPATIBLE
+#- name: "locate plugins already installed"
+#  become: true
+#  become_user: app_admin
+#  find:
+#    paths: "{{oid_plugins_directory}}"
+#    patterns: "{{plugin_name}}*"
+#  register: plugins_present
+#  when:
+#    - "force_replace == 'true'"
+#
+#- name: "remove plugin from plugins directory"
+#  become: true
+#  become_user: app_admin
+#  file:
+#    path: "{{item['path']}}"
+#    state: absent
+#  with_items: "{{ plugins_present['files'] }}"
+#  when:
+#    - "force_replace == 'true'"
+
+##### ANSIBLE 1.9 COMPATIBLE
+  # TODO: review changed_when for: {{ldap_bin}}/ldapdelete -h localhost -p 3060 -D cn={{ldap_us
+- name: "remove plugin from plugins directory"
+
+  become_user: app_admin
+  ansible.builtin.file:
+    path: "{{oid_plugins_directory}}{{plugin_name}}-{{version}}.jar"
+    state: absent
+  when:
+    - "force_replace == 'true'"
+
+# Copy plugin to plugins directory
+- name: "copy plugin to plugins directory"
+
+  become_user: app_admin
+  ansible.builtin.copy:
+    src: "{{staging}}/{{plugin_name}}-{{version}}.jar"
+    dest: "{{oid_plugins_directory}}"
+  when:
+    - "plugin_status.stdout == '' or force_replace == 'true'"
+
+# Register plugin to ldap
+- name: "template ldif registation file"
+
+  become_user: app_admin
+  ansible.builtin.template:
+    src: "plugin.ldif"
+    dest: "/tmp/plugin.ldif"
+  when:
+    - "plugin_status.stdout == '' or force_replace == 'true'"
+
+- name: "register plugin in OID"
+
+  become_user: app_admin
+  ansible.builtin.command: "{{ldap_bin}}/ldapadd -h localhost -p 3060 -D cn={{ldap_user}} -w {{ldap_password}} -f /tmp/plugin.ldif"
+  when:
+    - "plugin_status.stdout == '' or force_replace == 'true'"
+  environment:
+    ORACLE_HOME: "{{idm_oracle_home}}"
+
+# Restart oid
+  # TODO: review changed_when for: {{ldap_bin}}/ldapadd -h localhost -p 3060 -D cn={{ldap_user}
+- name: "stop OID"
+
+  ansible.builtin.service:
+    name: "{{oid_service}}"
+    state: stopped
+  when:
+    - "plugin_status.stdout == '' or force_replace == 'true'"
+
+- name: "start OID"
+
+  ansible.builtin.service:
+    name: "{{oid_service}}"
+    state: started
+  when:
+    - "plugin_status.stdout == '' or force_replace == 'true'"
+
+# Clean up
+- name: "remove ldif registration file:"
+
+  become_user: app_admin
+  ansible.builtin.file:
+    path: "/tmp/plugin.ldif"
+    state: absent
+  when:
+    - "plugin_status.stdout == '' or force_replace == 'true'"

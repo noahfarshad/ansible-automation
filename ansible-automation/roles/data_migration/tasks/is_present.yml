@@ -1,0 +1,191 @@
+---
+# tasks file for data_migration
+
+- name: Obtain Kerberos ticket with IPA
+
+  ansible.builtin.shell: |
+    echo {{ipa_admin_password}} | kinit admin
+
+
+  changed_when: false
+- name: Enable migration
+
+  ansible.builtin.shell: |
+    ipa config-mod --enable-migration=TRUE
+  ignore_errors: true
+
+
+  # TODO: review changed_when for: ipa config-mod --enable-migration=TRUE
+- name: Stage LDAP credential file
+
+  ansible.builtin.shell: |
+    echo -n {{misc_admin_password}} > /tmp/.ldappw
+
+
+  changed_when: false
+- name: Export people from misc-mgmt
+
+  ansible.builtin.shell: |
+    rm -rf /tmp/*.ldif
+    ldapsearch -h misc-mgmt-t2 -y /tmp/.ldappw -W -D "cn=Directory Manager" -b "ou=people,dc=afwa,dc=af,dc=mil" >> /tmp/people.ldif  
+
+
+  # TODO: review changed_when for: rm -rf /tmp/*.ldif
+- name: Remove Solaris Attributes from people
+
+  ansible.builtin.shell: |
+    gawk -i inplace '!/SolarisAttrKeyValue/' /tmp/people.ldif
+    gawk -i inplace '!/objectClass: solaris/' /tmp/people.ldif
+    gawk -i inplace '!/objectClass: SolarisUserAttr/' /tmp/people.ldif
+    gawk -i inplace '!/oobjectClass: Solarisuserattr/' /tmp/people.ldif
+    gawk -i inplace '!/objectClass: Solarisuserattr/' /tmp/people.ldif
+    gawk -i inplace '!/seeAlso:/' /tmp/people.ldif
+  
+
+  # TODO: review changed_when for: gawk -i inplace '!/SolarisAttrKeyValue/' /tmp/people.ldif
+- name: Add IPA attributes to people
+
+  ansible.builtin.shell: |   
+    sed -i 's/ou=People,dc=afwa,dc=af,dc=mil/cn=users,cn=accounts,dc=afwa,dc=af,dc=mil/g' /tmp/people.ldif
+    sed -i 's/ou=people,dc=afwa,dc=af,dc=mil/cn=users,cn=accounts,dc=afwa,dc=af,dc=mil/g' /tmp/people.ldif
+    sed -i 's/ou=people, dc=afwa,dc=af,dc=mil/cn=users,cn=accounts,dc=afwa,dc=af,dc=mil/g' /tmp/people.ldif
+    sed -i 's/OU=People,dc=afwa,dc=af,dc=mil/cn=users,cn=accounts,dc=afwa,dc=af,dc=mil/g' /tmp/people.ldif
+    perl -i -ne 'next if /objectClass: krbprincipalaux/;s+objectClass: posixaccount+objectClass: posixaccount\nobjectClass: krbprincipalaux+; print' /tmp/people.ldif
+    perl -i -ne 'next if /objectClass: krbticketpolicyaux/;s+objectClass: krbprincipalaux+objectClass: krbprincipalaux\nobjectClass: krbticketpolicyaux+; print' /tmp/people.ldif
+    perl -i -ne 'next if /objectClass: ipaobject/;s+objectClass: krbticketpolicyaux+objectClass: krbticketpolicyaux\nobjectClass: ipaobject+; print' /tmp/people.ldif
+    perl -i -ne 'next if /objectClass: ipasshuser/;s+objectClass: ipaobject+objectClass: ipaobject\nobjectClass: ipasshuser+; print' /tmp/people.ldif
+    perl -i -ne 'next if /objectClass: ipaSshGroupOfPubKeys/;s+objectClass: ipasshuser+objectClass: ipasshuser\nobjectClass: ipaSshGroupOfPubKeys+; print' /tmp/people.ldif
+    gawk -i inplace '1; gsub(/uid: /,"krbPrincipalName: ")' /tmp/people.ldif
+    sed -i '/krbPrincipalName:/ s/$/@EXAMPLE.COACH/' /tmp/people.ldif
+    
+
+
+  # TODO: review changed_when for: sed -i 's/ou=People,dc=afwa,dc=af,dc=mil/cn=users,cn=account
+- name: Migrate people into IPA
+
+  ansible.builtin.shell: |
+    ldapadd -c -x -D "cn=Directory Manager" -w {{ipa_admin_password}} -H ldap://idm01.example.coach:389 -f /tmp/people.ldif
+  ignore_errors: true
+
+
+  # TODO: review changed_when for: ldapadd -c -x -D "cn=Directory Manager" -w {{ipa_admin_passw
+- name: Export netgroups from misc-mgmt
+
+  ansible.builtin.shell: |
+    ldapsearch -h misc-mgmt-t2 -y /tmp/.ldappw -W -D "cn=Directory Manager" -b "ou=netgroup,dc=afwa,dc=af,dc=mil" >> /tmp/netgroup.ldif   
+
+
+  changed_when: false
+- name: Replace Solaris directory nest, and add IPA netgroup structure
+
+  ansible.builtin.shell: |
+    sed -i 's/ou=netgroup,dc=afwa,dc=af,dc=mil/cn=ng,cn=alt,dc=afwa,dc=af,dc=mil/g' /tmp/netgroup.ldif
+    sed -i 's/ou=netgroup, dc=afwa,dc=af,dc=mil/cn=ng,cn=alt,dc=afwa,dc=af,dc=mil/g' /tmp/netgroup.ldif
+    sed -i 's/OU=Netgroup,dc=afwa,dc=af,dc=mil/cn=ng,cn=alt,dc=afwa,dc=af,dc=mil/g' /tmp/netgroup.ldif
+    sed -i 's/ou=Netgroup,dc=afwa,dc=af,dc=mil/cn=ng,cn=alt,dc=afwa,dc=af,dc=mil/g' /tmp/netgroup.ldif
+
+
+  # TODO: review changed_when for: sed -i 's/ou=netgroup,dc=afwa,dc=af,dc=mil/cn=ng,cn=alt,dc=a
+- name: Replace Solaris attributes in netgroups with IPA attributes
+
+  ansible.builtin.shell: |
+    perl -i -ne 'next if /objectClass: ipaobject/;s+objectClass: nisNetgroup+objectClass: nisNetgroup\nobjectClass: ipaobject+; print' /tmp/netgroup.ldif
+    perl -i -ne 'next if /objectClass: ipaassociation/;s+objectClass: ipaobject+objectClass: ipaobject\nobjectClass: ipaassociation+; print' /tmp/netgroup.ldif
+    perl -i -ne 'next if /objectClass: ipanisnetgroup/;s+objectClass: ipaassociation+objectClass: ipaassociation\nobjectClass: ipanisnetgroup+; print' /tmp/netgroup.ldif
+
+
+  # TODO: review changed_when for: perl -i -ne 'next if /objectClass: ipaobject/;s+objectClass:
+- name: Replace Solaris attributes in netgroups with IPA attributes stage 2
+
+  ansible.builtin.shell: |
+    sed -i '/^nisNetgroupTriple: (,\b/d' /tmp/netgroup.ldif
+    sed -i 's/nisNetgroupTriple: (-,/memberUser: uid=/g' /tmp/netgroup.ldif
+    sed -i 's/nisNetgroupTriple: (/memberHost: fqdn=/g' /tmp/netgroup.ldif
+    sed -i 's/,,)/,cn=computers,cn=accounts,dc=afwa,dc=af,dc=mil/g' /tmp/netgroup.ldif
+    sed -i 's/,)/,cn=users,cn=accounts,dc=afwa,dc=af,dc=mil/g' /tmp/netgroup.ldif
+
+
+  # TODO: review changed_when for: sed -i '/^nisNetgroupTriple: (,\b/d' /tmp/netgroup.ldif
+- name: Migrate netgroups into IPA
+
+  ansible.builtin.shell: |
+    ldapadd -c -x -D "cn=Directory Manager" -w {{ipa_admin_password}} -H ldap://idm01.example.coach:389 -f /tmp/netgroup.ldif
+  ignore_errors: true
+
+
+  # TODO: review changed_when for: ldapadd -c -x -D "cn=Directory Manager" -w {{ipa_admin_passw
+- name: Export groups from misc-mgmt
+
+  ansible.builtin.shell: |
+    ldapsearch -h misc-mgmt-t2 -y /tmp/.ldappw -W -D "cn=Directory Manager" -b "ou=group,dc=afwa,dc=af,dc=mil" >> /tmp/group.ldif
+
+
+  changed_when: false
+- name: Replace Solaris attributes in groups with IPA attributes
+
+  ansible.builtin.shell: |
+    sed -i 's/ou=group,dc=afwa,dc=af,dc=mil/cn=groups,cn=accounts,dc=afwa,dc=af,dc=mil/g' /tmp/group.ldif
+    sed -i 's/ou=group, dc=afwa,dc=af,dc=mil/cn=groups,cn=accounts,dc=afwa,dc=af,dc=mil/g' /tmp/group.ldif
+    perl -i -ne 'next if /objectClass: ipausergroup/;s+objectClass: posixGroup+objectClass: posixGroup\nobjectClass: ipausergroup+; print' /tmp/group.ldif
+    perl -i -ne 'next if /objectClass: ipaobject/;s+objectClass: ipausergroup+objectClass: ipausergroup\nobjectClass: ipaobject+; print' /tmp/group.ldif
+    sed -i 's/memberUid: /member: uid=/g' /tmp/group.ldif
+    sed -i '/member: uid=/ s/$/,cn=users,cn=accounts,dc=afwa,dc=af,dc=mil/' /tmp/group.ldif
+    
+
+  # TODO: review changed_when for: sed -i 's/ou=group,dc=afwa,dc=af,dc=mil/cn=groups,cn=account
+- name: Migrate groups into IPA
+
+  ansible.builtin.shell: |
+    ldapadd -c -x -D "cn=Directory Manager" -w {{ipa_admin_password}} -H ldap://idm01.example.coach:389 -f /tmp/group.ldif
+  ignore_errors: true
+
+
+  # TODO: review changed_when for: ldapadd -c -x -D "cn=Directory Manager" -w {{ipa_admin_passw
+- name: Purge retired accounts.... Finally!
+
+  ansible.builtin.shell: |
+    ipa config-mod --searchrecordslimit=1990;
+    ipa user-find | grep "User login: R" >> /tmp/retired.people;
+    sed -i 's/  User login: / /g' /tmp/retired.people;
+    tr -d '\n' < /tmp/retired.people >> /tmp/retired.people2;
+    sed -i 's/^\s*./ipa user-del /g' /tmp/retired.people2;
+    sed -i -ne 's/$/ --continue&/p' /tmp/retired.people2;
+    sh /tmp/retired.people2;
+    rm -rf /tmp/retired.*;
+  ignore_errors: true
+
+
+  # TODO: review changed_when for: ipa config-mod --searchrecordslimit=1990;
+- name: Migrate un_tads-cm, un_sems-cm to afwwebs group
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_tads-afwwebs | grep "User login" >> /tmp/afwwebs.out;
+    ipa user-find --in-netgroups un_sems-afwwebs | grep "User login" >> /tmp/afwwebs.out;
+    sort -u /tmp/afwwebs.out >> /tmp/afwwebs.clean;
+    sed -i 's/  User login: /,/g' /tmp/afwwebs.clean;
+    tr -d '\n' < /tmp/afwwebs.clean >> /tmp/afwwebs.clean2;
+    sed -i 's/^\s*./ipa group-add-member afwwebs --users={/g' /tmp/afwwebs.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/afwwebs.clean2;
+    sh /tmp/afwwebs.clean2;
+    rm -rf /tmp/afwwebs.*;
+  ignore_errors: true
+
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_tads-afwwebs | grep "User lo
+- name: Migrate un_tads-sysadmin into essadmin group
+
+  ansible.builtin.shell: |
+    ipa user-find --in-netgroups un_tads-sysadmin | grep "User login" >> /tmp/essadmin.out;
+    ipa user-find --in-netgroups un_tads-essadmin | grep "User login" >> /tmp/essadmin.out;
+    ipa user-find --in-netgroups un_sems-sysadmin | grep "User login" >> /tmp/essadmin.out;
+    ipa user-find --in-netgroups un_sems-essadmin | grep "User login" >> /tmp/essadmin.out;
+    sort -u /tmp/essadmin.out >> /tmp/essadmin.clean;
+    sed -i 's/  User login: /,/g' /tmp/essadmin.clean;
+    tr -d '\n' < /tmp/essadmin.clean >> /tmp/essadmin.clean2;
+    sed -i 's/^\s*./ipa group-add-member essadmin --users={/g' /tmp/essadmin.clean2;
+    sed -i -ne 's/$/}&/p' /tmp/essadmin.clean2;
+    sh /tmp/essadmin.clean2;
+    rm -rf /tmp/essadmin.*;
+  ignore_errors: true
+
+  # TODO: review changed_when for: ipa user-find --in-netgroups un_tads-sysadmin | grep "User l

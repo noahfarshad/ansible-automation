@@ -1,0 +1,20 @@
+---
+
+ldap_oid_directory: /opt/Oracle/Middleware/Oracle_IDM1/
+ldap_bin_directory: "{{ldap_oid_directory}}/bin"
+oid_ldap_user: cn=orcladmin,cn=users,dc=cie,dc=local
+user_base_dn: cn=Users,dc=cie,dc=local
+ldif_export_file: /tmp/oid_users.ldif
+
+group_base_dn: cn=groups,dc=cie,dc=local
+ldif_rhel_export_file: /tmp/oid_rhel_group.ldif
+
+ldap_fields: cn sn cpcitizenshipcountry facsimiletelephonenumber givenname mail dsntelephonenumber 
+            organization officesymbol dsnfacsimiletelephonenumber postaladdress telephonenumber 
+            cpservicerank cpserviceorganization cpcertassociationid
+
+user_roles:
+   - AllUsers
+   - ISPAN Application Administrator
+   - Focal Point Control
+   - Toggle Users

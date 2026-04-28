@@ -1,0 +1,3 @@
+tstamp: { stdout: "" }
+date_command_format: "date +%Y-%m-%d-%H:%M%z"
+vm_annotation_msg: "VM was deployed with {{ parameters.template }} on {{ tstamp.stdout }} by Ansible."

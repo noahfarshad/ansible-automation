@@ -1,0 +1,51 @@
+
+- block:
+    - name: Get IP -> network name associations
+      ansible.builtin.set_fact:
+        host_ip_nic_map: "{{ ansible_facts | get_nic_assoc(nic_assoc_dict) }}"
+      changed_when: False
+
+    - name: Assert management and internal nics are present for the VM
+      ansible.builtin.assert:
+        that:
+          - host_ip_nic_map.internal is defined and host_ip_nic_map.internal != None
+          - host_ip_nic_map.management is defined and host_ip_nic_map.management != None
+
+    - name: Assert external NIC is present for applicable VM's
+      ansible.builtin.assert:
+        that: host_ip_nic_map.external is defined and host_ip_nic_map.external != None
+      when: external_vm_nic_required == True
+
+    - name: Stop and disable firewalld service on applicable machines
+
+      ansible.builtin.systemd:
+        name: firewalld.service
+        state: stopped
+        enabled: no
+
+    - name: Verify iptables installation
+
+      ansible.builtin.systemd:
+        name: iptables.service
+
+    - name: Install iptables-services
+
+      ansible.builtin.yum:
+        name: iptables-services
+        state: "{{ iptables_services_rpm_version }}"
+
+    - name: Move vmbl1/trafficmanager iptables templates
+
+      ansible.builtin.template:
+        src: "{{ inventory_hostname }}{{ iptables_file_name_appender }}_template.iptables"
+        dest: "{{ iptables_file_target }}"
+        owner: root
+        ansible.builtin.group: root
+        mode: 0600
+
+    - name: Enable iptables service
+
+      ansible.builtin.systemd:
+        name: iptables.service
+        enabled: yes
+  become: true

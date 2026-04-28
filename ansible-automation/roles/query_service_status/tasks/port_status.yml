@@ -1,0 +1,24 @@
+---
+- name: "Checking if {{service_name}} is responding on port {{port_number}}"
+  ansible.builtin.wait_for:
+    host: "{{inventory_hostname}}"
+    port: "{{port_number}}"
+    timeout: 5
+    state: started
+    # msg Requires Ansible 2.4 or higher, uncomment the line below after upgrade to enable
+    #msg: "{{service_name}} port {{port_number}} has not yet started"
+  when: ansible_hostname == inventory_hostname
+  register: serviceportstarted
+  ignore_errors: true
+
+- name: "Status"
+  ansible.builtin.debug:
+    msg: "{{serviceportstarted.msg}}"
+  when: serviceportstarted.failed is defined
+
+- name: "Halt if {{service_name}} port not responding"
+  ansible.builtin.fail:
+    msg: "FAILED: {{service_name}} port not responding on {{ansible_hostname}}. {{serviceportstarted.msg}}"
+  when: serviceportstarted.failed is defined
+  tags:
+    - forcefail

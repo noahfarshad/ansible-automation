@@ -1,0 +1,151 @@
+---
+
+#
+#  Inspects that the database parameter values of interest match the specified list of parameters 
+#  and parameter values.
+#
+#    Will validate the list of parameters to be changed and will terminate with no changes
+#       if a single parameter is invalid
+#    Will identify if no changes were made (all parameters matched)
+#    Will identify what parameters differ
+#
+
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+- ansible.builtin.include_tasks: check_db_status.yml
+- name: "1.0 Remove the sqlplus spool file"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.file: 
+    path: /tmp/DBA_DB_PARAM_session_output.lst
+    state: absent  
+
+
+#
+# Clear out the database table containing the list of database
+# parameters that were requested to be changed during the last run
+#
+- name: "1.0 Clear the database table of parameters and values"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: | 
+    $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+    set serveroutput on;
+    exec SYS.DBA_DB_PARAM_PKG.clear;
+    exit; 
+    EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+
+#
+#  Read in the list of new parameter changes and write them
+#  to the database table.
+
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF
+- name: "1.0 Populate the database table with the list of parameters"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: | 
+    $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+    set serveroutput on;
+    exec SYS.DBA_DB_PARAM_PKG.set('{{ item }}');
+    exit; 
+    EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  loop: "{{db_parameters}}"
+
+#
+#  Iterate through the database table and compare the desired parameter values
+#  to the current values in the database.
+#
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF
+- name: "1.0 Inspect the Database Parameters "
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: | 
+    $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF"
+    set serveroutput on;
+    spool /tmp/DBA_DB_PARAM_session_output
+    exec SYS.DBA_DB_PARAM_PKG.execute('TRUE');
+
+    exec SYS.DBA_DB_PARAM_PKG.execute('{{read_only_parm}}');
+    exit; 
+    EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  register: command_output
+
+# 
+# The execute job above creates a spool file in the /tmp
+# directory, read in the contents of the spool file in order
+# to see what happened during the setting of the database
+# parameters
+#
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba <<" EOF
+- name: "1.0 Read in the output spool file"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.command: cat /tmp/DBA_DB_PARAM_session_output.lst
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  register: spool_file_output
+
+
+  changed_when: false
+- debug: msg="1.0 Spool File Contents.   {{spool_file_output.stdout}}"
+
+#
+#  Ensure there were no invalid parameters that were attempted
+#  to be set; if there were any terminate processing and let
+#  the user know
+#
+- name: "1.0 Check for Invalid Parameters"
+  ansible.builtin.fail: msg="Invalid Parameters names submitted. {{spool_file_output.stdout}}"
+  when: spool_file_output.stdout.find('~~INVALID_PARM~~') != -1
+
+
+- debug: msg="1.0  No Database Parameter Changes, Playbook Terminating "
+  when: spool_file_output.stdout.find('~~NO_CHANGE~~') != -1
+
+#  
+- name: "1.0 End Play When No Change to Database Parameters"
+  ansible.builtin.meta: end_play
+  when: spool_file_output.stdout.find('~~NO_CHANGE~~') != -1
+
+#
+#  Parameter values must have changed; so get the 
+#  list of changed parameters for reporting purposes
+#
+- name: "1.0 Get Changed Changed Parameters List"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.command: grep ~~CHANGED_PARM~~ /tmp/DBA_DB_PARAM_session_output.lst
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+     JAVA_HOME: "{{JAVA_HOME}}"
+     PATH: "{{PATH}}"
+  when: spool_file_output.stdout.find('~~CHANGED_PARM~~') != -1
+  register: change_parm_list
+
+#
+#  Report on the list of Changed Parameters
+#
+  changed_when: false
+- debug: msg="1.0 {{ item }} "
+#  with_items: "{{ change_parm_list.stdout }}"   Set this back after the Ansible 2.3 upgrade
+  loop: "{{change_parm_list.stdout}}"
+  when: spool_file_output.stdout.find('~~CHANGED_PARM~~') != -1

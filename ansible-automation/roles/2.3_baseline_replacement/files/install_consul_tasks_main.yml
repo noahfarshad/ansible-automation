@@ -1,0 +1,40 @@
+---
+- name: "Installing binaries on host"
+  include: install_consul.yml
+
+- name: "Create {{consul_name}} config directory"
+  become: true
+  file:
+    path: "{{consul_config_dir}}"
+    state: directory
+    owner: app_admin
+    group: app_admin
+    mode: 0755
+
+- name: "Setting fact for Consul Server"
+  set_fact:
+    is_server: "'consul_servers' in group_names"
+
+- name: "Configuring host as a Consul Server"
+  include: configure_consul_server.yml
+  become: true
+  become_user: app_admin
+  when: is_server
+
+- name: "Setting fact for Consul Client"
+  set_fact:
+    is_client: "'consul_clients' in group_names"
+
+- name: "Configuring host as a Consul Client"
+  include: configure_consul_client.yml
+  become: true
+  become_user: app_admin
+  when: is_client
+
+- name: "Install the Consul service"
+  become: true
+  include: add_consul_service.yml
+
+- name: "Restart Consul Service"
+  become: true
+  command: "/etc/init.d/consul restart"

@@ -1,0 +1,21 @@
+---
+## Directory that logrotate.d is located. This should be consistent through all machines.
+log_rotation_directory: /etc/logrotate.d
+
+## Any specific Apache log locations.
+apache_directory: /opt/apache24/logs
+
+## VCIEDB (VM3)
+vciedb_trace: /u01/oradata/data/VCIEDB/diag/rdbms/vciedb/vciedb/trace
+vciedb_alert: /u01/oradata/data/VCIEDB/diag/rdbms/vciedb/vciedb/alert
+vciedb_cdump: /u01/oradata/data/VCIEDB/diag/rdbms/vciedb/vciedb/cdump
+
+##VCIEOID (VM3)
+vcieoid_trace: /u01/oradata/data/vcieoid/diag/rdbms/vcieoid/vcieoid/trace
+vcieoid_alert: /u01/oradata/data/vcieoid/diag/rdbms/vcieoid/vcieoid/alert
+vcieoid_cdump: /u01/oradata/data/vcieoid/diag/rdbms/vcieoid/vcieoid/cdump
+
+##ICEWS (VM3i)
+icewsdb_trace: /u01/oradata/data/ICEWSDB/diag/rdbms/icewsdb/icewsdb/trace
+icewsdb_alert: /u01/oradata/data/ICEWSDB/diag/rdbms/icewsdb/icewsdb/alert
+icewsdb_cdump: /u01/oradata/data/ICEWSDB/diag/rdbms/icewsdb/icewsdb/cdump

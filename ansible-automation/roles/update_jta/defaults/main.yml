@@ -1,0 +1,2 @@
+update_script: update_jta.py
+gc2_wlst_path: "{{mw_home}}/oracle_common/common/bin/wlst.sh"

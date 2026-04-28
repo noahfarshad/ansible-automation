@@ -1,0 +1,23 @@
+- name: Deploy SSH RSA Private Key
+  become: true
+  become_user: app_admin
+  ansible.builtin.copy:
+    src: "id_rsa"
+    dest: "{{ ssh_key_location }}"
+    mode: 0600
+
+- name: Deploy SSH RSA Public Key
+  become: true
+  become_user: app_admin
+  ansible.builtin.copy:
+    src: "id_rsa.pub"
+    dest: "{{ ssh_key_location }}"
+    mode: 0644
+
+- name: Set authorized key taken from file
+  become: true
+  become_user: app_admin
+  ansible.builtin.authorized_key:
+    ansible.builtin.user: app_admin
+    state: present
+    key: "{{ lookup('file', 'id_rsa.pub') }}"

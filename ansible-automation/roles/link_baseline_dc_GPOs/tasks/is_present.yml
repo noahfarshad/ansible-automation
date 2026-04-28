@@ -1,0 +1,46 @@
+---
+## This role needs to be ran as the primary DC to work properly. Either switch roles to dc1, or set hosts in the playbook to the primaryDC 
+
+# Remove unsupported IFC OU
+# - name: Ensure {{pre_ifc}} OU is absent #to delete if protected
+#   microsoft.ad.ou:
+#     name: '{{pre_ifc}}'
+#     state: absent
+
+###Check for C:\GPO_XXXX according to ADD doc number
+
+- name: Set environment color for IFC if even
+  ansible.builtin.set_fact:
+    color: 'BLUE'
+  when: "{{ ifc[-1::] }} % 2 == 0"
+
+- name: Set environment color for IFC if odd
+  ansible.builtin.set_fact: 
+    color: 'GREEN'
+  when: "{{ ifc[-1::] }} % 2 != 0"
+
+# Link Baseline DC GPOs
+- name: Link {{ domain_ou | upper }}_{{ ADD_PN_BL }} DC GPOs 
+  ansible.windows.win_shell: |
+    $exists = (Get-GPO -All).DisplayName
+    $name = "{{ domain_ou | upper }}_{{ ADD_PN_BL }} - {{item}}"
+    foreach ($e in $exists)
+    {
+      if ($name -in $e)
+      {
+        $LinksPaths = ""
+        $LinksEnableds = ""
+
+        [xml]$gpocontent =  Get-GPOReport $e -ReportType xml
+  
+        $LinksPaths = $gpocontent.GPO.LinksTo #| %{$_.SOMPath}
+        $LinksEnableds = $gpocontent.GPO.LinksTo #| %{$_.Enabled}
+
+        $DomainControllerOU = "ou=Domain Controllers,DC={{ domain_ou }},DC=local"
+        $LinkedDCGPOs = Get-ADOrganizationalUnit $DomainControllerOU | Select-object -ExpandProperty LinkedGroupPolicyObjects
+      
+        $DomainControllerOU | ForEach-Object { if ( $name -notin $LinkedDCGPOs ) { New-GPLink -Name $name -Target $DomainControllerOU -LinkEnabled Yes -ErrorAction SilentlyContinue }}
+      }
+    } 
+  loop: "{{ dc_gpos }}"
+  when: "{{ dc_gpos }} | length > 0"

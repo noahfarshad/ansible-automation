@@ -1,0 +1,306 @@
+---
+- block:
+    - name: Login to VMware Horizon
+      ansible.builtin.uri:
+        url: https://{{ connectionserver }}/rest/login
+        validate_certs: false
+        status_code: 200
+        method: POST
+        body_format: json
+        body:
+          username: '{{ horizon_server_username }}'
+          password: '{{ horizon_server_password }}'
+          domain: '{{ domain }}'
+      register: login_token
+
+    - name: create desktop pool
+      block:
+      - name: Set variables
+        ansible.builtin.set_fact:
+          distinguished_name_desired: "CN=Domain Users,CN=Users,DC={{ system_name }},DC=local"
+          machine_fqdn: "{{ inventory_hostname }}"
+    #ERROR
+      - name: Get Desktop Pools
+        ansible.builtin.uri:
+          url: https://{{ connectionserver }}/rest/inventory/v1/desktop-pools
+          validate_certs: false
+          status_code: 200
+          method: GET
+          headers:
+            Content-Type: application/json
+            Authorization: 'Bearer {{ login_token.json.access_token }}'
+        register: desktop_pools
+        until: desktop_pools.status == 200
+        retries: 10
+        delay: 5
+
+      - name: Get Access Groups
+        ansible.builtin.uri:
+          url: https://{{ connectionserver }}/rest/config/v1/local-access-groups
+          validate_certs: false
+          status_code: 200
+          method: GET
+          headers:
+            Content-Type: application/json
+            Authorization: 'Bearer {{ login_token.json.access_token }}'
+        register: access_groups
+
+      - name: Get AD User Groups
+        ansible.builtin.uri:
+          url: https://{{ connectionserver }}/rest/external/v1/ad-users-or-groups
+          validate_certs: false
+          status_code: 200
+          method: GET
+          headers:
+            Content-Type: application/json
+            Authorization: 'Bearer {{ login_token.json.access_token }}'
+        register: groups_response
+
+      - name: Find index with the right distinguished name
+        ansible.builtin.set_fact:
+          group_id: "{{ item.id }}"
+        loop: "{{ groups_response.json }}"
+        when: "{{ item.distinguished_name == distinguished_name_desired }}"
+        no_log: true
+
+      - name: Get Vcenter Data
+        ansible.builtin.uri:
+          url: https://{{ connectionserver }}/rest/config/v1/virtual-centers
+          validate_certs: false
+          status_code: 200
+          method: GET
+          headers:
+            Content-Type: application/json
+            Authorization: 'Bearer {{ login_token.json.access_token }}'
+        register: vcenter_data
+    ##ERROR
+      - name: Get Machines
+        ansible.builtin.uri:
+          url: https://{{ connectionserver }}/rest/external/v1/virtual-machines?vcenter_id={{ vcenter_data.json[0].id }}
+          validate_certs: false
+          status_code: 200
+          method: GET
+          headers:
+            Content-Type: application/json
+            Authorization: 'Bearer {{ login_token.json.access_token }}'
+        register: get_machines
+        until: get_machines.status == 200
+        retries: 10
+        delay: 5
+
+      - name: find vm id
+        ansible.builtin.set_fact:
+          vm_id: "{{ item.id }}"
+        loop: "{{ get_machines.json }}"
+        when: "{{ item.name == machine_fqdn }}"
+        no_log: true
+
+      - name: Set boolean to check if play needs to run
+        ansible.builtin.set_fact:
+          machine_pool_name: "{{ string_name | replace('_','-') | upper }}_{{ inventory_hostname_short }}"
+
+      - name: Delete existing desktop pool
+        ansible.builtin.uri:
+          url: https://{{ connectionserver }}/rest/inventory/v1/desktop-pools/{{ item.id }}
+          validate_certs: false
+          status_code: 204
+          method: DELETE
+          headers:
+            Content-Type: application/json
+            Authorization: 'Bearer {{ login_token.json.access_token }}'
+        loop: "{{ desktop_pools.json }}"
+        when: "{{ item.name == machine_pool_name }}"
+        no_log: true
+
+      - name: Wait for update to vdserver
+        ansible.builtin.wait_for:
+          timeout: 5
+
+      - name: Determine vGPU requirements
+        ansible.builtin.set_fact:
+          needs_gpu: '{% if vgpu is defined %}true{% else %}false{% endif %}'
+
+      - name: Create Desktop Pool Config
+        ansible.builtin.set_fact:
+          desktop_pool_config:
+            description: 'Pool for {{ inventory_hostname_short }}'
+            display_name: "{{ string_name | replace('_','-') | upper }}: {{ inventory_hostname_short }}"
+            enabled: true
+            access_group_id: '{{ access_groups.json[0].id }}'
+            vcenter_id: '{{ vcenter_data.json[0].id }}'
+            name: "{{ string_name | replace('_','-') | upper }}_{{ inventory_hostname_short }}"
+            cloud_assigned: false
+            cloud_managed: false
+            display_protocol_settings:
+              allow_users_to_choose_protocol: true
+              default_display_protocol: 'BLAST'
+              grid_vgpus_enabled: true
+              renderer3d: 'MANAGE_BY_VSPHERE_CLIENT'
+              session_collaboration_enabled: false
+            enable_client_restrictions: false
+            session_settings:
+              allow_multiple_sessions_per_user: true
+              allow_users_to_reset_machines: false
+              disconnected_session_timeout_policy: 'NEVER'
+              empty_session_timeout_minutes: 1
+              empty_session_timeout_policy: 'AFTER'
+              logoff_after_timeout: false
+              power_policy: 'TAKE_NO_POWER_ACTION'
+            view_storage_accelerator_settings:
+              use_view_storage_accelerator: false
+            session_type: 'DESKTOP_AND_APPLICATION'
+            source: 'VIRTUAL_CENTER'
+            type: 'MANUAL'
+            user_assignment: 'FLOATING'
+        when: '{{ needs_gpu | bool }}'
+
+      - name: Handle Incompatible Values
+        ansible.builtin.set_fact:
+          desktop_pool_config:
+            description: 'Pool for {{ inventory_hostname_short }}'
+            display_name: "{{ string_name | replace('_','-') | upper }}: {{ inventory_hostname_short }}"
+            enabled: true
+            access_group_id: '{{ access_groups.json[0].id }}'
+            vcenter_id: '{{ vcenter_data.json[0].id }}'
+            name: "{{ string_name | replace('_','-') | upper }}_{{ inventory_hostname_short }}"
+            cloud_assigned: false
+            cloud_managed: false
+            display_protocol_settings:
+              allow_users_to_choose_protocol: true
+              default_display_protocol: 'BLAST'
+              grid_vgpus_enabled: false
+              renderer3d: 'DISABLED'
+              session_collaboration_enabled: false
+              max_number_of_monitors: 4
+              max_resolution_of_any_one_monitor: 'WUXGA'
+            enable_client_restrictions: false
+            session_settings:
+              allow_multiple_sessions_per_user: true
+              allow_users_to_reset_machines: false
+              disconnected_session_timeout_policy: 'NEVER'
+              empty_session_timeout_minutes: 1
+              empty_session_timeout_policy: 'AFTER'
+              logoff_after_timeout: false
+              power_policy: 'TAKE_NO_POWER_ACTION'
+            view_storage_accelerator_settings:
+              use_view_storage_accelerator: false
+            session_type: 'DESKTOP_AND_APPLICATION'
+            source: 'VIRTUAL_CENTER'
+            type: 'MANUAL'
+            user_assignment: 'FLOATING'
+        when: '{{ not needs_gpu | bool }}'
+
+      - name: Create Desktop Pool
+        ansible.builtin.uri:
+          url: https://{{ connectionserver }}/rest/inventory/v1/desktop-pools
+          method: POST
+          body_format: json
+          body: '{{ desktop_pool_config  }}'
+          status_code: 201
+          validate_certs: false
+          headers:
+            Content-Type: application/json
+            Authorization: 'Bearer {{ login_token.json.access_token }}'
+        register: create_desktop_pool_response
+      
+      - name: Wait for update to vdserver
+        ansible.builtin.wait_for:
+          timeout: 5
+
+      - name: Get Updated Desktop Pools
+        ansible.builtin.uri:
+          url: https://{{ connectionserver }}/rest/inventory/v1/desktop-pools
+          validate_certs: false
+          status_code: 200
+          method: GET
+          headers:
+            Content-Type: application/json
+            Authorization: 'Bearer {{ login_token.json.access_token }}'
+        register: desktop_pools_updated
+
+      - name: Get Specific Desktop Pool ID
+        ansible.builtin.set_fact:
+          created_pool_id: "{{ item.id }}"
+        loop: '{{ desktop_pools_updated.json }}'
+        when: "{{ item.name == desktop_pool_config.name }}"
+        no_log: true
+
+      - name: Build Json query to add User Group Entitlement
+        ansible.builtin.set_fact:
+          add_pool_query:
+            ad_user_or_group_ids: [ '{{ group_id }}' ]
+            id: '{{ created_pool_id }}'
+
+      - name: Add User Group Entitlements
+        ansible.builtin.uri:
+          url: https://{{ connectionserver }}/rest/entitlements/v1/desktop-pools
+          method: POST
+          body_format: json
+          body: [ '{{ add_pool_query }}' ]
+          status_code: 200
+          validate_certs: false
+          headers:
+            Content-Type: application/json
+            Authorization: 'Bearer {{ login_token.json.access_token }}'
+        register: add_entitlements_response
+
+      - name: Wait for update to vdserver
+        ansible.builtin.wait_for:
+          timeout: 5
+
+      - name: Add Machine to desktop Pool
+        ansible.builtin.uri:
+          url: https://{{ connectionserver }}/rest/inventory/v1/desktop-pools/{{ created_pool_id }}/action/add-machines
+          method: POST
+          body_format: json
+          body: [ '{{ vm_id }}' ]
+          status_code: 200
+          validate_certs: false
+          headers:
+            Content-Type: application/json
+            Authorization: 'Bearer {{ login_token.json.access_token }}'
+        register: add_machine_response
+
+      - name: REBOOT GUEST OS
+        vmware_guest:
+          ansible.builtin.hostname: "{{ vcenter_hostname }}"
+          username: "{{ vsphere_account }}"
+          password: "{{ vcenter_password }}"
+          validate_certs: no
+          name: "{{ inventory_hostname }}"
+          state: rebootguest
+        delegate_to: localhost
+
+      - name: Wait for VM to reboot
+        ansible.builtin.wait_for:
+          timeout: 100
+      # - name: Reboot the machine
+      #   ansible.builtin.reboot:
+      #   delegate_to: '{{ inventory_hostname }}'
+
+      - name: Wait until  WinRM is Back Up on Host if Rebooted
+        ansible.windows.win_service:
+          name: WinRM
+          start_mode: 'delayed'
+        delegate_to: '{{ inventory_hostname }}'
+
+      - name: Ensure myservice  is in a running state
+        ansible.windows.win_service:
+          name: VMWare Horizon View Agent 
+        register: myserviceDetails
+        until: myserviceDetails.state == "running"
+        retries: 20
+        delay: 20
+        delegate_to: '{{ inventory_hostname }}'
+        
+      always:
+      - name: Logout of VMware Horizon
+        ansible.builtin.uri:
+          url: https://{{ connectionserver }}/rest/logout
+          validate_certs: false
+          status_code: 200
+          method: POST
+          body_format: json
+          body:
+            refresh_token: '{{ login_token.json.refresh_token  }}'
+  become: true

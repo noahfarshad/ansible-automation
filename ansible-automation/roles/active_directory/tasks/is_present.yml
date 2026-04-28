@@ -1,0 +1,7 @@
+---
+# tasks file for active_directory — present
+
+- ansible.builtin.include_tasks: 0_misc.yml
+- ansible.builtin.include_tasks: 2_kerberos.yml
+- ansible.builtin.include_tasks: 1_samba.yml
+- ansible.builtin.include_tasks: 3_sssd.yml

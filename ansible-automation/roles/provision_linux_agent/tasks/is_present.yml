@@ -1,0 +1,136 @@
+---
+# tasks file for provision_linux_agent — present
+
+# Playbook to provision CentOS 7 VM as an agent for Jenkins
+- name: install needed packages
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: present  # use {{ provision_linux_agent_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+  loop:
+    - open-vm-tools
+    - java-1.8.0-openjdk.x86_64
+    - mercurial
+    - unzip
+    - bzip2
+    - ansible-2.3*
+    - cifs-utils
+    - rsync
+    - wget
+    - zip
+    - bzip2
+    - python2-pyvmomi
+    - nodejs
+    - docker-ce
+
+  tags:
+    - skip_ansible_lint
+
+- name: Ensure packages for chrome are installed
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: present  # use {{ provision_linux_agent_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+  loop:
+    - libX11
+    - libXcomposite
+    - libXcursor
+    - libXdamage
+    - libXext
+    - libXi
+    - libXtst
+    - cups-libs
+    - libXScrnSaver
+    - libXrandr
+    - alsa-lib
+    - pango
+    - atk
+    - at-spi2-atk
+    - gtk3
+
+  tags:
+    - skip_ansible_lint
+
+- name: enable and start open-vm-tools
+  ansible.builtin.service:
+    name: vmtoolsd
+    enabled: yes
+    state: started
+
+- name: update sudoers to allow no tty
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^Defaults    requiretty'
+    line: 'Defaults    !requiretty'
+    validate: 'visudo -cf %s'
+
+- name: create artifact staging directory for jenkins
+  ansible.builtin.file:
+    path: /var/artifact_staging
+    state: directory
+    mode: 0755
+    ansible.builtin.group: "admin"
+    owner: "admin"
+
+- name: copy Ansible passwords file
+  ansible.builtin.copy:
+    src: passwords.txt
+    dest: /etc/ansible/passwords.txt
+    ansible.builtin.group: "admin"
+    owner: "admin"
+
+- name: copy cifs password file
+  ansible.builtin.copy:
+    src: .smb.txt
+    dest: /root/.smb.txt
+    ansible.builtin.group: "root"
+    owner: "root"
+    mode: 0600
+
+ #/etc/ansible/userConfig must be populated on the system where this playbook runs from or it will fail. Grab a copy from an existing pansibleslave.
+- name: copy wlst files
+  ansible.builtin.copy:
+    src: userConfig
+    dest: /etc/ansible
+    ansible.builtin.group: "admin"
+    owner: "admin"
+
+- name: create directory for mount point
+  ansible.builtin.file:
+    path: /var/GAP_CIE
+    state: directory
+    mode: 0755
+    ansible.builtin.group: "admin"
+    owner: "admin"
+
+- name: Mount fileserver /GAP_CIE
+  ansible.builtin.mount:
+    name: /var/GAP_CIE/
+    src: //fileserver/GAP_CIE
+    fstype: cifs
+    opts: "credentials=/root/.smb.txt,_netdev,uid=admin,gid=admin"
+    state: mounted
+
+- name: create working directory for jenkins
+  ansible.builtin.file:
+    path: /jenkins_slave
+    state: directory
+    mode: 0755
+    ansible.builtin.group: "admin"
+    owner: "admin"
+
+#- name: ensure .m2 directory exists
+#  file:
+#    path: /root/.m2
+#    state: directory
+#    mode: 0755
+#    group: "root"
+#    owner: "root"
+#  become: true
+
+#- name: Copy settings.xml into .m2 directory
+#  copy:
+#    src: "settings.xml"
+#    dest: "/root/.m2/settings.xml"
+#    group: "root"
+#    owner: "root"
+#  become: true

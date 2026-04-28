@@ -1,0 +1,17 @@
+---
+# tasks file for provision_linux_agent — absent
+#
+# Stops the service, removes the package.
+
+- name: Stop and disable service
+  ansible.builtin.service:
+    name: "vmtoolsd"
+    state: stopped
+    enabled: false
+  failed_when: false
+
+- name: Remove package(s)
+  ansible.builtin.package:
+    name: "{{ item | default([]) }}"
+    state: absent
+  when: (item | default([])) | length > 0

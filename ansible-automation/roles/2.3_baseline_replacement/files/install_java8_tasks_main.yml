@@ -1,0 +1,58 @@
+---
+
+
+- name: Remove old version of java8
+  become: true
+  become_user: "{{java_owner}}"
+  ignore_errors: yes
+  file:
+    path: "{{java_install_directory}}"
+    state: absent
+  tags:
+    - java
+
+- name: Create java directory
+  become: true
+  file:
+    path: "{{java_install_directory}}"
+    owner: "{{ java_owner }}"
+    group: "{{ java_group }}"
+    state: directory
+  tags:
+    - java
+
+- name: Unpack Java on the remote hosts
+  become: true
+  become_user: "{{java_owner}}"
+  unarchive:
+    src: "{{staging}}/{{java_tarball}}"
+    dest: "{{java_install_directory}}"
+    mode: "{{java_perms}}"
+  tags:
+    - java
+
+- name: Configure java directory to not reference java version
+  become: true
+  become_user: "{{java_owner}}"
+  shell: "mv {{java_install_directory}}/jdk{{java_version}}/* {{java_install_directory}}"
+  tags:
+    - java
+
+- name: Remove empty jdk directory
+  become: true
+  become_user: "{{java_owner}}"
+  file:
+    path: "{{java_install_directory}}/jdk{{java_version}}"
+    state: absent
+  tags:
+    - java
+
+- name: Unpack JCE archive
+  become: true
+  become_user: "{{java_owner}}"
+  unarchive:
+    src: "{{staging}}/{{jce_zip}}"
+    dest: "{{java_install_directory}}/jre/lib/security"
+    mode: "{{java_perms}}"
+  tags:
+    - java

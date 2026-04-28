@@ -1,0 +1,29 @@
+# This sudo config file allows users to perform commands as AppAdmins (process)
+# Update for SA-22740. Correct prod problems from SA-21252.   DRT-11/14/2019
+
+# User Aliases
+User_Alias      SWFS_PROCESS_P =       +un_sems-swafs-p,+un_tads-swafs-p
+
+#Added
+Runas_Alias     SWAFS1_ACCT =               swafs1
+Runas_Alias     SWAFS2_ACCT =               swafs2
+
+# These are the allowed commands, referenced later
+# Cmnd_Alias    SOME_CMD                /bin/bash,/bin/cat
+
+#Changed for SA-21252
+Host_Alias      SWFS_SWAFS1_HST =       swfs-gaim-a01p, swfs-gaim-a02p, swfs-core-a01p
+Host_Alias      SWFS_SWAFS2_HST =       swfs-gaim-b01p, swfs-gaim-b02p, swfs-core-b01p
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+SWFS_PROCESS_P           SWFS_SWAFS1_HST,SWFS_SWAFS2_HST = (PROCESS_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: LDH_PROCESS_CMD
+SWFS_PROCESS_P           SWFS_SWAFS1_HST = (SWAFS1_ACCT) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
+SWFS_PROCESS_P           SWFS_SWAFS2_HST = (SWAFS2_ACCT) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
+
+PROCESS_ADMIN              ALL = (PROCESS_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+
+

@@ -1,0 +1,3 @@
+resolv_template: resolv.conf
+resolv_template_target: /etc/resolv.conf
+resolv_localdomain: localdomain

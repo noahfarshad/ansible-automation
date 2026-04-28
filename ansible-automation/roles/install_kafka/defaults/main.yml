@@ -1,0 +1,11 @@
+---
+# defaults file for install_kafka
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+app_group: "root"
+# app_user: ""
+kafka_config_dir: "/opt/install_kafka"
+# kafka_config_file: ""
+# kafka_name: ""

@@ -1,0 +1,9 @@
+---
+# tasks file for configure_bp — absent
+#
+# This role's operation is environment-specific or one-off and has no
+# clean automated inverse. Define teardown manually if needed.
+
+- name: "configure_bp — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: "Role 'configure_bp' has no automated inverse. Define teardown manually if required."

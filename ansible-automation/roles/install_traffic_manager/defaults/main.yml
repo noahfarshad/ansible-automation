@@ -1,0 +1,5 @@
+---
+install_answers: "install_traffic_manager_answers"
+traffic_manager_artifact: "ZeusTM_192_Linux-x86_64"
+artifact_extension: ".tgz"
+traffic_manager_install_dir: "/traffic_manager_installer"

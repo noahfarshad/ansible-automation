@@ -1,0 +1,10 @@
+---
+# tasks file for configure_splunk_forwarder — absent
+#
+# Removes the package(s) installed by is_present.yml.
+
+- name: Remove package(s)
+  ansible.builtin.package:
+    name: "{{ install_loc.path | default([]) }}"
+    state: absent
+  when: (install_loc.path | default([])) | length > 0

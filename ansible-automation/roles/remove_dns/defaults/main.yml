@@ -1,0 +1,10 @@
+---
+# defaults file for remove_dns
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# dcserver: ""
+# dns_servers: ""
+# domain: ""
+# ip_public: ""

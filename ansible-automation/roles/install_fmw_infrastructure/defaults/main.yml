@@ -1,0 +1,26 @@
+---
+
+fmw_product: 'infrastructure'
+fmw_product_installer: 'fmw-{{weblogic_version}}-{{fmw_product}}.jar'
+java_loc: '{{java_install_directory}}/bin/java'
+fmw_shared_files: '{{ role_path }}/../../shared_files/configuration/oracle_fmw/'
+
+temp_install_dir: /u01/domains/tmp/
+
+fmw_responseFile: 'ResponseFile.rsp'
+
+fmw_invPtrLoc:  'oraInst.loc'
+
+oracle_base: '/opt/Oracle'
+oracle_middleware_home: '{{oracle_base}}/Middleware_{{weblogic_version}}'
+weblogic_home: '{{oracle_middleware_home}}/wlserver'
+middleware_logs: '{{oracle_middleware_home}}/logs'
+
+os_user: app_admin
+os_group: app_admin
+
+install_type: 'Fusion Middleware Infrastructure'
+
+security_updates_myoracle: "false"
+decline_security_updates: "true"
+

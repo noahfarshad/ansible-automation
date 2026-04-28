@@ -1,0 +1,8 @@
+# copy running config to start
+- name: Copying running config to startup config for {{ name }}
+  nxos_command:
+    commands: 
+    - conf t
+    - copy running-config startup-config
+    ansible.builtin.wait_for:
+    - result[1] contains complete

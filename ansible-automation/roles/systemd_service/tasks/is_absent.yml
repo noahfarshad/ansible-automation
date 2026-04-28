@@ -1,0 +1,14 @@
+---
+- name: "Stopping service {{ service_name }}"
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ service_name }}"
+    state: stopped
+  ignore_errors: yes
+
+- name: "Removing service file for {{ service_name }}"
+  become: true
+  ansible.builtin.file:
+    path: "{{ service_file_path }}"
+    state: absent
+  notify: Reload Systemd

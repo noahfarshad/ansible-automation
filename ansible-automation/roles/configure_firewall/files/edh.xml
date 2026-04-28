@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>edh</short>
+  <description>For edh communications.</description>
+  <port protocol="tcp" port="14848"/>
+  <port protocol="tcp" port="18080"/>
+  <port protocol="tcp" port="18181"/>
+  <port protocol="tcp" port="13700"/>
+  <port protocol="tcp" port="13820"/>
+  <port protocol="tcp" port="13920"/>
+  <port protocol="tcp" port="19009"/>
+  <port protocol="tcp" port="17676"/>
+  <port protocol="tcp" port="18686"/>
+  <port protocol="tcp" port="16666"/>
+  <port protocol="tcp" port="34848"/>
+  <port protocol="tcp" port="38080"/>
+  <port protocol="tcp" port="38181"/>
+  <port protocol="tcp" port="33700"/>
+  <port protocol="tcp" port="33820"/>
+  <port protocol="tcp" port="33920"/>
+  <port protocol="tcp" port="39009"/>
+  <port protocol="tcp" port="37676"/>
+  <port protocol="tcp" port="38686"/>
+  <port protocol="tcp" port="36666"/>
+  <port protocol="tcp" port="24848"/>
+  <port protocol="tcp" port="28080"/>
+  <port protocol="tcp" port="28181"/>
+  <port protocol="tcp" port="23700"/>
+  <port protocol="tcp" port="23820"/>
+  <port protocol="tcp" port="23920"/>
+  <port protocol="tcp" port="29009"/>
+  <port protocol="tcp" port="27676"/>
+  <port protocol="tcp" port="28686"/>
+  <port protocol="tcp" port="26666"/>
+</service>

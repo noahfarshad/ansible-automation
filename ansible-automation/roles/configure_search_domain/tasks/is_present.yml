@@ -1,0 +1,26 @@
+---
+# tasks file for configure_search_domain
+- name: Add search domain to host
+  become: true
+  community.general.nmcli:
+    conn_name: ens192
+    type: ethernet
+    dns4_search:
+    - "{{ domain }}"
+    state: present
+
+# - name: Restart network service for interface eth0
+#   become: true
+#   ansible.builtin.service:
+#     name: network
+#     state: restarted
+
+- name: Restart network service for int eth0
+  become: true
+  ansible.builtin.shell: systemctl restart NetworkManager
+
+  # TODO: review changed_when for: systemctl restart NetworkManager
+- name: set hostname to fqdn
+  become: true
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}.{{ domain }}"

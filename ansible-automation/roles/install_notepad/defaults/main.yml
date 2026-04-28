@@ -1,0 +1,3 @@
+---
+# defaults file for install_notepad
+notepad_install_loc: "C:\\Program Files\\Notepad++\\"

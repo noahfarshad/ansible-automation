@@ -1,0 +1,2 @@
+{{ cert_data.stdout }}
+{{ priv_data.stdout }}

@@ -1,0 +1,8 @@
+---
+# defaults file for resize_vm_host
+#
+# Disk and LVM layout to resize. Override per-host in host_vars.
+disk:      "/dev/sda"
+partition: "/dev/sda3"
+volgroup:  "vg_root"
+logvol:    "lv_root"

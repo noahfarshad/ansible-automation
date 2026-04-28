@@ -1,0 +1,8 @@
+---
+# tasks file for remove_dns — absent
+#
+# Inverse: re-add DNS records. See create_dns role.
+
+- name: Re-add DNS records (use create_dns role instead)
+  ansible.builtin.debug:
+    msg: "Run create_dns with desired_state=present to invert this."

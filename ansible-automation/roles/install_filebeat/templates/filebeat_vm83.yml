@@ -1,0 +1,40 @@
+- type: log
+  paths:
+    - /opt/hazelcast/hazelcast.log
+  tags: ['{{ system }}', '{{ ansible_hostname }}', 'hazelcast']
+  multiline.pattern: '^[[:upper:]][[:alpha:]]{2}'
+  multiline.negate: true
+  multiline.match: after
+  
+- type: log
+  paths:
+    - /opt/ecms/ecms.out
+    - /opt/ecms/logs/ecms.log
+  tags: ['{{ system }}', '{{ ansible_hostname }}', 'ecms']
+  multiline.pattern: '^[[:upper:]]{1,} '
+  multiline.negate: true
+  multiline.match: after
+
+- type: log
+  paths:
+    - /opt/kafka_2.12-1.1.0/logs/kafka.log
+  tags: ['{{ system }}', '{{ ansible_hostname }}', '{{ group_name }}']
+  multiline.pattern: '^[[:upper:]][[:alpha:]]{2}'
+  multiline.negate: true
+  multiline.match: after
+
+- type: log
+  paths:
+    - /opt/consul_1.2.1/logs/consul.log
+  tags: ['{{ system }}', '{{ ansible_hostname }}', '{{ group_name }}']
+  multiline.pattern: '^[[:upper:]][[:alpha:]]{2}'
+  multiline.negate: true
+  multiline.match: after
+
+- type: log
+  paths:
+    - /opt/zookeeper_3.4.12/logs/zookeeper.log
+  tags: ['{{ system }}', '{{ ansible_hostname }}', '{{ group_name }}']
+  multiline.pattern: '^[[:upper:]][[:alpha:]]{2}'
+  multiline.negate: true
+  multiline.match: after

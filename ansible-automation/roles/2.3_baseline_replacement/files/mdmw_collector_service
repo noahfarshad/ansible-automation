@@ -1,0 +1,89 @@
+#!/bin/sh
+
+# This script is meant to start the Missle Defense Missle Warning (MDMW) Collector instance
+#
+# /etc/init.d/{{mdmw_collector_service_name}}
+# Subsystem file for the mdmw collector
+#
+# chkconfig: 2345 95 05
+# description: MDMW Collector daemon
+#
+# processname: {{mdmw_collector_service_name}}
+# config: /etc/sysconfig/{{mdmw_collector_service_name}}
+# pidfile: {{mdmw_collector_dir}}/{{mdmw_collector_service_name}}.pid
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+# pull in sysconfig settings
+[ -f /etc/sysconfig/{{mdmw_collector_service_name}} ] && . /etc/sysconfig/{{mdmw_collector_service_name}}
+
+
+SERVICE_NAME={{mdmw_collector_service_name}}
+RUN_AS="app_admin"
+PIDFILE={{mdmw_collector_dir}}/${SERVICE_NAME}.pid
+LOCKFILE=/var/lock/subsys/${SERVICE_NAME}
+MDMW_COLLECTOR_HOME={{mdmw_collector_dir}}
+SYSTEM_VARS="{{system_properties}}"
+SERVER_CLASSPATH="{{mdmw_collector_classpath}}"
+CMD_HEAD="{{java_path}}"
+ADDITIONAL_PARAMS="-server -cp ${SERVER_CLASSPATH} ${SYSTEM_VARS}"
+CMD="${CMD_HEAD} ${ADDITIONAL_PARAMS} {{mdmw_collector_application_classname}} server ${MDMW_COLLECTOR_HOME}/{{service_configuration}}"
+
+start() {
+    echo "Starting $SERVICE_NAME ..."
+    touch ${LOCKFILE}
+
+    if [ -f $PIDFILE ]
+    then
+        echo -n "Process ${SERVICE_NAME} appears to be running ($( cat ${PIDFILE} )): ";echo_warning;echo
+        exit 0
+    fi
+    touch ${PIDFILE}
+    chown ${RUN_AS}:${RUN_AS} ${PIDFILE}
+
+    /bin/su - ${RUN_AS} -c "${CMD}" 1> ${MDMW_COLLECTOR_HOME}/${SERVICE_NAME}.out 2>&1 & echo $! > $PIDFILE
+    # change owner of the files, since we want the log files to be owned by the same user as the executor
+    chown ${RUN_AS}:${RUN_AS} ${MDMW_COLLECTOR_HOME}/${SERVICE_NAME}.out
+    PID=$(/bin/cat $PIDFILE);
+    echo "$SERVICE_NAME (${PID}) started..."
+    RETVAL=0
+}
+
+stop() {
+    if [ ! -f $PIDFILE ]
+    then
+        echo -n "Process ${SERVICE_NAME} appears to be dead already: ";echo_warning;echo
+        exit 1
+    fi
+
+    PID=$(/bin/cat $PIDFILE);
+    echo "$SERVICE_NAME (${PID}) stopping ..."
+    kill $PID;
+    echo "$SERVICE_NAME (${PID}) stopped ..."
+    /bin/rm -f $PIDFILE
+    /bin/rm -f ${LOCKFILE}
+    RETVAL=0
+}
+
+case "$1" in
+    start)
+        shift
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        shift
+        start
+        ;;
+    status)
+        /bin/ps -ef | /bin/grep -i ${SERVICE_NAME} | /bin/grep java
+        RETVAL=$?
+        ;;
+    *)
+        echo "Usage: ${0} {start|stop|restart|status}"
+esac
+#exit ${RETVAL}

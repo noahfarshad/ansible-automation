@@ -1,0 +1,13 @@
+#- name: Create a VM Folder in Datacenter
+#  vcenter_folder:
+#    hostname: "{{ vmware.vcenter_hostname }}"
+#    username: "{{ users.vcenter_admin_user }}"
+#    password: "{{ users.vcenter_admin_password }}"
+#    datacenter: "{{ vmware.datacenter }}"
+#    folder_name: "{{ parameters.folder_name }}" 
+#    folder_type: vm
+#    state: present
+#    validate_certs: false
+#  delegate_to: localhost
+#  no_log: true
+

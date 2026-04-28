@@ -1,0 +1,30 @@
+---
+# tasks file for install_docker
+- name: Create certificate deployment directory
+
+  ansible.builtin.file:
+    path: /root/certs
+    state: directory
+    mode: '0755'
+    remote_src: true
+
+- name: Copy server certificate key from Isilon /ess/idam/idam_certs
+
+  ansible.builtin.copy:
+    src: /ess/idam/idam_certs/test/{{inventory_hostname}}.key  
+    dest: /root/certs/
+    remote_src: true
+  
+- name: Copy server certificates from Isilon /ess/idam/idam_certs
+
+  ansible.builtin.copy:
+    src: /ess/idam/idam_certs/test/{{inventory_hostname}}.cer
+    dest: /root/certs/
+    remote_src: true
+
+- name: Copy server CA.cer from Isilon /ess/idam/idam_certs
+
+  ansible.builtin.copy:
+    src: /ess/idam/idam_certs/test/CA.cer
+    dest: /root/certs/
+    remote_src: true

@@ -1,0 +1,5 @@
+
+- template:
+    mode: 0755
+    src: client-config.json
+    dest: "{{consul_config_file}}"

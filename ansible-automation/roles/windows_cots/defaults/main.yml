@@ -1,0 +1,9 @@
+---
+# defaults file for windows_cots
+#
+# REQUIRED: baseline — a dict overlaid with version.stdout from a prior task.
+# Example:
+# baseline:
+#   adobe_reader: "23.001.20064"
+#   chrome:       "120.0.6099.71"
+baseline: {}

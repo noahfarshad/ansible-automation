@@ -1,0 +1,27 @@
+# This sudo config file allows users to perform commands as AppAdmins (process)
+
+# User Aliases
+User_Alias	VW_PROCESS_NP =		+un_sems-afwwebs,+un_tads-afwwebs	
+User_Alias	GF_PROCESS_NP =		+un_sems-afwwebs,+un_tads-afwwebs
+User_Alias      DR_PROCESS_NP =         +un_sys-datarouting-t
+
+# These define the possible hosts that users are allowed to run commands on
+Host_Alias	VW_SAN =		afw-vwingest-a01x, afw-vwingest-a02x, afw-vwproxy-a01x, afw-vwproxy-a02x
+Host_Alias	VW_DEV =		afw-vwingest-d01d, afw-vwingest-d02d
+Host_Alias	GF_DEV =		afw-gfapp-01d, afw-gfapp-02d
+Host_Alias	VW_TEST =		afw-vwingest-a01t, afw-vwingest-a02t, afw-vwingest-b01t, afw-vwingest-b02t, afw-vwingest-c01t, afw-vwingest-c02t, afw-vwingest-d01t, afw-vwingest-d02t
+Host_Alias	GF_TEST =		afw-gfapp-01t, afw-gfapp-02t
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+# 	If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+# 	to see the input/output of every command as it was being executed.
+
+Cmnd_Alias   LDH2PROD_PROCESS_CMD = /opt/apps/ldh_ProdToTest/ldh/wpmdsr_ldh.ksh start, /opt/apps/ldh_ProdToTest/ldh/wpmdsr_ldh.ksh stop, /opt/apps/ldh_ProdToTest/ldh/wpmdsr_ldh.ksh check, /opt/apps/ldh_ProdToTest/ldh/wpmdsr_ldh.ksh restart
+
+# Group specific permissions
+VW_PROCESS_NP		VW_TEST, VW_DEV, VW_SAN = (PROCESS_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: LDH_PROCESS_CMD
+GF_PROCESS_NP		GF_TEST, GF_DEV = (PROCESS_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: LDH_PROCESS_CMD
+PTEDH_APPADMIN		PTEDH_TEST = (PROCESS_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: LDH_PROCESS_CMD
+DR_PROCESS_NP		EDH_TEST = (PROCESS_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: LDH_PROCESS_CMD, LDH2PROD_PROCESS_CMD
+AFWWEBS_TEAM            GWAT_NONPROD = (PROCESS_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: LDH_PROCESS_CMD

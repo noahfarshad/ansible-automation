@@ -1,0 +1,35 @@
+---
+# playbooks/site.yml
+#
+# Top-level orchestrator. Builds the full environment in order.
+#
+# What this runs (in order):
+#   1. build_linux_vm.yml      — create + baseline every Linux host
+#   2. build_windows_vm.yml    — create + baseline every Windows host
+#   3. configure_webserver.yml — Apache config on [webservers]
+#   4. configure_dbserver.yml  — DB engine on [dbservers]
+#   5. configure_appserver.yml — App tier on [appservers]
+#   6. install_software.yml    — Windows software install on [windows]
+#
+# Usage:
+#   make site
+#   # or directly:
+#   ansible-playbook -i inventory/hosts playbooks/site.yml
+#
+#   # Limit to one host or group:
+#   ansible-playbook -i inventory/hosts playbooks/site.yml --limit webservers
+#
+#   # Dry run (check mode):
+#   ansible-playbook -i inventory/hosts playbooks/site.yml --check --diff
+#
+# Tags: pass --tags <tagname> to run only matching tasks across all imported
+# playbooks. Useful tags include: vsphere, baseline, firewall, packages,
+# webserver, dbserver, appserver, software.
+
+- import_playbook: linux/build_linux_vm.yml
+- import_playbook: windows/build_windows_vm.yml
+- import_playbook: linux/configure_webserver.yml
+- import_playbook: linux/configure_dbserver.yml
+- import_playbook: linux/configure_appserver.yml
+- import_playbook: windows/configure_baseline.yml
+- import_playbook: windows/install_software.yml

@@ -1,0 +1,13 @@
+- block:
+  - name: Copy NuGet package to local directory
+    ansible.windows.win_copy: 
+      src: "\\\\san01.{{ vsphere_datacenter }}.local\\software\\WSUSExport\\PSWindowsUpdate 2.2.1.5"
+      dest: "C:\\Program Files\\WindowsPowerShell\\Modules\\"
+      remote_src: true
+
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

@@ -1,0 +1,39 @@
+---
+# tasks file for stig_images — present
+
+- name: Load tar file into local docker registry
+
+  ansible.builtin.shell: docker load -i {{tar_directory}}{{tar_file}} | sed 's/Loaded image':' //'
+  register: image_name
+  
+
+  # TODO: review changed_when for: docker load -i {{tar_directory}}{{tar_file}} | sed 's/Loaded
+- name: Scan and STIG the image
+
+  ansible.builtin.shell: >-
+    atomic scan --remediate --scan_type configuration_compliance --scanner_args
+    xccdf-id=scap_org.open-scap_cref_ssg-rhel7-xccdf-1.2.xml,profile=xccdf_org.ssgproject.content_profile_ospp,report
+    {{image_name.stdout}} | grep -oP '(?<=Successfully built remediated image ).*(?= from)'
+  register: remediated_image_hash
+  
+  # TODO: review changed_when for: atomic scan --remediate --scan_type configuration_compliance
+- name: Set the new hardened image name
+  ansible.builtin.set_fact: 
+    remediated_image_name: 10.10.10.89:5000/{{image_name.stdout | regex_search('(?<=\/)(.*?)(?=\:)')}}-hardened{{image_name.stdout | regex_search('\:(.*)')}}
+  
+- name: Tag the new hardened image
+
+  ansible.builtin.shell: docker tag {{remediated_image_hash.stdout}} {{remediated_image_name}}
+    
+
+  # TODO: review changed_when for: docker tag {{remediated_image_hash.stdout}} {{remediated_ima
+- name: Publish the hardened image to the docker registry
+
+  become_user: admin
+  ansible.builtin.shell: docker push {{remediated_image_name}}
+  environment: 
+    DOCKER_CONTENT_TRUST: 1
+    DOCKER_CONTENT_TRUST_SERVER: https://127.0.0.1:4443
+    DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: "{{docker_reg_notary_password}}"
+    DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: "{{docker_reg_notary_password}}"
+  # TODO: review changed_when for: docker push {{remediated_image_name}}

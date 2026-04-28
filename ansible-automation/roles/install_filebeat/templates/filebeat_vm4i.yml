@@ -1,0 +1,10 @@
+- type: log
+  paths:
+    - /opt/neo4j/neo4j-community-3.3.5/logs/neo4j.log
+    - /opt/neo4j/neo4j-community-3.3.5/logs/debug.log
+  tags: ['{{ system }}', '{{ ansible_hostname }}', 'neo4j']
+  multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
+  multiline.negate: true
+  multiline.match: after
+
+

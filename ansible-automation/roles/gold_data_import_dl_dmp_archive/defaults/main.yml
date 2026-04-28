@@ -1,0 +1,5 @@
+---
+dmp_transfer_dir: /var/shares/appshare/gc2globalconfig/dpdump_transfer
+dl_tmp_dir: /var/tmp/
+dmp_archive: database-dmp-{{ version }}.tar.gz
+nexus_gold_repository: goldData_storage

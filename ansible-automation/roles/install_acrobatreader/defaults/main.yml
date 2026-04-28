@@ -1,0 +1,4 @@
+---
+# defaults file for install_acrobatreader
+AAReaderOLD: "16e4b4.msi"
+AA_install_loc: "C:\\Windows\\Installer\\"

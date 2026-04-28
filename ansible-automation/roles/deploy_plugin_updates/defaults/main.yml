@@ -1,0 +1,6 @@
+---
+stage_dir: /var/tmp
+plugins_stage_dir: "{{ stage_dir }}/jenkins_updates"
+
+remote_stage_dir: "{{ stage_dir }}/plugin_updates"
+cli_location: /var/tmp/jenkins

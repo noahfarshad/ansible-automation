@@ -1,0 +1,73 @@
+# this role defaualts to using the users.domainadmin_user user with users.domain_password host vars
+# to perform the file copy and run the script
+# to override these you can set vmcopy_user and vmcopy_pass
+- name: Copy WinRm Script to VM
+  vars:
+    src_file: "ConfigureRemotingForAnsible.ps1"
+    dst_path: "C:\\Windows\\"
+  delegate_to: localhost
+  block:
+
+  - name: Create temp folder
+    community.vmware.vmware_guest_file_operation:
+      ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+      username: "{{ users.vcenter_admin_user }}"
+      password: "{{ users.vcenter_admin_password }}"
+      datacenter: "{{ vmware.datacenter }}"
+      validate_certs: False
+      vm_id: "{{  vm_id | default( inventory_hostname ) }}"
+      vm_username: "{{ vmcopy_user | default(users.domainadmin_user) }}"
+      vm_password: "{{ vmcopy_pass | default(users.domain_password) }}"
+      directory:
+        operation: "mktemp"
+        prefix: "C"
+        suffix: "Ansible"
+    register: result
+    delegate_to: localhost
+    ignore_errors: true 
+
+  - name: copy file to vm
+    vmware_guest_file_operation:
+      ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+      username: "{{ users.vcenter_admin_user }}"
+      password: "{{ users.vcenter_admin_password }}"
+      datacenter: "{{ vmware.datacenter }}"
+      validate_certs: False
+      vm_id: "{{  vm_id | default( inventory_hostname ) }}"
+      vm_username: "{{ vmcopy_user | default(users.domainadmin_user) }}"
+      vm_password: "{{ vmcopy_pass | default(users.domain_password) }}"
+      ansible.builtin.copy:
+          src: "../scripts/{{ src_file }}"
+          dest: "{{ result.dir }}\\{{ src_file }}"
+          overwrite: True
+    ignore_errors: true 
+
+  - name: Run ConfigureRemotingForAnsible
+    register: shell_command_output
+    ignore_errors: true
+    vmware_vm_shell: 
+      datacenter: "{{ vmware.datacenter }}"
+      folder: "{{ folder_name | default(omit) }}"
+      ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+      password: "{{ users.vcenter_admin_password }}"
+      username: "{{ users.vcenter_admin_user }}"
+      validate_certs: false
+      vm_id: "{{ vm_id  | default(inventory_hostname )}}"
+      vm_username: "{{ vmcopy_user | default(users.domainadmin_user) }}"
+      vm_password: "{{ vmcopy_pass | default(users.domain_password) }}"
+      vm_shell: 'C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe'
+      vm_shell_args: "powershell.exe -ExecutionPolicy Unrestricted -File {{ result.dir }}\\{{ src_file }} -CertValidityDays 1825 -ForceNewSSLCert -SkipNetworkProfileCheck >> {{ result.dir }}ansible_log.txt"
+      wait_for_process: true
+      timeout: 300
+    delay: 60   
+    retries: 5
+    until: shell_command_output.failed == False 
+ 
+- name: wait for connection
+  ansible.builtin.wait_for_connection:
+    timeout: 120
+  delegate_to: "{{ vm_id | default( inventory_hostname ) }}"
+  vars:
+    ansible_user: "{{ vmcopy_user | default(users.domainadmin_user) }}"
+    ansible_pass: "{{ vmcopy_pass | default(users.domain_password) }}"
+    ansible_winrm_transport: "{{ vmcopy_transport | default('kerberos') }}"

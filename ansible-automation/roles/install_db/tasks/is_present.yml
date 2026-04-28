@@ -1,0 +1,27 @@
+---
+# tasks file for install_db — present
+
+- ansible.builtin.include_tasks: 00_Checks.yml
+  tags:
+    - DB
+    - DB_checks
+- ansible.builtin.include_tasks: 01_Prereqs.yml
+  tags:
+    - DB
+    - DB_prereqs
+- ansible.builtin.include_tasks: 02_Install_binaries.yml
+  tags:
+    - DB
+    - DB_binaries
+- ansible.builtin.include_tasks: 03_create_instance.yml
+  tags:
+    - DB
+    - DB_instance
+- ansible.builtin.include_tasks: 04_initschemas.yml
+  tags:
+    - DB
+    - DB_schemas
+- ansible.builtin.include_tasks: 05_configure_listener.yml
+  tags:
+    - DB
+    - DB_listener

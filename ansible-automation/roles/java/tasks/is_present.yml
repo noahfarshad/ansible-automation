@@ -1,0 +1,6 @@
+---
+- name: Install java-jdk
+  become: true
+  ansible.builtin.yum:
+    name: "{{ java_jdk_name }}"
+    state: "{{ java_jdk_state }}"

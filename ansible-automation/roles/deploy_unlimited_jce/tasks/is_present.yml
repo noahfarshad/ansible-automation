@@ -1,0 +1,14 @@
+---
+# tasks file for deploy_unlimited_jce — present
+
+- name: Copy non-legacy JCE files
+  become: true
+  become_user: "{{app_user}}"
+  ansible.builtin.copy:
+    src: "{{item}}"
+    dest: "{{java_jre_security_directory}}"
+    owner: "{{app_user}}"
+    ansible.builtin.group: "{{app_group}}"
+    mode: "0600"
+  loop:
+    "{{jce_list}}"

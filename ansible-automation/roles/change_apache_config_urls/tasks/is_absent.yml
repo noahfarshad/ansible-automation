@@ -1,0 +1,12 @@
+---
+# tasks file for change_apache_config_urls — absent
+#
+# This role does in-place URL replacement. The inverse is to run it again
+# with `source` and `replace` swapped (i.e. swap the regex and the replacement).
+# A native "absent" is not meaningful for a search-and-replace operation.
+
+- name: "change_apache_config_urls — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: >-
+      To revert change_apache_config_urls, run it again with source and replace swapped.
+      State 'absent' is not meaningful for a search-and-replace operation.

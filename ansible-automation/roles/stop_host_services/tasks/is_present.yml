@@ -1,0 +1,8 @@
+---
+# tasks file for stop_host_services — present
+
+- ansible.builtin.include_tasks: stop_systemctl_services.yml
+- ansible.builtin.include_tasks: stop_systemd_services.yml
+- ansible.builtin.include_tasks: stop_system_process.yml
+- ansible.builtin.include_tasks: stop_custom_process.yml
+- ansible.builtin.include_tasks: unsupported_content.yml

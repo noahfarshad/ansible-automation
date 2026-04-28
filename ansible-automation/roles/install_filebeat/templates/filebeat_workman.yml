@@ -1,0 +1,6 @@
+- input_type: log
+  paths:
+    - /file/to/watch
+  document_type: workmen
+  tags: ['{{ system }}', 'worker']
+

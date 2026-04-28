@@ -1,0 +1,49 @@
+---
+target_dir: '/home/apps/app_admin/'
+request_dir: "{{target_dir}}/{{CA_name}}/csr"
+CA_name: 'GCCA'
+openssl_conf: "{{target_dir}}/{{CA_name}}/openssl.cnf"
+ca_key_location: "{{artifact_staging}}/vm2/{{CA_name}}.key"
+ca_cert_location: "{{artifact_staging}}/vm2/{{CA_name}}.cer"
+openssl_sign_path: "/opt/apache24/bin/openssl"
+
+alias_items:
+  - web2
+  - web1
+  - osb
+  - portal
+  - appwm3
+  - appwm2
+  - appwm1
+  - appadm
+  - ldap
+  - vm3
+  - vm2
+  - vm4
+  - vm7
+  - appms2
+  - axm
+  - appms1
+  - dbit
+  - db
+  - vm42
+  - vm41
+  - oam
+  - vm3i
+  - vm52
+  - vm51
+  - portalms2
+  - portalms1
+  - app.external
+  - vm4i
+  - vm62
+  - webrel
+  - vm61
+  - appit1
+  - app
+  - portalrel
+  - vm81
+  - vm83
+  - vm82
+
+

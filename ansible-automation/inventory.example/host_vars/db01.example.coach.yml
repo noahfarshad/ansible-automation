@@ -1,0 +1,42 @@
+---
+# host_vars/db01.example.coach.yml
+#
+# Per-host overrides for the primary database server.
+
+# ===========================================================================
+# vSphere placement
+# ===========================================================================
+vsphere_template:           "rhel9-template"
+vsphere_folder:             "/example_dc/vm/Linux/DB"
+vsphere_datastore:          "datastore-fast"     # SSD-backed
+vsphere_network:            "VM Network"
+vsphere_cpu:                8
+vsphere_memory_mb:          32768
+vsphere_disk_gb:            200
+
+# ===========================================================================
+# Network
+# ===========================================================================
+static_ipv4_address:        10.10.20.10
+static_ipv4_netmask:        255.255.255.0
+static_ipv4_gateway:        10.10.20.1
+
+# ===========================================================================
+# Database tuning — this host has 32GB RAM, so we tune up
+# ===========================================================================
+db_max_connections:         400
+db_shared_buffers:          "8GB"
+db_effective_cache_size:    "24GB"
+db_work_mem:                "64MB"
+db_maintenance_work_mem:    "1GB"
+
+# ===========================================================================
+# Backup
+# ===========================================================================
+# Primary needs longer retention than the group default
+db_backup_retention_days:   30
+
+# ===========================================================================
+# Replication role
+# ===========================================================================
+db_role:                    primary

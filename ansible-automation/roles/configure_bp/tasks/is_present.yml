@@ -1,0 +1,59 @@
+---
+# tasks file for configure_bp — present
+
+- name: configure BP
+  become: true
+  block:
+
+    - name: Enable Host IPv6
+      ansible.builtin.replace:
+        path: /etc/default/grub
+        regexp: 'ipv6.disable=1'
+        ansible.builtin.replace: 'ipv6.disable=0'
+
+    - name: Persist Changes Made To /etc/grub
+      ansible.builtin.command: grub2-mkconfig -o /boot/grub2/grub.cfg
+
+      changed_when: false
+    - name: Verify Host IPv6 Enabled
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '#::1 localhost localhost.localdomain localhost6 localhost6.localdomain6'
+        line: '::1 localhost localhost.localdomain localhost6 localhost6.localdomain6'
+
+    - name: reboot machine after changes
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+
+    - name: Change SELINUX status
+      ansible.builtin.replace:
+        path: /etc/sysconfig/selinux
+        regexp: 'SELINUX=enforcing'
+        ansible.builtin.replace: 'SELINUX=permissive'
+
+    - name: reboot machine
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+
+    - name: create BP String directory
+      ansible.builtin.file:
+        path: /mnt/data/BP/{{ string_name }}
+        state: directory
+        mode: '775'
+
+    - name: Create Mountpoint
+      ansible.builtin.file:
+        path: /data
+        state: directory
+        mode: '755'
+
+    - name: modify fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: 'san01:\data\/BP\/string0.+'
+        line: 'san01:/data/BP/{{string_name }} /data nfs vers=3,rw,fg,hard,intr,proto=tcp'
+
+    - name: Mount all in the FSTAB
+      ansible.builtin.shell: mount -a
+      become: true
+      changed_when: false

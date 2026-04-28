@@ -1,0 +1,9 @@
+---
+- name: Download the Database Export Archive
+  become: true
+  become_user: app_admin
+  ansible.builtin.get_url:
+    url: "http://{{nexus_host_qualified}}/repository/{{ nexus_gold_repository }}/{{ group }}/database/{{ version }}/{{dmp_archive}}"
+    dest: "{{dmp_transfer_dir}}"
+    tmp_dest: "{{dl_tmp_dir}}"
+    mode: 0755

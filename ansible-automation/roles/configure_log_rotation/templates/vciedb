@@ -1,0 +1,40 @@
+{{ vciedb_trace }}/*.trc {
+     daily
+     missingok
+     maxage 7
+}
+
+{{ vciedb_trace }}/*.trm {
+     daily
+     missingok
+     maxage 7
+}
+
+{{ vciedb_trace }}/*.log {
+     daily
+     rotate 2
+     dateext
+     missingok
+     size 100M
+     compress
+     create 640 ora_rmt ora_rmt
+     maxage 7
+}
+
+{{ vciedb_trace }}/*.gz {
+     daily
+     missingok
+     maxage 7
+}
+
+{{ vciedb_alert }}/log_*.xml {
+     daily
+     missingok
+     maxage 7
+}
+
+{{ vciedb_cdump }}/* {
+     daily
+     missingok
+     maxage 7
+}

@@ -1,0 +1,129 @@
+#!/bin/sh
+# Set ORA_HOME to be equivalent to the $ORACLE_HOME
+# from which you wish to execute dbstart and dbshut;
+#
+# Set ORA_OWNER to the user id of the owner of the 
+# Oracle database in ORA_HOME.
+
+### BEGIN INIT INFO
+# Provides: dbora
+# Required-Start: lsnrora
+# Required-Stop: lsnrora
+# Default-Start: 2 3 5
+# Default-Stop: 0 1 6
+# Short-Description: Oracle COTSDB auto start-stop script
+# Description:  Oracle COTSDB auto start-stop script
+### END INIT INFO
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+ORA_HOME={{ORACLE_HOME}}
+ORA_OWNER={{oracle_user}}
+DBSID={{ORACLE_SID}}
+BASE_NAME=dbora_example
+LOCKFILE=/var/lock/subsys/${BASE_NAME}
+PIDFILE=/var/run/${BASE_NAME}.pid
+
+if [ ! -f $ORA_HOME/bin/dbstart ]
+then
+    echo "Oracle startup: cannot start"
+    exit
+fi
+
+# Disable starting of all databases
+sed -i"" -e "s/:[YN]$/:N/g" /etc/oratab
+# Enable the starting of this database
+sed -i"" -e "s/^\(${DBSID}.*\):N/\1:Y/" /etc/oratab
+
+updatePID() {
+	local PID RETVAL
+
+	status -p ${PIDFILE} ${BASE_NAME} >> /dev/null
+	RETVAL=$?
+
+	if [ ${RETVAL} -ne 0 ]
+	then
+		PID=$( pgrep -f pmon_${DBSID} )
+		if [ ! -z "${PID}" ]
+		then
+			echo ${PID} > ${PIDFILE}
+		else
+			echo "" > ${PIDFILE}
+		fi
+	fi
+}
+
+start() {
+	touch ${LOCKFILE}
+	updatePID
+	PID=$( cat ${PIDFILE} )
+	if [ ! -z "${PID}" ]
+	then
+		echo -n "Process ${BASE_NAME} appears to be running ($( cat ${PIDFILE} )): ";echo_warning;echo
+		exit 0
+	fi
+
+	ORACLE_HOME=${ORA_HOME}
+	export ORACLE_HOME
+
+	echo -n "Starting Oracle Database (${DBSID}):"
+	daemon --pidfile ${PIDFILE} --user ${ORA_OWNER} "$ORA_HOME/bin/dbstart > /dev/null 2>&1"
+	RETVAL=$?
+	echo
+
+	if [ ${RETVAL} -eq 0 ]
+	then
+		updatePID
+	fi
+}
+		
+stop() {
+	updatePID
+	PID=$( cat ${PIDFILE} )
+	if [ -z "${PID}" ]
+	then
+		echo -n "Process ${BASE_NAME} appears to be dead already: ";echo_warning;echo
+		exit 1
+	fi
+
+	ORACLE_HOME=${ORA_HOME}
+	export ORACLE_HOME
+
+	echo -n "Stopping Oracle Database (${DBSID}):"
+	runuser ${ORA_OWNER} -c "$ORA_HOME/bin/dbshut > /dev/null 2>&1"
+	RETVAL=$?
+
+	if [ ${RETVAL} -eq 0 ]
+	then
+		echo_success
+		echo
+	else
+		echo_failure
+		echo
+	fi
+
+        [[ "$(runlevel | cut -d' ' -f2)" =~ "[06]" ]] && rm -f ${LOCKFILE}
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		shift
+		start
+		;;
+	status)
+		updatePID
+		status -p ${PIDFILE} ${BASE_NAME}
+		RETVAL=$?
+		;;
+	*)
+		echo "Usage: ${0} {start|stop|restart|status}"
+esac
+exit ${RETVAL}

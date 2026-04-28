@@ -1,0 +1,1149 @@
+---
+# tasks file for ipa_hostgroups
+- name: Ensure host-group sysd is present
+
+  community.general.ipa_hostgroup:
+    name: sysd
+    state: present
+    description: Example Org Database servers
+    host:
+    - sysd-afweddb-01t.example.coach
+    - sysd-afwwebsdb-01t.example.coach
+    - sysd-afwwsdb-01t.example.coach
+    - sysd-avmsdb-01t.example.coach
+    - sysd-cdfsdb-01t.example.coach
+    - sysd-cdfsdb-02t.example.coach
+    - sysd-cdmsdb-01t.example.coach
+    - sysd-dbmsdb-01t.example.coach
+    - sysd-dwdb-01t.example.coach
+    - sysd-edb-01t.example.coach
+    - sysd-edhdb-01t.example.coach
+    - sysd-jmsdb-01t.example.coach
+    - sysd-oamdb-01t.example.coach
+    - sysd-swfsdb-01t.example.coach
+    - sysd-swfsdb-02t.example.coach
+    - sysd-afweddb-01d.example.coach
+    - sysd-afwwebsdb-01d.example.coach
+    - sysd-afwwsdb-01d.example.coach
+    - sysd-avmsdb-01d.example.coach
+    - sysd-cdfsdb-01d.example.coach
+    - sysd-cdfsdb-02d.example.coach
+    - sysd-cdmsdb-01d.example.coach
+    - sysd-dwdb-01d.example.coach
+    - sysd-edb-01d.example.coach
+    - sysd-edhdb-01d.example.coach
+    - sysd-jmsdb-01d.example.coach
+    - sysd-metricsdb-01d.example.coach
+    - sysd-swfsdb-01d.example.coach
+    - sysd-swfsdb-02d.example.coach
+    - sysd-oracledb-01x.example.coach
+    - sysd-oracledb-02x.example.coach
+    - sysd-paisdb-01d.example.coach
+    hostgroup:
+    - sysd
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group ess is present
+
+  community.general.ipa_hostgroup:
+    name: ess
+    state: present
+    description: Example Org System Administrative servers
+    host:
+    - ess-satellite-03d.example.coach
+    - ess-satellite-01d.example.coach
+    - idm01.example.coach
+    - idm02.example.coach
+    - idm03.example.coach
+    - ess-nas-a01t.example.coach
+    - ess-nas-b01t.example.coach
+    - ess-mdc-a01t.example.coach
+    - ess-mdc-a03t.example.coach
+    - ess-mdc-a04t.example.coach
+    - ess-mdc-b01t.example.coach
+    - ess-mdc-b03t.example.coach
+    - ess-mdc-b04t.example.coach
+    - ess-services-a01t.example.coach
+    - ess-services-b01t.example.coach
+    - ess-tsm-01t.example.coach
+    - ess-insightiq-01t.example.coach
+    - swfs-lab-01d.example.coach
+    hostgroup:
+    - ess
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group cdfs is present
+
+  community.general.ipa_hostgroup:
+    name: cdfs-compute
+    state: present
+    description: Example Org Cloud Depiction and Forecasting Systems
+    host:
+    - cdfs-compute-01d.example.coach
+    - cdfs-compute-01t.example.coach
+    - cdfs-compute-02d.example.coach
+    - cdfs-compute-02t.example.coach
+    - cdfs-compute-03d.example.coach
+    - cdfs-compute-03t.example.coach
+    - cdfs-compute-04d.example.coach
+    - cdfs-compute-04t.example.coach
+    - cdfs-compute-05d.example.coach
+    - cdfs-compute-05t.example.coach
+    - cdfs-compute-06d.example.coach
+    - cdfs-compute-06t.example.coach
+    - cdfs-compute-07d.example.coach
+    - cdfs-compute-08d.example.coach
+    - cdfs-compute-10d.example.coach
+    hostgroup:
+    - cdfs-compute
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group ose-compute is present
+
+  community.general.ipa_hostgroup:
+    name: ose-compute
+    state: present
+    description: Example Org Cloud Depiction and Forecasting Systems
+    host:
+    - ose-compute-01d.example.coach
+    - ose-compute-02d.example.coach
+    - ose-compute-03d.example.coach
+    - ose-compute-04d.example.coach
+    - ose-compute-05d.example.coach
+    - ose-compute-06d.example.coach
+    hostgroup:
+    - ose-compute
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group swfs-core is present
+
+  community.general.ipa_hostgroup:
+    name: swfs-core
+    state: present
+    description: Example Org SWAFS Systems
+    host:
+    - swfs-core-a01d.example.coach
+    - swfs-core-a01t.example.coach
+    - swfs-core-b01d.example.coach
+    - swfs-core-b01t.example.coach
+    hostgroup:
+    - swfs-core
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group swfs-gaim is present
+
+  community.general.ipa_hostgroup:
+    name: swfs-gaim
+    state: present
+    description: Example Org SWAFS Systems
+    host:
+    - swafs-gaim-a01d.example.coach
+    - swafs-gaim-a01t.example.coach
+    - swafs-gaim-b01d.example.coach
+    - swafs-gaim-b01t.example.coach
+    hostgroup:
+    - swfs-gaim
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-appadmin is present
+
+  community.general.ipa_hostgroup:
+    name: afw-appadmin
+    state: present
+    description: Example Org App Admin Systems
+    host:
+    - afw-appadmin-01x.example.coach
+    - afw-appadmin-02x.example.coach
+    - afw-appadmin-03x.example.coach
+    - afw-appadmin-04x.example.coach
+    hostgroup:
+    - afw-appadmin
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-dmzproxy is present
+
+  community.general.ipa_hostgroup:
+    name: afw-dmzproxy
+    state: present
+    description: Example Org DMZ Proxy Systems
+    host:
+    - afw-dmzproxy-01t.example.coach
+    - afw-dmzproxy-02t.example.coach
+    hostgroup:
+    - afw-dmzproxy
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-earth is present
+
+  community.general.ipa_hostgroup:
+    name: afw-earth
+    state: present
+    description: Example Org Google Earth Systems
+    host:
+    - afw-earth-01d.example.coach
+    - afw-earth-02d.example.coach
+    - afw-earth-01t.example.coach
+    - afw-earth-02t.example.coach
+    hostgroup:
+    - afw-earth
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-edh is present
+
+  community.general.ipa_hostgroup:
+    name: afw-edh
+    state: present
+    description: Example Org EDH Systems
+    host:
+    - afw-edh-01d.example.coach
+    - afw-edh-01t.example.coach
+    - afw-edh-02d.example.coach
+    - afw-edh-02t.example.coach
+    - afw-edh-03d.example.coach
+    - afw-edh-03t.example.coach
+    - afw-edh-04d.example.coach
+    - afw-edh-04t.example.coach
+    - afw-edh-05d.example.coach
+    - afw-edh-05t.example.coach
+    hostgroup:
+    - afw-edh
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-gfapp is present
+
+  community.general.ipa_hostgroup:
+    name: afw-gfapp
+    state: present
+    description: Example Org Glassfish Systems
+    host:
+    - afw-gfapp-01d.example.coach
+    - afw-gfapp-01t.example.coach
+    - afw-gfapp-02d.example.coach
+    - afw-gfapp-02t.example.coach
+    hostgroup:
+    - afw-gfapp
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-globe is present
+
+  community.general.ipa_hostgroup:
+    name: afw-globe
+    state: present
+    description: Example Org GeoServer Systems
+    host:
+    - afw-globe-01d.example.coach
+    - afw-globe-01t.example.coach
+    - afw-globe-02t.example.coach
+    - afw-globe-03t.example.coach
+    hostgroup:
+    - afw-globe
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-jetxfer is present
+
+  community.general.ipa_hostgroup:
+    name: afw-jetxfer
+    state: present
+    description: Example Org Joint Environmental Toolkit Systems
+    host:
+    - afw-jetxfer-01t.example.coach
+    - afw-jetxfer-02t.example.coach
+    hostgroup:
+    - afw-jetxfer
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-jms is present
+
+  community.general.ipa_hostgroup:
+    name: afw-jms
+    state: present
+    description: Example Org JMS Systems
+    host:
+    - afw-jms-01d.example.coach
+    - afw-jms-01t.example.coach
+    - afw-jms-02d.example.coach
+    - afw-jms-02t.example.coach
+    - afw-jms-03d.example.coach
+    - afw-jms-03t.example.coach
+    - afw-jms-04d.example.coach
+    - afw-jms-04t.example.coach
+    hostgroup:
+    - afw-jms
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-metsat is present
+
+  community.general.ipa_hostgroup:
+    name: afw-metsat
+    state: present
+    description: Example Org Metsat Systems
+    host:
+    - afw-metsat-01d.example.coach
+    - afw-metsat-01t.example.coach
+    - afw-metsat-02d.example.coach
+    - afw-metsat-02t.example.coach
+    - afw-metsat-02d.example.coach
+    - afw-metsat-03t.example.coach
+    - afw-metsat-04t.example.coach
+    - afw-metsat-05t.example.coach
+    - afw-metsat-06t.example.coach
+    hostgroup:
+    - afw-metsat
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-metweb is present
+
+  community.general.ipa_hostgroup:
+    name: afw-metweb
+    state: present
+    description: Example Org Metweb Systems
+    host:
+    - afw-metsat-01d.example.coach
+    - afw-metweb-01d.example.coach
+    - afw-metweb-01t.example.coach
+    - afw-metweb-02t.example.coach
+    hostgroup:
+    - afw-metweb
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-mw is present
+
+  community.general.ipa_hostgroup:
+    name: afw-mw
+    state: present
+    description: Example Org Moving Weather Systems
+    host:
+    - afw-mw-01t.example.coach
+    - afw-mw-02t.example.coach
+    - afw-mw-03t.example.coach
+    - afw-mw-04t.example.coach
+    - afw-mw-05t.example.coach
+    - afw-mw-01d.example.coach
+    - afw-mw-02d.example.coach
+    - afw-mw-03d.example.coach
+    - afw-mw-04d.example.coach
+    - afw-mw-05d.example.coach
+    - afw-ptmw-01t.example.coach
+    - afw-ptmw-02t.example.coach
+    - afw-ptmw-03t.example.coach
+    hostgroup:
+    - afw-mw
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-oam is present
+
+  community.general.ipa_hostgroup:
+    name: afw-oam
+    state: present
+    description: Example Org OAM Systems
+    host:
+    - afw-oam-01d.example.coach
+    - afw-oam-01t.example.coach
+    - afw-oam-02d.example.coach
+    - afw-oam-02t.example.coach
+    hostgroup:
+    - afw-oam
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-ows is present
+
+  community.general.ipa_hostgroup:
+    name: afw-ows
+    state: present
+    description: Example Org OWS Systems
+    host:
+    - afw-ows-01t.example.coach
+    - afw-ows-02t.example.coach
+    hostgroup:
+    - afw-ows
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-php is present
+
+  community.general.ipa_hostgroup:
+    name: afw-php
+    state: present
+    description: Example Org php Systems
+    host:
+    - afw-php-01d.example.coach
+    - afw-php-01t.example.coach
+    - afw-php-02d.example.coach
+    - afw-php-02t.example.coach
+    hostgroup:
+    - afw-php
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-ps is present
+
+  community.general.ipa_hostgroup:
+    name: afw-ps
+    state: present
+    description: Example Org Product Services Systems
+    host:
+    - afw-ps-01d.example.coach
+    - afw-ps-01t.example.coach
+    - afw-ps-01v.example.coach
+    - afw-ps-02d.example.coach
+    - afw-ps-02t.example.coach
+    - afw-ps-02v.example.coach
+    - afw-ps-03t.example.coach
+    - afw-ps-03v.example.coach
+    - afw-ps-04t.example.coach
+    - afw-ps-04v.example.coach
+    - afw-ps-05t.example.coach
+    - afw-ps-06t.example.coach
+    - afw-ps-07t.example.coach
+    - afw-ps-08t.example.coach
+    hostgroup:
+    - afw-ps
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-pslite is present
+
+  community.general.ipa_hostgroup:
+    name: afw-pslite
+    state: present
+    description: Example Org afw-pslite Systems
+    host:
+    - afw-pslite-01d.example.coach
+    - afw-pslite-02d.example.coach
+    hostgroup:
+    - afw-pslite
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-splunk is present
+
+  community.general.ipa_hostgroup:
+    name: afw-splunk
+    state: present
+    description: Example Org Splunk Systems
+    host:
+    - afw-splunkin-01t.example.coach
+    - afw-splunkin-02t.example.coach
+    - afw-splunkmgt-01t.example.coach
+    - afw-splunksh-01t.example.coach
+    - afw-splunksh-02t.example.coach
+    - afw-splunksh-03t.example.coach
+    - afw-splunksh-04t.example.coach
+    hostgroup:
+    - afw-splunk
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-swafs is present
+
+  community.general.ipa_hostgroup:
+    name: afw-swafs
+    state: present
+    description: Example Org afw-swafs Systems
+    host:
+    - afw-swafs-01d.example.coach
+    - afw-swafs-01t.example.coach
+    - afw-swafs-02d.example.coach
+    - afw-swafs-02t.example.coach
+    - afw-swafs-b01d.example.coach
+    - afw-swafs-b01t.example.coach
+    - afw-swafs-b02d.example.coach
+    - afw-swafs-b02t.example.coach
+    hostgroup:
+    - afw-swafs
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-webdas is present
+
+  community.general.ipa_hostgroup:
+    name: afw-webdas
+    state: present
+    description: Example Org afw-webdas Systems
+    host:
+    - afw-webdas-01d.example.coach
+    - afw-webdas-01t.example.coach
+    - afw-webdas-01v.example.coach
+    hostgroup:
+    - afw-webdas
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-webgate is present
+
+  community.general.ipa_hostgroup:
+    name: afw-webgate
+    state: present
+    description: Example Org afw-webgate Systems
+    host:
+    - afw-webgate-01d.example.coach
+    - afw-webgate-02d.example.coach
+    hostgroup:
+    - afw-webgate
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-webmisc is present
+
+  community.general.ipa_hostgroup:
+    name: afw-webmisc
+    state: present
+    description: Example Org afw-webmisc Systems
+    host:
+    - afw-webmisc-01d.example.coach
+    - afw-webmisc-01t.example.coach
+    - afw-webmisc-01v.example.coach
+    - afw-webmisc-02d.example.coach
+    - afw-webmisc-02t.example.coach
+    - afw-webmisc-02v.example.coach
+    hostgroup:
+    - afw-webmisc
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-webproxy is present
+
+  community.general.ipa_hostgroup:
+    name: afw-webproxy
+    state: present
+    description: Example Org afw-webproxy Systems
+    host:
+    - afw-webproxy-01t.example.coach
+    - afw-webproxy-02t.example.coach
+    hostgroup:
+    - afw-webproxy
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-virapp is present
+
+  community.general.ipa_hostgroup:
+    name: afw-virapp
+    state: present
+    description: Example Org afw-virapp Systems
+    host:
+    - afw-virapp-01d.example.coach
+    - afw-virapp-01t.example.coach
+    - afw-virapp-02d.example.coach
+    - afw-virapp-02t.example.coach
+    hostgroup:
+    - afw-virapp
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-vwingest is present
+
+  community.general.ipa_hostgroup:
+    name: afw-vwingest
+    state: present
+    description: Example Org afw-vwingest Systems
+    host:
+    - afw-vwingest-a01t.example.coach
+    - afw-vwingest-a02t.example.coach
+    - afw-vwingest-b01t.example.coach
+    - afw-vwingest-b02t.example.coach
+    - afw-vwingest-c01t.example.coach
+    - afw-vwingest-c02t.example.coach
+    - afw-vwingest-d01t.example.coach
+    - afw-vwingest-d02t.example.coach
+    - afw-vwingest-a01v.example.coach
+    - afw-vwingest-b01v.example.coach
+    - afw-vwingest-c01v.example.coach
+    - afw-vwingest-d01v.example.coach
+    - afw-vwingest-a01d.example.coach
+    - afw-vwingest-a02d.example.coach
+    - afw-vwingest-b01d.example.coach
+    - afw-vwingest-b02d.example.coach
+    - afw-vwingest-c01d.example.coach
+    - afw-vwingest-c02d.example.coach
+    - afw-vwingest-d01d.example.coach
+    - afw-vwingest-a01x.example.coach
+    - afw-vwingest-a02x.example.coach
+    hostgroup:
+    - afw-vwingest
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afw-vwproxy is present
+
+  community.general.ipa_hostgroup:
+    name: afw-vwproxy
+    state: present
+    description: Example Org afw-vwproxy Systems
+    host:
+    - afw-vwproxy-a01d.example.coach
+    - afw-vwproxy-a01t.example.coach
+    - afw-vwproxy-a01x.example.coach
+    - afw-vwproxy-a02d.example.coach
+    - afw-vwproxy-a02t.example.coach
+    - afw-vwproxy-a02v.example.coach
+    - afw-vwproxy-b01d.example.coach
+    - afw-vwproxy-b01t.example.coach
+    - afw-vwproxy-b02t.example.coach
+    - afw-vwproxy-b02v.example.coach
+    - afw-vwproxy-c01d.example.coach
+    - afw-vwproxy-c01t.example.coach
+    - afw-vwproxy-c02d.example.coach
+    - afw-vwproxy-c02t.example.coach
+    - afw-vwproxy-c02v.example.coach
+    - afw-vwproxy-d01d.example.coach
+    - afw-vwproxy-d01t.example.coach
+    - afw-vwproxy-d01x.example.coach
+    - afw-vwproxy-d02d.example.coach
+    - afw-vwproxy-d02t.example.coach
+    - afw-vwproxy-d02v.example.coach
+    hostgroup:
+    - afw-vwproxy
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group wxrd-aersat is present
+
+  community.general.ipa_hostgroup:
+    name: wxrd-aersat
+    state: present
+    description: Example Org wxrd-aersat Systems
+    host:
+    - wxrd-aersat-01x.example.coach
+    hostgroup:
+    - wxrd-aersat
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group wxrd-swit is present
+
+  community.general.ipa_hostgroup:
+    name: wxrd-swit
+    state: present
+    description: Example Org wxrd-swit Systems
+    host:
+    - wxrd-swit-01d.example.coach
+    - wxrd-swit-01t.example.coach
+    hostgroup:
+    - wxrd-swit
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group sems-cm is present
+
+  community.general.ipa_hostgroup:
+    name: sems-cm
+    state: present
+    description: Example Org sems-cm Systems
+    host:
+    - sems-cm-01d.example.coach
+    - sems-cm-01t.example.coach
+    hostgroup:
+    - sems-cm
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group sems-cmnode is present
+
+  community.general.ipa_hostgroup:
+    name: sems-cmnode
+    state: present
+    description: Example Org sems-cmnode Systems
+    host:
+    - sems-cmnode-01t.example.coach
+    - sems-cmnode-02t.example.coach
+    - sems-cmnode-03t.example.coach
+    - sems-cmnode-04t.example.coach
+    hostgroup:
+    - sems-cmnode
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group sysc-alpha is present
+
+  community.general.ipa_hostgroup:
+    name: sysc-alpha
+    state: present
+    description: Example Org sysc-alpha Systems
+    host:
+    - sysc-alpha-01d.example.coach
+    - sysc-alpha-01t.example.coach
+    - sysc-alpha-02d.example.coach
+    - sysc-alpha-02t.example.coach
+    - sysc-alpha-03d.example.coach
+    - sysc-alpha-03t.example.coach
+    hostgroup:
+    - sysc-alpha
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group sysc-sat is present
+
+  community.general.ipa_hostgroup:
+    name: sysc-sat
+    state: present
+    description: Example Org sysc-sat Systems
+    host:
+    - sysc-sat-01d.example.coach
+    - sysc-sat-01t.example.coach
+    hostgroup:
+    - sysc-sat
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group sysc-swx is present
+
+  community.general.ipa_hostgroup:
+    name: sysc-swx
+    state: present
+    description: Example Org sysc-swx Systems
+    host:
+    - sysc-swx-01d.example.coach
+    - sysc-swx-01t.example.coach
+    hostgroup:
+    - sysc-swx
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group sysc-volc is present
+
+  community.general.ipa_hostgroup:
+    name: sysc-volc
+    state: present
+    description: Example Org sysc-volc Systems
+    host:
+    - sysc-volc-01d.example.coach
+    - sysc-volc-01t.example.coach
+    hostgroup:
+    - sysc-volc
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group cm-pipeline is present
+
+  community.general.ipa_hostgroup:
+    name: cm-pipeline
+    state: present
+    description: Example Org cm-pipeline Systems
+    host:
+    - cm-pipeline-05d.example.coach
+    - cm-pipeline-06d.example.coach
+    - cm-pipeline-07d.example.coach
+    - cm-pipeline-08d.example.coach
+    hostgroup:
+    - cm-pipeline
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group dp2g-dtig is present
+
+  community.general.ipa_hostgroup:
+    name: dp2g-dtig
+    state: present
+    description: Example Org dp2g-dtig(Datapipe) Systems
+    host:
+    - dp2g-dgen-01t.example.coach
+    - dp2g-dtig-01d.example.coach
+    - dp2g-dtig-02d.example.coach
+    - dp2g-dtig-03d.example.coach
+    - dp2g-dtig-04d.example.coach
+    - dp2g-dtig-05d.example.coach
+    - dp2g-dtig-01t.example.coach
+    - dp2g-dtig-02t.example.coach
+    hostgroup:
+    - dp2g-dtig
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group wdd-avms is present
+
+  community.general.ipa_hostgroup:
+    name: wdd-avms
+    state: present
+    description: Example Org wdd-avms Systems
+    host:
+    - wdd-avms-01d.example.coach
+    - wdd-avms-01t.example.coach
+    - wdd-avms-02t.example.coach
+    - wdd-avms-03t.example.coach
+    - wdd-avms-04t.example.coach
+    hostgroup:
+    - wdd-avms
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group wdd-mdrg is present
+
+  community.general.ipa_hostgroup:
+    name: wdd-mdrg
+    state: present
+    description: Example Org wdd-mdrg Systems
+    host:
+    - wdd-mdrg-01t.example.coach
+    - wdd-mdrg-02t.example.coach
+    - wdd-mdrg-03t.example.coach
+    - wdd-mdrg-04t.example.coach
+    hostgroup:
+    - wdd-mdrg
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group wdd-pais is present
+
+  community.general.ipa_hostgroup:
+    name: wdd-pais
+    state: present
+    description: Example Org wdd-pais Systems
+    host:
+    - wdd-pais-01d.example.coach
+    - wdd-pais-02d.example.coach
+    - wdd-pais-03d.example.coach
+    hostgroup:
+    - wdd-pais
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group wdd-wda is present
+
+  community.general.ipa_hostgroup:
+    name: wdd-wda
+    state: present
+    description: Example Org wdd-wda Systems
+    host:
+    - wdd-wda-01d.example.coach
+    - wdd-wda-02d.example.coach
+    - wdd-wda-03d.example.coach
+    - wdd-wda-01x.example.coach
+    - wdd-wda-02x.example.coach
+    hostgroup:
+    - wdd-wda
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group sym-cm is present
+
+  community.general.ipa_hostgroup:
+    name: sym-cm
+    state: present
+    description: Example Org sym-cm Systems
+    host:
+    - sym-cm-01d.example.coach
+    hostgroup:
+    - sym-cm
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group gvcm-cmsrv is present
+
+  community.general.ipa_hostgroup:
+    name: gvcm-cmsrv
+    state: present
+    description: Example Org gvcm-cmsrv Systems
+    host:
+    - gvcm-cmsrv-a01d.example.coach
+    - gvcm-cmsrv-a02d.example.coach
+    - gvcm-cmsrv-a03d.example.coach
+    - gvcm-cmsrv-a04d.example.coach
+    hostgroup:
+    - gvcm-cmsrv
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group wdd-globus is present
+
+  community.general.ipa_hostgroup:
+    name: wdd-globus
+    state: present
+    description: Example Org wdd-globus Systems
+    host:
+    - wdd-globus-01d.example.coach
+    - wdd-globus-01t.example.coach
+    - wdd-globus-02t.example.coach
+    - wdd-globus-03t.example.coach
+    hostgroup:
+    - wdd-globus
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true
+
+- name: Ensure host-group afwwebs-refresh is present
+
+  community.general.ipa_hostgroup:
+    name: afwwebs-refresh
+    state: present
+    description: Example Org AFWWEBS Systems
+    host:
+    - afw-pool-a01d.example.coach
+    - afw-pool-a02d.example.coach
+    - afw-pool-a03d.example.coach
+    - afw-pool-a04d.example.coach
+    - afw-pool-b01d.example.coach
+    - afw-pool-b02d.example.coach
+    - afw-pool-b03d.example.coach
+    - afw-pool-b04d.example.coach
+    - afw-pool-c01d.example.coach
+    - afw-pool-c02d.example.coach
+    - afw-pool-c03d.example.coach
+    - afw-pool-c04d.example.coach
+    - afw-pool-d01d.example.coach
+    - afw-pool-d02d.example.coach
+    - afw-pool-d03d.example.coach
+    - afw-pool-d04d.example.coach
+    - afw-pool-e01d.example.coach
+    - afw-pool-e02d.example.coach
+    - afw-pool-e03d.example.coach
+    - afw-pool-e04d.example.coach
+    - afw-ingestvw-a01d.example.coach
+    - afw-ingestvw-a02d.example.coach
+    - afw-ingestvw-b01d.example.coach
+    - afw-ingestvw-b02d.example.coach
+    - afw-ingestvw-c01d.example.coach
+    - afw-ingestvw-c02d.example.coach
+    - afw-ingestvw-d01d.example.coach
+    - afw-ingestvw-d02d.example.coach
+    - afw-sat-01d.example.coach
+    - afw-sat-02d.example.coach
+    - afw-sat-03d.example.coach
+    - afw-sat-04d.example.coach
+    - afw-sat-05d.example.coach
+    - afw-sat-06d.example.coach
+    - afw-wxview-01d.example.coach
+    - afw-wxview-02d.example.coach
+    - afw-phpweb-01d.example.coach
+    - afw-phpweb-02d.example.coach
+    - afw-services-01d.example.coach
+    - afw-services-02d.example.coach
+    - afw-services-03d.example.coach
+    - afw-services-04d.example.coach
+    - afw-services-05d.example.coach
+    - afw-services-06d.example.coach
+    - afw-services-07d.example.coach
+    - afw-services-08t.example.coach
+    - afw-clientvw-a01d.example.coach
+    - afw-clientvw-a02d.example.coach
+    - afw-clientvw-a03d.example.coach
+    - afw-clientvw-a04d.example.coach
+    - afw-clientvw-a05d.example.coach
+    - afw-clientvw-a06d.example.coach
+    - afw-clientvw-b01d.example.coach
+    - afw-clientvw-b02d.example.coach
+    - afw-clientvw-b03d.example.coach
+    - afw-clientvw-b04d.example.coach
+    - afw-clientvw-c01d.example.coach
+    - afw-clientvw-c02d.example.coach
+    - afw-clientvw-c03d.example.coach
+    - afw-clientvw-c04d.example.coach
+    - afw-clientvw-d01d.example.coach
+    - afw-clientvw-d02d.example.coach
+    - afw-clientvw-d03d.example.coach
+    - afw-clientvw-d04d.example.coach
+    - afw-miscweb-01d.example.coach
+    - afw-miscweb-02d.example.coach
+    - afw-ingestvw-a01t.example.coach
+    - afw-ingestvw-a02t.example.coach
+    - afw-ingestvw-b01t.example.coach
+    - afw-ingestvw-b02t.example.coach
+    - afw-ingestvw-c01t.example.coach
+    - afw-ingestvw-c02t.example.coach
+    - afw-ingestvw-d01t.example.coach
+    - afw-ingestvw-d02t.example.coach
+    - afw-sat-01t.example.coach
+    - afw-sat-02t.example.coach
+    - afw-sat-03t.example.coach
+    - afw-sat-04t.example.coach
+    - afw-sat-05t.example.coach
+    - afw-sat-06t.example.coach
+    - afw-wxview-01t.example.coach
+    - afw-wxview-02t.example.coach
+    - afw-phpweb-01t.example.coach
+    - afw-phpweb-02t.example.coach
+    - afw-services-01t.example.coach
+    - afw-services-02t.example.coach
+    - afw-services-03t.example.coach
+    - afw-services-04t.example.coach
+    - afw-services-05t.example.coach
+    - afw-services-06t.example.coach
+    - afw-services-07t.example.coach
+    - afw-services-08t.example.coach
+    - afw-clientvw-a01t.example.coach
+    - afw-clientvw-a02t.example.coach
+    - afw-clientvw-a03t.example.coach
+    - afw-clientvw-a04t.example.coach
+    - afw-clientvw-a05t.example.coach
+    - afw-clientvw-a06t.example.coach
+    - afw-clientvw-b01t.example.coach
+    - afw-clientvw-b02t.example.coach
+    - afw-clientvw-b03t.example.coach
+    - afw-clientvw-b04t.example.coach
+    - afw-clientvw-c01t.example.coach
+    - afw-clientvw-c02t.example.coach
+    - afw-clientvw-c03t.example.coach
+    - afw-clientvw-c04t.example.coach
+    - afw-clientvw-d01t.example.coach
+    - afw-clientvw-d02t.example.coach
+    - afw-clientvw-d03t.example.coach
+    - afw-clientvw-d04t.example.coach
+    - afw-miscweb-01t.example.coach
+    - afw-miscweb-02t.example.coach
+    - afw-haproxy-01t.example.coach
+    - afw-haproxy-02t.example.coach
+    - afw-ingestvw-a01v.example.coach
+    - afw-ingestvw-a02v.example.coach
+    - afw-ingestvw-b01v.example.coach
+    - afw-ingestvw-b02v.example.coach
+    - afw-ingestvw-c01v.example.coach
+    - afw-ingestvw-c02v.example.coach
+    - afw-ingestvw-d01v.example.coach
+    - afw-ingestvw-d02v.example.coach
+    - afw-sat-01v.example.coach
+    - afw-sat-02v.example.coach
+    - afw-sat-03v.example.coach
+    - afw-sat-04v.example.coach
+    - afw-sat-05v.example.coach
+    - afw-sat-06v.example.coach
+    - afw-wxview-01v.example.coach
+    - afw-wxview-02v.example.coach
+    - afw-phpweb-01v.example.coach
+    - afw-phpweb-02v.example.coach
+    - afw-services-01v.example.coach
+    - afw-services-02v.example.coach
+    - afw-services-03v.example.coach
+    - afw-services-04v.example.coach
+    - afw-services-05v.example.coach
+    - afw-services-06v.example.coach
+    - afw-services-07v.example.coach
+    - afw-services-08v.example.coach
+    - afw-clientvw-a01v.example.coach
+    - afw-clientvw-a02v.example.coach
+    - afw-clientvw-a03v.example.coach
+    - afw-clientvw-a04v.example.coach
+    - afw-clientvw-a05v.example.coach
+    - afw-clientvw-a06v.example.coach
+    - afw-clientvw-b01v.example.coach
+    - afw-clientvw-b02v.example.coach
+    - afw-clientvw-b03v.example.coach
+    - afw-clientvw-b04v.example.coach
+    - afw-clientvw-c01v.example.coach
+    - afw-clientvw-c02v.example.coach
+    - afw-clientvw-c03v.example.coach
+    - afw-clientvw-c04v.example.coach
+    - afw-clientvw-d01v.example.coach
+    - afw-clientvw-d02v.example.coach
+    - afw-clientvw-d03v.example.coach
+    - afw-clientvw-d04v.example.coach
+    - afw-miscweb-01v.example.coach
+    - afw-miscweb-02v.example.coach
+    hostgroup:
+    - afwwebs-refresh
+    ipa_host: idm01.example.coach
+    ipa_user: "admin"
+    ipa_pass: "{{ipa_admin_password}}"
+  ignore_errors: true

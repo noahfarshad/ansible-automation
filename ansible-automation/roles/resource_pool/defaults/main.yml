@@ -1,0 +1,8 @@
+vapp_mem_shares: normal
+vapp_mem_limit: -1
+vapp_mem_reservation: 0
+vapp_mem_expandable: yes
+vapp_cpu_shares: normal
+vapp_cpu_limit: -1
+vapp_cpu_reservation: 0
+vapp_cpu_expandable: yes

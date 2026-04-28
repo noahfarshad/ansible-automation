@@ -1,0 +1,8 @@
+---
+
+microservices_dir: /opt/microservices
+userPresence_dir: "{{microservices_dir}}/userPresence"
+images_dir: "{{microservices_dir}}/images"
+microservices_stack_name: microservices
+microservice_network: gc2_services
+java_image: 10.10.10.89:5000/java-base:1.8.0_231

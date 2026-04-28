@@ -1,0 +1,47 @@
+# ===========================================================================
+# Real inventory and secrets — NEVER COMMIT
+# ===========================================================================
+inventory/
+!inventory.example/
+
+# Vault password file (used by ansible-playbook to decrypt vault.yml)
+.vault_pass
+.vault_password
+*.vault_pass
+
+# Galaxy-installed collections (the role library is bundled at ./roles, not gitignored)
+collections/ansible_collections/
+
+# ===========================================================================
+# Ansible runtime artifacts
+# ===========================================================================
+*.retry
+.ansible-cache/
+ansible.log
+*.log
+
+# ===========================================================================
+# Editor / OS
+# ===========================================================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ===========================================================================
+# Python (in case anyone runs scripts here)
+# ===========================================================================
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.venv/
+
+# ===========================================================================
+# Local-only overrides
+# ===========================================================================
+local.yml
+*.local

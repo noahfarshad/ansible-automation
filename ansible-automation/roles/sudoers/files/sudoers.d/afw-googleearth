@@ -1,0 +1,83 @@
+# This sudo config file allows members of the GoogleEarth team to perform certain actions AS ROOT!
+
+# User Aliases
+User_Alias 	GOOGLE_INSTALL = 	+un_sems-scs,+un_tads-scs
+User_Alias 	GOOGLE_SUSTAIN = 	+un_16th-metserv-t,+un_16th-geoapps-t	
+
+# These are the allowed commands, referenced later
+Cmnd_Alias	INSTALL_CMD =		/gevol/install/InstallGEFusion.sh, \
+					/gevol/install/InstallGEFusionGUI.sh, \
+					/bin/chmod 7?5 /opt/google/install/, \
+					/bin/chmod 7?5 /opt/google/install, \
+					/bin/chmod 7?5 /opt/google/.users/, \
+					/bin/chmod 7?5 /opt/google/.users, \
+					/gevol/install/GEEFusionPro-4.4.1-20130207/InstallGEFusion.sh, \
+					/gevol/install/GEEServer-4.4.1-20130207/InstallGEServer.sh
+
+Cmnd_Alias      UNINSTALL_CMD =		/gevol/install/Uninstall_Google_Earth_Enterprise_Fusion_GUI.sh, \
+					/gevol/install/Uninstall_Google_Earth_Enterprise_Fusion.sh, \
+					/ess/afwwebs/googlefusion/gevol/install/GEEFusionPro-4.4.1-20130207/Uninstall_Google_Earth_Enterprise_Fusion_GUI.sh, \
+					/ess/afwwebs/googlefusion/gevol/install/GEEFusionPro-4.4.1-20130207/Uninstall_Google_Earth_Enterprise_Fusion.sh, \
+					/ess/afwwebs/googlefusion/gevol/install/GEEServer-4.4.1-20130207/Uninstall_Google_Earth_Enterprise_Server.sh, \
+					/gevol/install/GEEFusionPro-4.4.1-20130207/Uninstall_Google_Earth_Enterprise_Fusion.sh, \
+					/gevol/install/GEEServer-4.4.1-20130207/Uninstall_Google_Earth_Enterprise_Server.sh, \
+					/bin/rm -rf /etc/opt/google/, \
+					/bin/rm -rf /etc/opt/google, \
+					/bin/rm -rf /opt/google/*, \
+					/bin/rm -rf /opt/google, \
+					/bin/rm -rf /var/opt/google/*, \
+					/bin/rm -rf /var/opt/google, \
+					/bin/rm -rf /gevol/* 
+
+Cmnd_Alias	NOEXEC_CMD =		/bin/vi	/gevol/install/Uninstall_Google_Earth_Enterprise_Fusion.sh, \
+					/bin/vi /gevol/install/Uninstall_Google_Earth_Enterprise_FusionGUI.sh, \
+					/bin/vi /ess/afwwebs/googlefusion/gevol/install/GEEFusionPro-4.4.1-20130207/Uninstall_Google_Earth_Enterprise_Fusion.sh, \
+					/bin/vi /ess/afwwebs/googlefusion/gevol/install/GEEFusionPro-4.4.1-20130207/Uninstall_Google_Earth_Enterprise_FusionGUI.sh, \
+					/bin/vi Uninstall_Google_Earth_Enterprise_Fusion.sh, \
+					/bin/vi Uninstall_Google_Earth_Enterprise_FusionGUI.sh, \
+					/bin/vi /etc/init.d/geserver, \
+					/bin/vi /opt/google/getomcat/bin/setenv.sh, \
+					/bin/vi /var/opt/google/*, \
+					/bin/vi /etc/opt/google/*, \
+					/bin/vi /opt/google/* 
+
+Cmnd_Alias	RUN_CMD =		/etc/init.d/gefusion, \
+					/etc/init.d/geserver
+
+Cmnd_Alias      CONFIG_CMD =		/opt/google/bin/geconfigureassetroot, \
+					/opt/google/bin/getop, \
+					/opt/google/bin/geserveradmin,\
+					/opt/google/bin/gedisconnectedclean, \
+					/opt/google/bin/gedisconnectedpublish, \
+					/opt/google/bin/gedisconnectedreceive, \ 
+					/opt/google/bin/gedisconnectedsend, \
+					/opt/google/bin/gepublishdatabase, \
+					/opt/google/bin/geselectassetroot, \
+					/opt/google/bin/geselectpublishroot, \
+					/opt/google/bin/geupgradeassetroot
+
+# we need to define the sustainment commands better...
+Cmnd_Alias 	SUSTAIN_CMD = 		/usr/bin/id, !/usr/bin/passwd, !/bin/sh, !/bin/bash, !/bin/csh, !/bin/tcsh 
+
+# These define the possible application accounts (comma-separated)
+#Runas_Alias GOOGLEEARTH_APPACCT = j2eeadmin
+
+# Note: no Host_Aliases are defined here, since this will be controlled by wherever this file is deployed from satellite server
+# (meaning it will work on localhost, wherever this file exists)
+#Host_Alias 	EARTH_DEV = 		afw-earth-01d
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+# Commands that installers may run
+GOOGLE_INSTALL	EARTH_DEV = LOG_OUTPUT: LOG_INPUT: INSTALL_CMD, UNINSTALL_CMD, RUN_CMD, CONFIG_CMD
+GOOGLE_INSTALL	EARTH_DEV = LOG_OUTPUT: LOG_INPUT: NOEXEC: NOEXEC_CMD
+GOOGLE_INSTALL  EARTH_TEST = LOG_OUTPUT: LOG_INPUT: INSTALL_CMD, UNINSTALL_CMD, RUN_CMD, CONFIG_CMD
+GOOGLE_INSTALL  EARTH_TEST = LOG_OUTPUT: LOG_INPUT: NOEXEC: NOEXEC_CMD
+
+
+# Commands that sustainment may run
+GOOGLE_SUSTAIN	EARTH_DEV = LOG_OUTPUT: LOG_INPUT: SUSTAIN_CMD, RUN_CMD, CONFIG_CMD
+GOOGLE_SUSTAIN  EARTH_TEST = LOG_OUTPUT: LOG_INPUT: SUSTAIN_CMD, RUN_CMD, CONFIG_CMD

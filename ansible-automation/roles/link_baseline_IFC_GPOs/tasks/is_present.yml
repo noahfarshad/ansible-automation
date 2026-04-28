@@ -1,0 +1,171 @@
+---
+## This role needs to be ran as the primary DC to work properly. Either switch roles to dc1, or set hosts in the playbook to the primaryDC 
+
+# Remove unsupported IFC OU
+# - name: Ensure {{pre_ifc}} OU is absent #to delete if protected
+#   microsoft.ad.ou:
+#     name: '{{pre_ifc}}'
+#     state: absent
+
+###Check for C:\GPO_XXXX according to ADD doc number
+
+- name: Set environment color for IFC if even
+  ansible.builtin.set_fact:
+    color: 'BLUE'
+  when: "{{ ifc[-1::] }} % 2 == 0"
+
+- name: Set environment color for IFC if odd
+  ansible.builtin.set_fact: 
+    color: 'GREEN'
+  when: "{{ ifc[-1::] }} % 2 != 0"
+
+# Verify OUs are present
+- name: Verify {{ domain_ou | upper }}_{{ color }} OU exists
+  microsoft.ad.ou:
+    name: '{{ domain_ou | upper }}_{{ color }}'
+    protect_from_deletion: false
+    state: present 
+
+- name: Verify {{ domain_ou | upper }}_{{ color }} Servers OU exists
+  microsoft.ad.ou:
+    name: Servers
+    path: OU={{ domain_ou | upper }}_{{ color }},DC={{ domain_ou }},DC=local
+    protect_from_deletion: false
+    state: present
+
+- name: Verify {{ domain_ou | upper }}_{{ color }} Workstations OU exists 
+  microsoft.ad.ou:
+    name: Workstations
+    path: OU={{ domain_ou | upper }}_{{ color }},DC={{ domain_ou }},DC=local
+    protect_from_deletion: false
+    state: present
+
+- name: Verify {{ domain_ou | upper }}_{{ color }} VDI OU exists
+  microsoft.ad.ou:
+    name: VDI
+    path: OU={{ domain_ou | upper }}_{{ color }},DC={{ domain_ou }},DC=local
+    protect_from_deletion: false
+    state: present
+
+- name: Verify {{ domain_ou | upper }}_{{ color }} RHEL OU exists
+  microsoft.ad.ou:
+    name: RHEL
+    path: OU={{ domain_ou | upper }}_{{ color }},DC={{ domain_ou }},DC=local
+    protect_from_deletion: false
+    state: present
+
+# Verify Domain Controllers OU is present
+- name: Verify Domain Controllers OU exists
+  microsoft.ad.ou:
+    name: Domain Controllers
+    protect_from_deletion: false
+    state: present
+
+# Link Baseline IFC GPOs
+- name: Link {{ domain_ou | upper }}_{{ ADD_PN_BL }} VDI GPOs to {{ domain_ou | upper }}_{{ color }}
+  ansible.windows.win_shell: |
+    $exists = (Get-GPO -All).DisplayName
+    $name = "{{ domain_ou | upper }}_{{ ADD_PN_BL }} - {{item}}"
+    foreach ($e in $exists)
+    {
+      if ($name -in $e)
+      {
+        $LinksPaths = ""
+        $LinksEnableds = ""
+
+        [xml]$gpocontent =  Get-GPOReport $e -ReportType xml
+  
+        $LinksPaths = $gpocontent.GPO.LinksTo #| %{$_.SOMPath}
+        $LinksEnableds = $gpocontent.GPO.LinksTo #| %{$_.Enabled}
+
+        $VDIOU = "ou=VDI,ou={{ domain_ou | upper }}_{{ color }},DC={{ domain_ou }},DC=local"
+        $LinkedVDIGPOs = Get-ADOrganizationalUnit $VDIOU | Select-object -ExpandProperty LinkedGroupPolicyObjects
+
+        $VDIOU | ForEach-Object { if ($name -notin $LinkedVDIGPOs) { New-GPLink -Name $name -Target $VDIOU -LinkEnabled Yes -ErrorAction SilentlyContinue }}
+      }
+    }   
+  loop: "{{ vdi_gpos }}"
+  when: "{{ vdi_gpos }} | length > 0"
+
+- name: Link {{ domain_ou | upper }}_{{ ADD_PN_BL }} Workstations GPOs to {{ domain_ou | upper }}_{{ color }}
+  ansible.windows.win_shell: |
+    $exists = (Get-GPO -All).DisplayName
+    $name = "{{ domain_ou | upper }}_{{ ADD_PN_BL }} - {{item}}"
+    foreach ($e in $exists)
+    {
+      if ($name -in $e)
+      {
+        $LinksPaths = ""
+        $LinksEnableds = ""
+
+        [xml]$gpocontent =  Get-GPOReport $e -ReportType xml
+  
+        $LinksPaths = $gpocontent.GPO.LinksTo #| %{$_.SOMPath}
+        $LinksEnableds = $gpocontent.GPO.LinksTo #| %{$_.Enabled}
+
+        $VDIOU = "ou=VDI,ou={{ domain_ou | upper }}_{{ color }},DC={{ domain_ou }},DC=local"
+        $LinkedVDIGPOs = Get-ADOrganizationalUnit $VDIOU | Select-object -ExpandProperty LinkedGroupPolicyObjects
+
+        $WorkstationsOU = "ou=Workstations,ou={{ domain_ou | upper }}_{{ color }},DC={{ domain_ou }},DC=local"
+        $LinkedWorkstationsGPOs = Get-ADOrganizationalUnit $WorkstationsOU | Select-object -ExpandProperty LinkedGroupPolicyObjects
+
+        $VDIOU | ForEach-Object { if ($name -notin $LinkedVDIGPOs) { New-GPLink -Name $name -Target $VDIOU -LinkEnabled Yes -ErrorAction SilentlyContinue }}
+        $WorkstationsOU | ForEach-Object { if ($name -notin $LinkedWorkstationsGPOs) { New-GPLink -Name $name -Target $WorkstationsOU -LinkEnabled Yes -ErrorAction SilentlyContinue }}
+      }
+    }   
+  loop: "{{ workstations_gpos }}"
+  when: "{{ workstations_gpos }} | length > 0"
+
+- name: Link {{ domain_ou | upper }}_{{ ADD_PN_BL }} Common GPOs to {{ domain_ou | upper }}_{{ color }} and DC
+  ansible.windows.win_shell: |
+    $exists = (Get-GPO -All).DisplayName
+    $name = "{{ domain_ou | upper }}_{{ ADD_PN_BL }} - {{item}}"
+    foreach ($e in $exists)
+    {
+      if ($name -in $e)
+      {
+        $LinksPaths = ""
+        $LinksEnableds = ""
+
+        [xml]$gpocontent =  Get-GPOReport $e -ReportType xml
+  
+        $LinksPaths = $gpocontent.GPO.LinksTo #| %{$_.SOMPath}
+        $LinksEnableds = $gpocontent.GPO.LinksTo #| %{$_.Enabled}
+
+        $CommonOU = "ou={{ domain_ou | upper }}_{{ color }},DC={{ domain_ou }},DC=local"
+        $LinkedCommonGPOs = Get-ADOrganizationalUnit $CommonOU | Select-object -ExpandProperty LinkedGroupPolicyObjects
+
+        $DomainControllerOU = "ou=Domain Controllers,DC={{ domain_ou }},DC=local"
+        $LinkedDCGPOs = Get-ADOrganizationalUnit $DomainControllerOU | Select-object -ExpandProperty LinkedGroupPolicyObjects
+
+        $CommonOU | ForEach-Object { if ($name -notin $LinkedCommonGPOs) { New-GPLink -Name $name -Target $CommonOU -LinkEnabled Yes -ErrorAction SilentlyContinue }}
+        $DomainControllerOU | ForEach-Object { if ( $name -notin $LinkedDCGPOs ) { New-GPLink -Name $name -Target $DomainControllerOU -LinkEnabled Yes -ErrorAction SilentlyContinue }}
+      }
+    } 
+  loop: "{{ common_gpos }}"
+  when: "{{ common_gpos }} | length > 0"
+
+- name: Link {{ domain_ou | upper }}_{{ ADD_PN_BL }} Servers GPOs to {{ domain_ou | upper }}_{{ color }}
+  ansible.windows.win_shell: |
+    $exists = (Get-GPO -All).DisplayName
+    $name = "{{ domain_ou | upper }}_{{ ADD_PN_BL }} - {{item}}"
+    foreach ($e in $exists)
+    {
+      if ($name -in $e)
+      {
+        $LinksPaths = ""
+        $LinksEnableds = ""
+
+        [xml]$gpocontent =  Get-GPOReport $e -ReportType xml
+  
+        $LinksPaths = $gpocontent.GPO.LinksTo #| %{$_.SOMPath}
+        $LinksEnableds = $gpocontent.GPO.LinksTo #| %{$_.Enabled}
+
+        $ServersOU = "ou=Servers,ou={{ domain_ou | upper }}_{{ color }},DC={{ domain_ou }},DC=local"
+        $LinkedVServersGPOs = Get-ADOrganizationalUnit $ServersOU | Select-object -ExpandProperty LinkedGroupPolicyObjects
+
+        $ServersOU | ForEach-Object { if ($name -notin $LinkedVServersGPOs) { New-GPLink -Name $name -Target $ServersOU -LinkEnabled Yes -ErrorAction SilentlyContinue }}
+      }
+    }   
+  loop: "{{ servers_gpos }}"
+  when: "{{ servers_gpos }} | length > 0"

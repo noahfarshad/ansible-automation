@@ -1,0 +1,7 @@
+iptables_file_target: /etc/sysconfig/iptables
+systemd_service_dir: /usr/lib/systemd/
+yum_download_dir: files/
+iptables_services_rpm_version: 'latest'
+iptables_file_name_appender: "_base"
+
+external_vm_nic_required: False

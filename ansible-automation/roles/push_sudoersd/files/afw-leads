@@ -1,0 +1,22 @@
+# This sudo config file allows users to perform commands as leads
+
+# User Aliases
+User_Alias	LEADS_APPADMIN =	+un_sems-afwwebs,+un_tads-afwwebs
+
+# These are the allowed commands, referenced later
+# Cmnd_Alias    SOME_CMD                /bin/bash,/bin/cat
+
+# These define the possible application accounts (comma-separated)
+Runas_Alias	LEADS_APPACCT =		leads
+
+# These define the possible hosts that users are allowed to run commands on
+# These are defined already in the afw-j2eeadmin sudoers file
+# Host_Alias	EDIW_PROD =		afw-ediw-[01-04]p
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure.
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+# Group specific leads permissions
+LEADS_APPADMIN	EDIW_PROD = (LEADS_APPACCT) LOG_OUTPUT: LOG_INPUT:  ALL

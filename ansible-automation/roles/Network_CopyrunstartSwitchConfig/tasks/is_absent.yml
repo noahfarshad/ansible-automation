@@ -1,0 +1,9 @@
+---
+# tasks file for Network_CopyrunstartSwitchConfig — absent
+#
+# This role's operation is environment-specific or one-off and has no
+# clean automated inverse. Define teardown manually if needed.
+
+- name: "Network_CopyrunstartSwitchConfig — absent is a documented no-op"
+  ansible.builtin.debug:
+    msg: "Role 'Network_CopyrunstartSwitchConfig' has no automated inverse. Define teardown manually if required."

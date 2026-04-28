@@ -1,0 +1,13 @@
+---
+- name: "Checking if Apache24 service exists"
+  ansible.builtin.stat: path=/etc/init.d/apache24
+  register: apache24_status
+  tags:
+    - apache
+
+- name: "Restarting Apache24 Services"
+  become: true
+  ansible.builtin.service: name=apache24 state=restarted
+  when: apache24_status.stat.exists
+  tags:
+    - apache

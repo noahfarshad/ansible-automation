@@ -1,0 +1,18 @@
+---
+# defaults file for configure_affinity_OLD
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# affinity: ""
+# applicable_group_list: ""
+# applicable_rules_list: ""
+# length: ""
+# members: ""
+# string_name: ""
+# type: ""
+# vcenter_hostname: ""
+# vcenter_password: ""
+# vsphere_account: ""
+# vsphere_cluster: ""
+# vsphere_datacenter: ""

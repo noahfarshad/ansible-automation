@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>glassfish</short>
+  <description>This allows for glassfish domain connections.</description>
+  <port protocol="tcp" port="4848"/>
+  <port protocol="tcp" port="3130"/>
+  <port protocol="tcp" port="3139"/>
+  <port protocol="tcp" port="3120"/>
+  <port protocol="tcp" port="3020"/>
+  <port protocol="tcp" port="2110"/>
+  <port protocol="tcp" port="3110"/>
+  <port protocol="tcp" port="3119"/>
+  <port protocol="tcp" port="3240"/>
+  <port protocol="tcp" port="3239"/>
+  <port protocol="tcp" port="3250"/>
+  <port protocol="tcp" port="3259"/>
+  <port protocol="tcp" port="7676"/>
+  <port protocol="tcp" port="3820"/>
+  <port protocol="tcp" port="3920"/>
+  <port protocol="tcp" port="3700"/>
+  <port protocol="tcp" port="8686"/>
+  <port protocol="udp" port="67"/>
+  <port protocol="udp" port="68"/>
+  <port protocol="udp" port="137"/>
+  <port protocol="udp" port="138"/>
+  <port protocol="udp" port="1947"/>
+  <port protocol="udp" port="2110"/>
+  <port protocol="udp" port="3020"/>
+  <port protocol="udp" port="3120"/>
+  <port protocol="udp" port="3239"/>
+  <port protocol="udp" port="3240"/>
+</service>

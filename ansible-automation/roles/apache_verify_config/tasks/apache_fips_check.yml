@@ -1,0 +1,28 @@
+---
+
+- name: Grep for FIPS mode on in apache config files
+  ansible.builtin.shell: "docker exec {{apache_container}} grep -R ^[[:blank:]]*SSLFIPS {{apache_conf_d}}/httpd-ssl.conf"
+  register: sslfips
+  ignore_errors: true
+  tags:
+    - apache.check.config
+    - apache.check.fips
+        
+  changed_when: false
+- name: Output results of check
+  ansible.builtin.debug: 
+     msg: "{{sslfips.stdout}}"
+     verbosity: 1
+  tags:
+    - apache.check.config
+    - apache.check.fips
+
+# GC-29911.01: DAGR Apache container running in FIPS mode.
+- name: Check FIPS (fail if missing)
+  ansible.builtin.fail: 
+     msg: "'SSLFIPS on' not found in configuration"
+  when: 
+     - sslfips.stdout.find("SSLFIPS on") == -1
+  tags:
+    - apache.check.config
+    - apache.check.fips

@@ -1,0 +1,27 @@
+---
+# tasks file for create_nm_credentials — present
+
+# This task sets up Node Manager specific credentials
+
+- name: Move files into place
+
+  become_user: "{{os_user}}"
+  ansible.builtin.template: src="{{item}}" dest="{{domain_home}}"
+  loop:
+    - "{{export_nm_script}}"
+
+- name: Create gc2 nm config and key file location
+
+  become_user: "{{os_user}}"
+  ansible.builtin.file: dest="{{gc2_config_path}}" state=directory
+
+- name: Export node manager config and key files
+
+  become_user: "{{os_user}}"
+  ansible.builtin.shell: "echo 'y' | CONFIG_JVM_ARGS=\"-Djava.security.egd=file:/dev/./urandom\" {{gc2_wlst_path}} {{domain_home}}/{{export_nm_script}}"
+
+  changed_when: false
+- name: Remove the config file
+
+  become_user: "{{os_user}}"
+  ansible.builtin.file: path="{{domain_home}}/{{export_nm_script}}" state=absent

@@ -1,0 +1,30 @@
+# Message Settings
+#
+# expiration_time - describes how long the notification lasts in milliseconds default(10 seconds)
+# potency - describes the color of the notification (low - yellow, normal - blue, critical - red)
+# title - describes the string to be at the top of the notification window
+# icon - the file name of the image you want to use for the notification. Do not include pathing!
+# The script assumes the image is in the same directory as the script. default('')
+#
+
+notify_script_name: notify.sh
+dev_admin_scripts_dir: /var/tmp
+
+notify_async_retries: 10
+notify_async_wait: 1000
+
+notification_script_params:
+  default:
+    expiration_time: 10000
+    severity: "normal"
+    title: "ALERT"
+    icon: ""
+  build:
+    expiration_time: 43200000 # 12 Hours
+    severity: "low"
+    title: "ALERT"
+    icon: "{{dev_admin_scripts_dir }}/fire-small.png"
+
+notify_params: "{{ notification_script_params[notify_set].expiration_time }} {{ notification_script_params[notify_set].severity }} \"{{ notification_script_params[notify_set].title }}\" \"{{ notify_message }}\" {{ notification_script_params[notify_set].icon }}"
+
+notify_script_expression: "{{ dev_admin_scripts_dir }}/{{ notify_script_name }} {{ notify_params }}"

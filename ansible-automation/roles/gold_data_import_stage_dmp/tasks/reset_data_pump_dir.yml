@@ -1,0 +1,8 @@
+---
+- name: Create Data Pump directory
+  become: true
+#  become_user: ora_rmt
+  ansible.builtin.file:
+    path="{{ import_gd_stage_dir}}"
+    state=directory
+    mode=0777

@@ -1,0 +1,23 @@
+---
+- name: "Uninstalling {{ dnsmasq_name }} via yum"
+  ansible.builtin.yum:
+    name: "{{dnsmasq_yum_name}}"
+    state: absent
+
+- name: "Remove {{ dnsmasq_name }} from resolv.conf"
+  ansible.builtin.template:
+    src: templates/resolv_default.conf.j2
+    dest: /etc/resolv.conf
+    owner: root
+    ansible.builtin.group: root
+    mode: 0644
+
+- name: "Remove the {{ dnsmasq_name }} custom conf directory /etc/dnsmasq.d and all contents"
+  ansible.builtin.file:
+    path: "/etc/dnsmasq.d"
+    state: absent
+
+- name: "Remove the {{ dnsmasq_name }} default conf file backup /etc/dnsmasq.conf.rpmsave"
+  ansible.builtin.file:
+    path: "/etc/dnsmasq.conf.rpmsave"
+    state: absent

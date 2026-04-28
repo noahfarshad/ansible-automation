@@ -1,0 +1,17 @@
+---
+gc2_domain: example.coach
+string_domain: "{{ system }}.{{ gc2_domain }}"
+endpoint_name: "{{load_balancer}}.{{ string_domain }}"
+
+priv_key_b64: "{{ endpoint_name }}_privatekey.b64"
+cert_b64: "{{ endpoint_name }}_cert.b64"
+gems_priv_key_b64: "gems.{{ string_domain }}_privatekey.b64"
+gems_cert_b64: "gems.{{ string_domain }}_cert.b64"
+pem_file: "{{ endpoint_name }}.pem"
+regexp_expression: "{{ endpoint_name }}_.*b64"
+
+string_cert_list:
+ - "{{priv_key_b64}}"
+ - "{{cert_b64}}"
+ - "{{gems_priv_key_b64}}"
+ - "{{gems_cert_b64}}"

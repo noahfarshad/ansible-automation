@@ -1,0 +1,117 @@
+#!/bin/sh
+# Set ORA_HOME to be equivalent to the $ORACLE_HOME
+# from which you wish to execute dbstart and dbshut;
+#
+# Set ORA_OWNER to the user id of the owner of the 
+# Oracle database in ORA_HOME.
+
+### BEGIN INIT INFO
+# Provides: lsnrora
+# Required-Start: $network $syslog
+# Required-Stop: $network $syslog
+# Default-Start: 2 3 5
+# Default-Stop: 0 1 6
+# Short-Description: Oracle LISTENER init script
+# Description:  Oracle LISTENER init script
+### END INIT INFO
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+BASE_NAME=lsnrora
+ORA_HOME={{ORACLE_HOME}}
+#ORA_HOME=/opt/oracle/app/ora_rmt/product/11.2.0.4i
+ORA_OWNER={{oracle_user}}
+LSNRNAME={{listener_name}}
+LOCKFILE=/var/lock/subsys/${BASE_NAME}
+PIDFILE=/var/run/${BASE_NAME}.pid
+
+updatePID() {
+	local PID RETVAL
+
+	status -p ${PIDFILE} ${BASE_NAME} >> /dev/null
+	RETVAL=$?
+
+	if [ ${RETVAL} -ne 0 ]
+	then
+		PID=$( pgrep -f "${LSNRNAME}" )
+		if [ ! -z "${PID}" ]
+		then
+			echo ${PID} > ${PIDFILE}
+		else
+			echo "" > ${PIDFILE}
+		fi
+	fi
+}
+
+start() {
+	touch ${LOCKFILE}
+	updatePID
+	PID=$( cat ${PIDFILE} )
+	if [ ! -z "${PID}" ]
+	then
+		echo -n "Process ${BASE_NAME} appears to be running ($( cat ${PIDFILE} )): ";echo_warning;echo
+		exit 0
+	fi
+	
+	ORACLE_HOME=${ORA_HOME}
+	export ORACLE_HOME
+	echo -n "Starting Oracle Listener (${LSNRNAME}): "
+	daemon --pidfile ${PIDFILE} --user ${ORA_OWNER} "$ORA_HOME/bin/lsnrctl start ${LSNRNAME} > /dev/null 2>&1"
+	RETVAL=$?
+	echo
+
+	if [ ${RETVAL} -eq 0 ]
+	then
+		updatePID
+	fi
+}
+		
+stop() {
+	updatePID
+	PID=$( cat ${PIDFILE} )
+	if [ -z "${PID}" ]
+	then
+		echo -n "Process ${BASE_NAME} appears to be dead already: ";echo_warning;echo
+		exit 1
+	fi
+
+	ORACLE_HOME=${ORA_HOME}
+	export ORACLE_HOME
+	echo -n "Stopping Oracle Listener (${LSNRNAME}): "
+	runuser $ORA_OWNER -c "${ORA_HOME}/bin/lsnrctl stop ${LSNRNAME} > /dev/null 2>&1"
+	RETVAL=$?
+
+	if [ ${RETVAL} -eq 0 ]
+	then
+		echo_success
+		echo
+	else
+		echo_failure
+		echo
+	fi
+
+        [[ "$(runlevel | cut -d' ' -f2)" =~ "[06]" ]] && rm -f ${LOCKFILE}
+}
+
+case "$1" in
+    	start)
+		start
+		;;
+    	stop)
+		stop
+		;;
+    	restart)
+		stop
+		shift
+		start
+		;;
+	status)
+		updatePID
+		status -p ${PIDFILE} ${BASE_NAME}
+		RETVAL=$?
+		;;
+	*)
+		echo "Usage: ${0} {start|stop|restart|status}"
+esac
+exit ${RETVAL}

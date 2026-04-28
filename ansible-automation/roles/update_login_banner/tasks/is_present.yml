@@ -1,0 +1,17 @@
+---
+# tasks file for update_login_banner — present
+
+- name: Copying update_login_banner.sql to remote location...
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.template: src={{update_login_banner_file}} dest=/var/tmp owner=ora_rmt group=ora_rmt mode=0755
+
+- name: Executing update_login_banner.sql...
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: sqlplus / as sysdba @{{update_login_banner_remote}}
+  environment:
+     ORACLE_HOME: "{{oracle_home_db}}"
+     ORACLE_SID: vciedb
+     PATH: "{{oracle_home_db}}/bin:.:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/var/shares/cots/midtier_share/admin_scripts/:/home/apps/ora_rmt/bin:.:/home/apps/ora_rmt/bin:/var/shares/cots/midtier_share/admin_scripts/:/home/apps/ora_rmt/bin:/var/shares/cots/midtier_share/admin_scripts/:/home/apps/ora_rmt/bin"
+  # TODO: review changed_when for: sqlplus / as sysdba @{{update_login_banner_remote}}

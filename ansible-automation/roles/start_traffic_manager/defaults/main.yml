@@ -1,0 +1,3 @@
+---
+new_traffic_manager: "/opt/traffic_manager/"
+legacy_traffic_manager: "/opt/zeus/"

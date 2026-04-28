@@ -1,0 +1,14 @@
+---
+# tasks file for dns_update
+- name: Run DNS UPDATE
+  run_once: true
+  delegate_to: "{{ hostvars | select('match','^dcserver01') | first | default('DCSERVER_NO_EXIST') }}"
+  custom_win_dns_update:
+    host_list: "{{ (newlist | from_yaml) }}"
+  vars:
+    newlist: |
+      {% for host in ansible_play_hosts %}
+      - hostname: "{{ host }}"
+        ip: "{{ hostvars[host].networking.interfaces[0].ip }}"
+        state: "present"
+      {% endfor %}

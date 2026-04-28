@@ -1,0 +1,70 @@
+---
+- set_fact: 
+    office_2013_path: "/mnt/software/Microsoft"
+
+- name: Check if Office 2013 is Installed
+  become: true
+  ansible.windows.win_stat:
+    path: 'C:\Program Files\Microsoft Office\Office15'
+  register: office2013_path_return_msg
+
+- name: Install Office 2013
+  when: not office2013_path_return_msg.stat.exists
+  block:
+  - name: Create Temp Folder for Installer
+    ansible.windows.win_tempfile: 
+      state: directory 
+      suffix: 'officeproplus2013'
+    register: install_loc
+
+  - name: Copy Installer to Temp Folder
+    ansible.windows.win_copy:
+      src: "{{ office_2013_path }}/Office2013.zip"
+      dest: "{{ install_loc.path }}\\"
+
+  - name: Unzip Installer
+    ansible.windows.win_unzip:
+      delete_archive: yes
+      src: "{{ install_loc.path }}\\Office2013.zip"
+      dest: "{{ install_loc.path }}\\Microsoft"
+  
+  - set_fact: 
+      sw_base_dir: "{{ install_loc.path }}\\Microsoft\\Office2013"
+  
+  - set_fact:
+      sw_to_install:
+        baselinename: Microsoft Office Professional Plus 2013
+        requiredversion: 15.0.4569.1506
+        installerpath: "{{ sw_base_dir }}\\setup.exe"
+        productid: Office15.PROPLUS
+        installargs: "/config {{ sw_base_dir }}\\ProPlus.WW\\config.xml"
+  
+  - name: Verify Service is Up
+    ansible.windows.win_service: 
+      name: "Windows Font Cache Service"
+      state: started
+      start_mode: auto
+  
+  - name: Wait for Any Other Installation Processes to Complete
+    win_wait_for_process:
+      process_name_pattern: 'msiexec'
+      state: absent
+      timeout: 600
+  
+  - name: Install Office Professional Plus 2013
+    ansible.windows.win_package:
+      path: "{{ sw_to_install['installerpath'] }}"
+      product_id: "{{ sw_to_install['productid'] }}"
+      arguments: "{{ sw_to_install['installargs'] }}"
+      state: present
+    register: install_status
+    changed_when: install_status.rc is defined and install_status.rc in [SUCCESS, SUCCESS_REBOOT_INITIATED]    
+  
+  - name: Wait for Reboot
+    ansible.builtin.wait_for_connection:
+      delay: 15  
+  always: 
+  - name: Clear Temp Folder
+    ansible.windows.win_file:
+      path: "{{ install_loc.path }}"
+      state: absent

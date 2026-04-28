@@ -1,0 +1,6 @@
+- name: "Starting confluence"
+  become: true
+  ansible.builtin.service:
+    name: confluence
+    pattern: confluence
+    state: started

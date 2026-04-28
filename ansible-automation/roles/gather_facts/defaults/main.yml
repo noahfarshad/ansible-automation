@@ -1,0 +1,40 @@
+# VSphere Tempaltes
+vm_template: "{{ vsphere_string_template }}"
+
+# Move this to host vars or string inventory
+string_nics:
+  - name: "Dell PVL 308"
+    ip: "{{ vm_internal_ip }}"
+    netmask: 255.255.254.0
+  - name: "Dell Gap Public (vlan 191)"
+    ip: "{{ vm_external_ip }}"
+    netmask: 255.255.254.0
+
+string_vm_struct:
+  large:
+    disks:
+      - size_gb: 1000
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+    hardware:
+      memory_mb: 24000
+      num_cpus: 8
+  medium:
+    disks:
+      - size_gb: 500
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+    hardware:
+      memory_mb: 16000
+      num_cpus: 4
+  small:
+    disks:
+      - size_gb: 250
+        type: thin
+        datastore: "{{ vsphere_datastore }}"
+    hardware:
+      memory_mb: 20000
+      num_cpus: 2
+
+vm_size_target: "{{ string_vm_struct[vm_size] }}"
+   

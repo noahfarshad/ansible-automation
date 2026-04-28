@@ -1,0 +1,11 @@
+- name: "Executing Custom Process Start"
+  become: true
+  become_user: "{{ service_user }}"
+  ansible.builtin.shell: "{{ item.start_cmd }}"
+  loop:
+    - "{{ service_processes }}"
+  when: service_processes is defined and service_processes is not none and service_processes|length>0 and item.start_cmd is defined
+  tags:
+    -skip_ansible_lint_305
+  #'[305] Use shell only when shell functionality is required' - intended here. Ad-hoc execution is arbitrary shell blocks.
+  # TODO: review changed_when for: {{ item.start_cmd }}

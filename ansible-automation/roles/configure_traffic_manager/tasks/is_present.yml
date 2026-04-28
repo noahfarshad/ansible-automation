@@ -1,0 +1,95 @@
+---
+# tasks file for configure_traffic_manager — present
+
+#  Loop over ip group dictionary objects, apply dictionary value to template, and post through traffic manager REST API
+- block:
+    - name: Create ip groups on traffic manager
+
+      ansible.builtin.uri:
+        url: http://{{ traffic_manager_string }}:{{ traffic_manager_port }}/api/tm/{{ restapi_version }}/config/active/traffic_ip_groups/{{ item.value.group_name }}
+        method: PUT
+        ansible.builtin.user: "{{ stingray_username }}"
+        password: "{{ stingray_password }}"
+        force_basic_auth: yes
+        status_code: 200,201
+        validate_certs: no
+        return_content: yes
+        body_format: json
+        body: "{{ lookup('template', 'traffic_ip_group_post') }}"
+        loop: nodes
+      with_dict: "{{ traffic_ip_groups }}"
+
+    #  Loop over pool dictionary objects, apply dictionary value to template, and post through traffic manager REST API
+    - name: Create pools on traffic manager
+
+      ansible.builtin.uri:
+        url: http://{{ traffic_manager_string }}:{{ traffic_manager_port }}/api/tm/{{ restapi_version }}/config/active/pools/{{ item.value.pool_name }}
+        method: PUT
+        ansible.builtin.user: "{{ stingray_username }}"
+        password: "{{ stingray_password }}"
+        force_basic_auth: yes
+        status_code: 200,201
+        validate_certs: no
+        return_content: yes
+        body_format: json
+        body: "{{ lookup('template', 'pools_post') }}"
+        loop: nodes
+      with_dict: "{{ traffic_manager_pools }}"
+
+    # Loop over virtual server dictionary objects, apply dictionary value to template, and post through traffic manager REST API
+    - name: Create virtual servers on traffic manager
+
+      ansible.builtin.uri:
+        url: http://{{ traffic_manager_string }}:{{ traffic_manager_port }}/api/tm/{{ restapi_version }}/config/active/virtual_servers/{{ item.value.vs_name }}
+        method: PUT
+        ansible.builtin.user: "{{ stingray_username }}"
+        password: "{{ stingray_password }}"
+        force_basic_auth: yes
+        status_code: 200,201
+        validate_certs: no
+        return_content: yes
+        body_format: json
+        body: "{{ lookup('template', 'virtual_servers_post') }}"
+        loop: nodes
+      with_dict: "{{ traffic_manager_virtual_servers}}"
+
+    - name: Retrieve traffic manager license from staging
+
+      ansible.builtin.copy:
+        src: "{{traffic_manager_staging}}software_licenses/traffic_manager/{{traffic_manager_license}}"
+        dest: "{{traffic_manager_temp}}"
+
+    # Ansible uri module is unable to upload octet stream until 2.7
+    - name: Apply traffic manager license
+      no_log: true
+
+      ansible.builtin.command: "curl -X PUT -u {{ stingray_username }}:{{ stingray_password }} -H 'Content-Type: application/octet-stream' --data-binary @{{traffic_manager_temp}}{{traffic_manager_license}} http://{{ traffic_manager_string }}:{{ traffic_manager_port }}/api/tm/{{ restapi_version }}/config/active/license_keys/{{system}}"
+
+
+      # TODO: review changed_when for: curl -X PUT -u {{ stingray_username }}:{{ stingray_password 
+    - name: Disable REST API on traffic manager
+
+      ansible.builtin.uri:
+        url: http://{{ traffic_manager_string }}:{{ traffic_manager_port }}/api/tm/{{ restapi_version }}/config/active/global_settings
+        method: PUT
+        ansible.builtin.user: "{{ stingray_username }}"
+        password: "{{ stingray_password }}"
+        force_basic_auth: yes
+        status_code: 200,201
+        validate_certs: no
+        return_content: yes
+        body_format: json
+        body: "{{ lookup('file', 'disable_traffic_manager_restapi_body') }}"
+
+    - name: Remove license license file from temp directory after upload
+
+      ansible.builtin.file:
+        path: "{{traffic_manager_temp}}"
+        state: absent
+
+    - name: Restart traffic manager after traffic virtual servers have been added
+
+      ansible.builtin.service:
+        name: zeus
+        state: restarted
+  become: true

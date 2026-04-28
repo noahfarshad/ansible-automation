@@ -1,0 +1,64 @@
+---
+# tasks file for install_traffic_manager — present
+
+- block:
+    - name: Create traffic manager installer and temp files directories
+
+      ansible.builtin.file:
+        force: yes
+        path: "{{traffic_manager_install_dir}}"
+        state: directory
+        mode: '0755'
+
+    - name: Extract traffic manager installer
+
+      ansible.builtin.unarchive:
+        src: "{{traffic_manager_staging}}{{traffic_manager_artifact}}{{artifact_extension}}"
+        dest: "{{traffic_manager_install_dir}}"
+
+    - name: Copy traffic manager install answers file to installer directory
+
+      ansible.builtin.template:
+        src: "{{install_answers}}"
+        dest: "{{traffic_manager_install_dir}}/{{install_answers}}"
+
+    - name: Stop legacy traffic manager 
+
+      ansible.builtin.shell: /opt/zeus/stop-zeus
+      ignore_errors: yes
+
+
+      # TODO: review changed_when for: /opt/zeus/stop-zeus
+    - name: Stop iptables before installation of new traffic manager
+
+      ansible.builtin.service:
+        name: iptables
+        state: stopped
+
+    - name: Install newest traffic manager
+
+      ansible.builtin.shell: "{{traffic_manager_install_dir}}/{{traffic_manager_artifact}}/zinstall --replay-from={{traffic_manager_install_dir}}/{{install_answers}}"
+
+
+      # TODO: review changed_when for: {{traffic_manager_install_dir}}/{{traffic_manager_artifact}}
+    - name: Start iptables after installation of new traffic manager
+
+      ansible.builtin.service:
+        name: iptables
+        state: started
+
+    - name: Add zeus service file
+
+      ansible.builtin.copy:
+        src: "{{role_path}}/files/zeus"
+        dest: /etc/init.d/zeus
+        mode: 0755
+
+    - name: Remove traffic manager installer directory
+
+      ansible.builtin.file:
+        force: yes
+        path: "{{traffic_manager_install_dir}}"
+        state: absent
+        mode: '0755'
+  become: true

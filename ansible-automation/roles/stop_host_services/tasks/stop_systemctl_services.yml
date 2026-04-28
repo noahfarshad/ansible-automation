@@ -1,0 +1,9 @@
+- name: "Stopping Services"
+  become: true
+  become_user: "{{ service_user }}"
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: stopped
+  loop:
+      - "{{ services }}"
+  when: services is defined and services is not none and services|length>0

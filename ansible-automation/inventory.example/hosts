@@ -1,0 +1,74 @@
+# inventory.example/hosts
+#
+# Copy this whole inventory.example/ directory to inventory/ (the setup script
+# does this), then edit to match your real hosts. The inventory/ directory is
+# in .gitignore — only this example is committed.
+#
+# Format: standard Ansible INI inventory
+# Reference: https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html
+
+# ============================================================================
+# Linux hosts
+# ============================================================================
+# Group these hosts by their tier (webservers / dbservers / appservers).
+# Most playbooks target groups, not individual hosts.
+
+[webservers]
+web01.example.coach
+web02.example.coach
+
+[dbservers]
+db01.example.coach
+db02.example.coach
+
+[appservers]
+app01.example.coach
+app02.example.coach
+
+# ============================================================================
+# Windows hosts
+# ============================================================================
+
+[windows]
+win01.example.coach
+fileserver01.example.coach
+
+# ============================================================================
+# Group-of-groups — DO NOT REMOVE THESE
+# Many playbooks target [linux] or [infrastructure] as a roll-up
+# ============================================================================
+
+[linux:children]
+webservers
+dbservers
+appservers
+
+[infrastructure:children]
+linux
+windows
+
+# ============================================================================
+# Connection defaults — applied to every host unless overridden
+# ============================================================================
+
+[all:vars]
+# Default SSH user for Linux hosts. Override per-host in host_vars if needed.
+ansible_user=ansible
+
+# Use Python 3 on the target (RHEL 8/9, Ubuntu 22.04+, etc.)
+ansible_python_interpreter=/usr/bin/python3
+
+# ============================================================================
+# Group-specific connection overrides
+# ============================================================================
+
+[windows:vars]
+# Windows uses WinRM, not SSH
+ansible_connection=winrm
+ansible_port=5986
+ansible_winrm_scheme=https
+ansible_winrm_transport=ntlm
+ansible_winrm_server_cert_validation=ignore
+# These come from vault — see inventory/group_vars/windows/main.yml
+# ansible_user=  (set in group_vars)
+# ansible_password=  (set in vault.yml)

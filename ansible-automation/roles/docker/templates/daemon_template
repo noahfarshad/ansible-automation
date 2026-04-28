@@ -1,0 +1,24 @@
+{
+{% for item in docker_daemon_additions_list %}
+    {{ item }}
+{% endfor %}
+    "icc": false,
+    "ipv6": true,
+    "fixed-cidr-v6": "2001:db8:1::/64",
+    "log-level": "info",
+    "iptables": true,
+    "default-ulimits": {
+            "nofile": {
+                    "Name": "nofile",
+                    "Hard": 90000,
+                    "Soft": 90000
+            },
+            "nproc": {
+                    "Name": "nproc",
+                    "Hard": 2408,
+                    "Soft": 1024
+            }
+    },
+    "userland-proxy": false,
+    "experimental": false
+}

@@ -1,0 +1,7 @@
+---
+# defaults file for open_rhel_ports
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# host_open_port_list: ""

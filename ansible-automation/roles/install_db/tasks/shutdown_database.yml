@@ -1,0 +1,7 @@
+---
+
+# Stop the database
+- name: Stop the database
+  become: true
+  ansible.builtin.service: name={{initd_script_name_example}} state=stopped
+

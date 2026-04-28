@@ -1,0 +1,57 @@
+---
+# The primary config dnsmasq.conf can be found in /etc and except for the last line it is completely commented out
+# The uncommented line enables the custom config file directory "/etc/dnsmasq.d"
+# Properties from all files in /etc/dnsmasq.d will be combined with those from the primary to define the final config
+
+- name: "Apply {{ dnsmasq_name }} primary config to enable custom config folder"
+  ansible.builtin.template:
+    src: templates/{{dnsmasq_primaryconfig_file_template}}
+    dest: /etc/{{dnsmasq_primaryconfig_file}}
+    owner: root
+    ansible.builtin.group: root
+    mode: 0644
+
+#Verify the action dnsmasq_config_action is a valid action
+- assert:
+    that:
+      - dnsmasq_config_action is defined
+      - dnsmasq_config_action in valid_dnsmasq_config_actions
+    msg: "Action {{ dnsmasq_config_action }} is invalid. Must be one of: {{ valid_dnsmasq_config_actions }}"
+
+# Add a configuration file from template
+- name: "Applying {{ dnsmasq_name }} custom configuration"
+  ansible.builtin.template:
+    src: templates/{{dnsmasq_config_file_template}}
+    dest: /etc/dnsmasq.d/{{dnsmasq_config_file}}
+    owner: root
+    ansible.builtin.group: root
+    mode: 0644
+  when: >
+    dnsmasq_config_file is defined
+    and dnsmasq_config_action == "add"
+
+# Remove a configuration file
+- name: "Remove {{ dnsmasq_name }} custom config file {{ dnsmasq_config_file }}"
+  ansible.builtin.file:
+    path: /etc/dnsmasq.d/{{ dnsmasq_config_file }}
+    state: absent
+  when: >
+    dnsmasq_config_file is defined
+    and dnsmasq_config_action == "remove"
+
+# Clear all .conf files from the custom config directory
+- name: "Search for .conf files in /etc/dnsmasq.d"
+  ansible.builtin.find:
+    paths: "/etc/dnsmasq.d/"
+    patterns: "*.conf"
+  register: files_to_delete
+  when: >
+    dnsmasq_config_action == "clear_all"
+
+- name: "Remove .conf files from /etc/dnsmasq.d"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ files_to_delete.files }}"
+  when: >
+    dnsmasq_config_action == "clear_all"

@@ -1,0 +1,6 @@
+---
+# defaults file for update_ansible
+#
+# Where ansible is installed and which SCM URL to pull from
+ansible_path: "/opt/ansible"
+ansible_scm:  "https://github.com/example/ansible.git"

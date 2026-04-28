@@ -1,0 +1,54 @@
+---
+# tasks file for configure_filesystem
+- block:
+    - name: verifying files and directories
+
+      ansible.builtin.file:
+        path: "{{item.path}}"
+        owner: "{{item.owner}}"
+        ansible.builtin.group: "{{item.group}}"
+        mode: "{{item.mode}}"
+        state: "{{item.state}}"
+      loop: "{{dir_config}}"
+      when: dir_config is defined
+      tags: configure_filesystem
+
+    - name: verifying symlinks
+
+      ansible.builtin.file:
+        src: "{{item.src}}"
+        dest: "{{item.dest}}"
+        state: link
+        force: yes
+      loop: "{{symlink_config}}"
+      when: symlink_config is defined
+      tags: configure_filesystem
+
+    - name: verifiying facls
+
+      acl:
+        entity: "{{item.entity}}"
+        etype: "{{item.etype}}"
+        path: "{{item.path}}"
+        permissions: "{{item.permissions}}"
+        state: present
+        recursive: true
+      loop: "{{facl_config}}"
+      when: facl_config is defined
+      tags: configure_filesystem
+
+    - name: verifiying facls defaults
+
+      acl:
+        entity: "{{item.entity}}"
+        etype: "{{item.etype}}"
+        path: "{{item.path}}"
+        permissions: "{{item.permissions}}"
+        state: present
+        default: true
+        recursive: true
+      loop: "{{facl_config}}"
+      when: facl_config is defined
+      tags: configure_filesystem
+        
+  become: true

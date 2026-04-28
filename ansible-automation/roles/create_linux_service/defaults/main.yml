@@ -1,0 +1,3 @@
+service_log_dir: "{{service_dir}}/logs"
+service_pid_file: "{{service_dir}}/{{service_name}}.pid"
+

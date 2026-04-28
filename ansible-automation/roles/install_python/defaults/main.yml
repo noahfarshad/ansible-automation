@@ -1,0 +1,4 @@
+---
+# defaults file for install_python
+pythonOLD: "16e83e.msi"
+python_install_loc: "C:\\Windows\\Installer\\"

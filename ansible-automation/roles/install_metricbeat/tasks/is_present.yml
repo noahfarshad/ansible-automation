@@ -1,0 +1,18 @@
+---
+# tasks file for install_metricbeat — present
+
+# This installs metricbeats on a string host.
+
+- name: Install Metricbeats
+  become: true
+  ansible.builtin.yum: name=metricbeat state=latest
+
+# Use the metricbeat template and group_vars to configure the eventual configuration.
+- name: "Placing Metricbeat Configuration File"
+  become: true
+  ansible.builtin.template: src=metricbeat.yml dest=/etc/metricbeat/metricbeat.yml owner=root group=root mode=0644
+
+# Enable the metricbeats service to start on boot.
+- name: "Start and Enable Metricbeats"
+  become: true
+  ansible.builtin.service: name=metricbeat state=started enabled=yes

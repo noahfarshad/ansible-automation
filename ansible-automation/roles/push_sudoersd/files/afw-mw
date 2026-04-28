@@ -1,0 +1,69 @@
+# This sudo config file fulfills two purposes. 
+
+# The first purpose of this file is to allow users to sudo to the mw-a/mw-b/mw-c accounts:
+
+# User Aliases
+# User_Alias	CM_TEAM = 	+un_sems-cm
+# CM_TEAM is already defined in afw-cm
+# DATA_MGR is already defined in afw-root
+
+# These are the allowed commands, referenced later
+# Cmnd_Alias    SOME_CMD     =          /bin/bash,/bin/cat
+Cmnd_Alias      MW_SFTP_CMDS =	/usr/bin/sftp,/usr/bin/ssh-copy-id
+
+# These define the possible application accounts (comma-separated)
+Runas_Alias     MW_APPACCT =    mw-a, mw-b, mw-c, mw-ad, mw-bd, mw-cd, tdcftac-ad, tdcftac-bd, tdcftac-cd
+
+# These define the possible hosts that users are allowed to run commands on
+# MW_NONPROD is already defined in afw-cmgov
+# MW_SANDBOX is already defined in afw-j2eeadmin
+Host_Alias 	PTMW_SYSTEMS = 	afw-ptmw-01t, afw-ptmw-02t, afw-ptmw-03t
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+CM_TEAM		MW_NONPROD, PTMW_SYSTEMS = (MW_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL
+MW_ADMINS	MW_NONPROD, PTMW_SYSTEMS, MW_SANDBOX = (MW_APPACCT) LOG_OUTPUT: LOG_INPUT: ALL
+# The datarouting team needs to run sftp commands to troubleshoot distant-end connection problems
+DATA_MGR		MW_NONPROD = (MW_APPACCT) LOG_OUTPUT: LOG_INPUT: MW_SFTP_CMDS
+
+
+
+# The second purpose of this file is to allow members of the WDAteam to "normalize" services in moving weather DEV as root:
+# User Aliases
+User_Alias      MW_ADMINS =     +un_wda4,+un_tads-wdd
+
+# Runas_Alias not defined, because we're using root by name
+
+# These are the allowed commands, referenced later
+# This will ONLY make it possible for WDA users to fail the service back to the Home system,
+# but NOT around within the cluster. It also allows them to fix "partially" started resource 
+# groups (ones that have a [P] in the status line).
+
+Cmnd_Alias      MW_CLUSTER =	/usr/sbin/clusvcadm -r afw-mw-ad -m afw-mw-01d,\
+				/usr/sbin/clusvcadm -r afw-mw-bd -m afw-mw-03d,\
+				/usr/sbin/clusvcadm -r afw-mw-cd -m afw-mw-05d,\
+				/usr/sbin/clusvcadm -c afw-mw-ad,\
+				/usr/sbin/clusvcadm -c afw-mw-bd,\
+				/usr/sbin/clusvcadm -c afw-mw-cd 
+
+# These define the possible hosts that users are allowed to run commands on
+Host_Alias    MW_DEV =      afw-mw-01d,afw-mw-02d,afw-mw-03d,afw-mw-04d,afw-mw-05d
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+# If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+# Group specific permissions for MW admins as root
+MW_ADMINS       MW_DEV =    (root) LOG_OUTPUT: LOG_INPUT: MW_CLUSTER
+
+
+# afwadmin acount. Ensures application separation for what the AFW-WEBS software team is responsible.
+User_Alias      AFWADMINS = +un_sems-afwwebs, +un_tads-afwwebs  
+
+AFWADMINS   ALL = (afwadmin) LOG_OUTPUT: LOG_INPUT: NOPASSWD:   ALL
+
+

@@ -1,0 +1,57 @@
+---
+# task file for configure_centrify/tasks/is_present.yml
+- name: Centrify AD Install and Join
+  become: true
+  vars:
+    RC_AD_NOT_JOIN: 10
+    RC_AD_CENTRIFY_NOT_INSTALLED: 127
+    RC_AD_PREV_JOIN: 27
+  block:
+  - name: Run the adinfo command to check previous AD install
+    register: adinfo_return_msg
+    ansible.builtin.shell: adinfo 
+    changed_when: false
+    failed_when:
+      - adinfo_return_msg.rc != 0 # Centrify is installed and is joined to AD
+      - adinfo_return_msg.rc != RC_AD_NOT_JOIN # Centrify is installed and is NOT joined to AD
+      - adinfo_return_msg.rc != RC_AD_CENTRIFY_NOT_INSTALLED
+
+  - name: Remove Host Record from Active Directory
+    vars:
+      ansible_connection: "winrm"
+      ansible_user: "xadministrator"
+      ansible_become_user: "xadministrator"
+      ansible_password: "Password#123"
+      ansible_winrm_transport: "kerberos"
+      ansible_winrm_server_cert_validation: "ignore"
+      ansible_user: "{{ domainadmin_user }}"
+    community.windows.win_domain_computer:
+      name: "{{ inventory_hostname_short }}"
+      dns_hostname: "{{ inventory_hostname }}"
+      domain_username: "{{ domainadmin_user }}"
+      domain_password: "{{ domain_password }}"
+      state: absent
+    delegate_to: "dcserver01.{{ domain }}"
+    become: false
+    when: adinfo_return_msg.rc != 0
+
+  - name: Debug adinfo return msg
+    ansible.builtin.debug:
+      msg: "{{ adinfo_return_msg }}"
+
+  - name: Already Joined
+    ansible.builtin.debug: 
+      msg: " Computer has already installed centrify and joined Active Directory"
+    when: adinfo_return_msg.rc == 0
+
+  - name: Run Centrify install.sh
+    ansible.builtin.shell: './install.sh --ent-suite --adjoin_opt="{{ domain }} -p {{ domain_password }} -z Default -u {{ domainadmin_user }} --force"'
+    args:
+      chdir: /mnt/software/CentrifyRedhat
+    when: adinfo_return_msg.rc == RC_AD_CENTRIFY_NOT_INSTALLED
+
+    # TODO: review changed_when for: ./install.sh --ent-suite --adjoin_opt="{{ domain }} -p {{ do
+  - name: Centrify already installed, now joining active directory
+    ansible.builtin.shell: 'adjoin {{ domain }} -u {{ domainadmin_user }} -p {{ domain_password }} -z Default --force'
+    when: adinfo_return_msg.rc == RC_AD_NOT_JOIN    
+    # TODO: review changed_when for: adjoin {{ domain }} -u {{ domainadmin_user }} -p {{ domain_p

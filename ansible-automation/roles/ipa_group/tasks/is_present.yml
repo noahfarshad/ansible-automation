@@ -1,0 +1,408 @@
+---
+# tasks file for ipa_group
+
+- block:
+    - name: Ensure that bolt group is present
+
+      community.general.ipa_group:
+        name: boltgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true
+
+    - name: Ensure that vwadmin group is present
+
+      community.general.ipa_group:
+        name: vwadmingroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that cmadmin group is present
+
+      community.general.ipa_group:
+        name: cmadmingroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that cmgov group is present
+
+      community.general.ipa_group:
+        name: cmgovgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that datasubs group is present
+
+      community.general.ipa_group:
+        name: datasubsgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+        
+    - name: Ensure that j2eeadmin group is present
+
+      community.general.ipa_group:
+        name: j2eeadmingroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that leads group is present
+
+      community.general.ipa_group:
+        name: leadsgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that mw group is present
+
+      community.general.ipa_group:
+        name: mwgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that process group is present
+
+      community.general.ipa_group:
+        name: processgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that sdo group is present
+
+      community.general.ipa_group:
+        name: sdosgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that tdcftac group is present
+
+      community.general.ipa_group:
+        name: tdcftacgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that weblogic group is present
+
+      community.general.ipa_group:
+        name: tdcftacgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that jenkins group is present
+
+      community.general.ipa_group:
+        name: jenkinsgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that jenkins is added to afwwebs group
+
+      community.general.ipa_group:
+        name: afwwebs
+        ansible.builtin.user:
+        - jenkins
+        append: true
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that dba group is present
+
+      community.general.ipa_group:
+        name: dba
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that 16ws specm group is present
+
+      community.general.ipa_group:
+        name: 16ws
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that swafs group is present
+
+      community.general.ipa_group:
+        name: swafsgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that dv (wdcads) group is present
+
+      community.general.ipa_group:
+        name: dvgroup
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that 16ws-wxnctune group is present
+
+      community.general.ipa_group:
+        name: 16ws-wxnctune
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that sys-cdfs group is present
+
+      community.general.ipa_group:
+        name: sys-cdfs
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that sys-cm group is present
+
+      community.general.ipa_group:
+        name: sys-cm
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that sys-swafs group is present
+
+      community.general.ipa_group:
+        name: sys-swaf
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that 16ws-swit group is present
+
+      community.general.ipa_group:
+        name: 16ws-swit
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that 16ws-wxet group is present
+
+      community.general.ipa_group:
+        name: 16ws-wxet
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that 16ws-wxnc group is present
+
+      community.general.ipa_group:
+        name: 16ws-wxnc
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that sys-datarouting-t group is present
+
+      community.general.ipa_group:
+        name: sys-datarouting-t
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that sys-analyst group is present
+
+      community.general.ipa_group:
+        name: sys-analyst
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that wda4 group is present
+
+      community.general.ipa_group:
+        name: wda4
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that 16ws-wxnm group is present
+
+      community.general.ipa_group:
+        name: 16ws-wxnm
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that edhxfer group is present
+
+      community.general.ipa_group:
+        name: edhxfer
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that 21-ows group is present
+
+      community.general.ipa_group:
+        name: 21-ows
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that sys-an group is present
+
+      community.general.ipa_group:
+        name: sys-an
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that sys-models group is present
+
+      community.general.ipa_group:
+        name: sys-models
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that sys-sysa-apps-d group is present
+
+      community.general.ipa_group:
+        name: sys-sysa-apps-d
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that 16ws-gvcm group is present
+
+      community.general.ipa_group:
+        name: 16ws-gvcm
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Ensure that 16ws-gvcm-user group is present
+
+      community.general.ipa_group:
+        name: 16ws-gvcm-user
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Add essadmin group to admins group
+
+      community.general.ipa_group:
+        name: admins
+        ansible.builtin.group:
+        - essadmin
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true
+
+    - name: Ensure that vCenter group is present
+
+      community.general.ipa_group:
+        name: vcenter
+        state: present
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true  
+
+    - name: Add essadmin group to vcenter group
+
+      community.general.ipa_group:
+        name: vcenter
+        ansible.builtin.group:
+        - essadmin
+        ipa_host: idm01.example.coach
+        ipa_user: "admin"
+        ipa_pass: "{{ipa_admin_password}}"
+      ignore_errors: true
+
+    - name: Set cac-exempt group to non-expiration
+
+      ansible.builtin.shell: |
+        echo {{ipa_admin_password}} | kinit admin
+        ipa pwpolicy-add --maxlife=0 --minlife=0  --history=10 --minclasses=3 --minlength=8 --priority=0 cac-exempt
+      ignore_errors: true
+      # TODO: ipa-add: usually fails with "already exists" — gate via rc/stderr or use ipa.* collection module
+      # TODO: review changed_when for: ipa pwpolicy-add (idempotent? add fails if exists)
+  become: true

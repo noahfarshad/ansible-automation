@@ -1,0 +1,8 @@
+- name: Remove limits configurations
+  become: true
+  ansible.builtin.lineinfile:
+    path: "{{ pam_limits_target }}"
+    regexp: "{{ item.domain }}.*{{ item.limit_type }}.*{{ item.limit_item }}.*{{ item.value }}"
+    state: absent
+  loop: "{{ pam_group_limits }}"
+  when: pam_group_limits is defined

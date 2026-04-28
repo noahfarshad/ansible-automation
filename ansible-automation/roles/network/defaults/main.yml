@@ -1,0 +1,7 @@
+network_exclude_regxp: '^(v|lo|docker).*$'
+network_include_config:
+  - 'NM_CONTROLLED="no"'
+  - 'PEERDNS=no'
+
+network_exclude_config:
+  - 'PEERDNS=yes'

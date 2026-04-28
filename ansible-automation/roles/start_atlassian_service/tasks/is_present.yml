@@ -1,0 +1,6 @@
+---
+# tasks file for start_atlassian_service — present
+
+- ansible.builtin.include_tasks: start_jira_service.yml
+- ansible.builtin.include_tasks: start_confluence_service.yml
+- ansible.builtin.include_tasks: start_fecru_service.yml

@@ -1,0 +1,13 @@
+---
+
+target_dir: /tmp
+cis_script_parent_dir_name: cis_script
+docker_cis_benchmark_script_name: docker-bench-security.sh
+cis_bench_script_output_file: "output_{{ansible_date_time.iso8601}}.txt"
+
+results_dir: "{{target_dir}}/{{cis_script_parent_dir_name}}"
+results_fetch_dir: "{{target_dir}}/scans/cis_benchmark_scan"
+
+scan_artifact:
+  - "docker-bench-security.sh.log"
+  - "docker-bench-security.sh.log.json"

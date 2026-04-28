@@ -1,0 +1,4 @@
+ssh_key_location: /home/apps/app_admin/.ssh/
+ssh_key_files:
+  - id_rsa
+  - id_rsa.pub

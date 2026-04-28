@@ -1,0 +1,53 @@
+---
+# tasks file for install_package
+- block:
+    - name: verify if autofs and sshfs are present
+
+      ansible.builtin.yum:
+        name: "autofs,https://afw-artifactory-t.example.coach/artifactory/artifactory-epel7/dl.fedoraproject.org/pub/epel/7/x86_64/Packages/f/fuse-sshfs-2.10-1.el7.x86_64.rpm"
+        state: present
+        skip_broken: true
+        use_backend: yum
+        disable_gpg_check: yes
+      tags: configure_autofs
+
+    - name: verify if autofs and sshfs are up-to-date
+
+      ansible.builtin.yum:
+        name: "autofs,https://afw-artifactory-t.example.coach/artifactory/artifactory-epel7/dl.fedoraproject.org/pub/epel/7/x86_64/Packages/f/fuse-sshfs-2.10-1.el7.x86_64.rpm"
+        state: present  # use {{ configure_autofs_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+        use_backend: yum
+      tags: configure_autofs
+
+    - name: verify if autofs is enabled and started
+
+      ansible.builtin.service:
+        name: "autofs"
+        enabled: "yes"
+        state: "started"
+      tags: configure_autofs
+
+    - name: verifying auto.master file
+
+      ansible.builtin.copy:
+        src: files/auto.master
+        dest: "/etc/"
+        owner: "root"
+        ansible.builtin.group: "root"
+        mode: "0644"
+      tags: configure_autofs
+      notify:
+      - restart service
+
+    - name: verifying auto.sshfs file
+
+      ansible.builtin.copy:
+        src: files/auto.sshfs
+        dest: "/etc/"
+        owner: "root"
+        ansible.builtin.group: "root"
+        mode: "0644"
+      tags: configure_autofs
+      notify:
+      - restart service
+  become: true

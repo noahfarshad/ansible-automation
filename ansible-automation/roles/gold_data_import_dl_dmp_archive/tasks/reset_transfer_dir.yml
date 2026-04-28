@@ -1,0 +1,15 @@
+---
+- name: Remove Transfer Directory
+  become: true
+  become_user: app_admin
+  ansible.builtin.file:
+    path="{{dmp_transfer_dir}}"
+    state=absent
+
+- name: Create Transfer directory
+  become: true
+  become_user: app_admin
+  ansible.builtin.file:
+    path="{{dmp_transfer_dir}}"
+    state=directory
+    mode=0777

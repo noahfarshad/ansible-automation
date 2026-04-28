@@ -1,0 +1,5 @@
+---
+  target_dir: '/home/apps/app_admin/'
+  CA_name: 'GCCA'
+  cert_to_transfer: gapsca.cer
+  cert_src: ''

@@ -1,0 +1,47 @@
+---
+- name: Create groups needed for ora_rmt
+  become: true
+  group:
+     name: "{{item}}"
+     state: present
+     system: yes
+  loop:
+     - dba
+     - oinstall
+     - midtier
+  
+- name: Creating user with groups WHEEL (sudo)
+  become: true
+  user: name=ora_rmt password="$6$TlLKJdv0$A4HdMY4MJAjwj7zf5meXtCosY.IFfc0JYucDr/YPJqfgY2Zsg8BTE/zUGZFFSTC5lJgytWDFYv5hP2fpGujny1" groups=wheel,dba,oinstall,midtier
+
+- name: Disable ora_rmt user password expiration
+  become: true
+  command: chage -E -1 -M -1 ora_rmt
+  
+- name: Create oracle app directory  
+  become: true
+  file:
+     path: "{{item}}"
+     state: directory
+     mode: 0775
+     owner: ora_rmt
+     group: ora_rmt      
+  loop:
+     - "{{ORACLE_BASE}}"
+     - "/u01/oradata"
+
+- name: Create swap file location  
+  become: true
+  file:
+     path: "/u02/"
+     state: directory
+     mode: 0775
+     owner: root
+     group: root
+    
+- name: Set bashrc
+  become: true
+  become_user: ora_rmt
+  template:
+    src: bashrc
+    dest: "~/.bashrc"

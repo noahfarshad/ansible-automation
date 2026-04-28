@@ -1,0 +1,19 @@
+---
+- name: Ensure identity directory exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ identity_directory_target.path }}"
+    mode: "{{ identity_directory_target.mode }}"
+    owner: "{{ identity_directory_target.owner }}"
+    ansible.builtin.group: "{{ identity_directory_target.group }}"
+    state: directory
+
+- name: Place identity files
+  become: true
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ identity_directory_target.path }}/"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    ansible.builtin.group: "{{ item.group }}"
+  loop: "{{ identity_files_list }}"

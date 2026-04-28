@@ -1,0 +1,21 @@
+user_list:
+  - name: app_admin
+    uid: 602
+    shell: /bin/bash
+    group: app_admin
+    groups: midtier
+    home_mode: '0700'
+    home: /home/apps/app_admin
+    password: "{{ app_admin_password_hash }}"
+    password_expires: no
+    expires: -1
+  - name: ora_rmt
+    uid: 601
+    shell: /bin/bash
+    group: ora_rmt
+    groups: midtier
+    home_mode: '0700'
+    home: /home/apps/ora_rmt
+    password: "{{ ora_rmt_password_hash }}"
+    password_expires: no
+    expires: -1

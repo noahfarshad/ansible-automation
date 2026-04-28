@@ -1,0 +1,8 @@
+---
+
+# Stop the database
+- name: Stop the database
+  become: true
+  ansible.builtin.service: name={{initd_script_name_example}} state=stopped
+  when: (reboot_database_permitted == "true" and spool_file_output.stdout.find('~~REBOOT_REQUIRED~~') != -1)
+

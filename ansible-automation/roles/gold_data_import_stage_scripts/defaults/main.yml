@@ -1,0 +1,4 @@
+---
+script_archive: database-{{version}}-scripts.tar.gz
+dmp_archive: database-dmp-{{ version }}.tar.gz
+nexus_gold_repository: goldData_storage

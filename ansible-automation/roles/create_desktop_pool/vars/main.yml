@@ -1,0 +1,7 @@
+---
+horizon_server_username: "{{ domainadmin_user }}"
+horizon_server_password: "{{ domain_password }}"
+domain: "{{ system_name | lower }}.local"
+connectionserver: "vdserver01.{{ system_name | lower }}.local"
+logoff_policy: "WAIT_FOR_LOGOFF"
+vcenter_fqdn: "{{ vcenter_hostname }}"

@@ -1,0 +1,22 @@
+# This sudo config file allows users to perform commands as cmgov
+
+# User Aliases
+User_Alias      CMGOV_APPADMIN =        +un_sys-cm
+
+# These are the allowed commands, referenced later
+# Cmnd_Alias    SOME_CMD                /bin/bash,/bin/cat
+
+# These define the possible application accounts (comma-separated)
+Runas_Alias     CMGOV_APPACCT =                 cmgov
+
+# These define the possible hosts that users are allowed to run commands on
+Host_Alias      MW_NONPROD =         afw-mw-01d,afw-mw-02d,afw-mw-03d,afw-mw-04d,afw-mw-05d,afw-mw-01t,afw-mw-02t,afw-mw-03t,afw-mw-04t,afw-mw-05t
+#EDH_DEV and EDH_TEST are already defined elsewhere
+
+# This controls who can do what now  (the ALL refers to ALL hosts, that is, localhost in this context)
+# Note: use of sudo is logged in via syslog to /var/log/secure. 
+#       If the LOG_INPUT: and LOG_OUTPUT: directives are defined below, then you can also use the sudoreplay command
+#       to see the input/output of every command as it was being executed.
+
+# Allow cmgov netgroup to sudo to their shared account everywhere
+CMGOV_APPADMIN          EDH_DEV,EDH_TEST,MW_NONPROD,AFW_VWTEST,AFW_VWDEV,AFW_VWSB = (CMGOV_APPACCT) LOG_OUTPUT: LOG_INPUT: NOPASSWD: ALL

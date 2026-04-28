@@ -1,0 +1,10 @@
+---
+# tasks file for nas_mount — absent
+
+- name: Unmount and remove fstab entries
+  ansible.posix.mount:
+    path: "{{ item.mount_path | default(item.path) }}"
+    state: absent
+  loop: "{{ nas_mount_mounts | default(mounts | default([])) }}"
+  loop_control:
+    label: "{{ item.mount_path | default(item.path) }}"

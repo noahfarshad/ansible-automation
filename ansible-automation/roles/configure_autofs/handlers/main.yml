@@ -1,0 +1,7 @@
+---
+# handlers file for configure_autofs
+- name: restart service
+  become: true
+  ansible.builtin.service:
+    name: "autofs"
+    state: "restarted"

@@ -1,0 +1,47 @@
+---
+# tasks file for configure_yum — present
+
+# We only update CentOS repos so not configuring RHEL.
+
+# Remove the yum.repos.d directory to purge existing repo files.
+# This can be done less sledgehammery in 2.x.
+- block:
+    - name: Remove yum.repos.d directory
+
+      ansible.builtin.file:
+        path: /etc/yum.repos.d/
+        state: absent
+
+    - name: Create yum.repos.d directory
+
+      ansible.builtin.file:
+        path: /etc/yum.repos.d
+        state: directory
+        owner: root
+        ansible.builtin.group: root
+        mode: 0755
+
+    - name: Download CentOS 6 repo file
+
+      ansible.builtin.copy:
+        src: centos6.repo
+        dest: /etc/yum.repos.d
+      when:
+        - ansible_distribution_major_version == "6"
+
+    - name: Download CentOS 7 repo file
+
+      ansible.builtin.copy:
+        src: centos7.repo
+        dest: /etc/yum.repos.d
+      when:
+        - ansible_distribution_major_version == "7"
+
+    - name: "Check for latest version of YUM"
+
+      ansible.builtin.yum:
+        name: yum
+        state: present  # use {{ configure_yum_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+      tags:
+        - skip_ansible_lint
+  become: true

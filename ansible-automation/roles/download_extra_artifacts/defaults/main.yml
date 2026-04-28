@@ -1,0 +1,9 @@
+---
+nexus_repo: <nexus_url>
+nexus_development: <nexus_dev_repo>
+standalone: /var/ansible_master
+artifacts:
+  - ext: '<extension>'
+    files:
+      - <file1>
+      - <file2>

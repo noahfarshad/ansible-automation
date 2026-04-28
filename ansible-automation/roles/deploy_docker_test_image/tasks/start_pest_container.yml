@@ -1,0 +1,12 @@
+---
+- name: Stop and remove pest container
+  become: true
+  ansible.builtin.shell: "docker stop {{test_image.name}} && docker rm {{test_image.name}}"
+  ignore_errors: yes
+
+  # TODO: review changed_when for: docker stop {{test_image.name}} && docker rm {{test_image.na
+- name: Start the pest container
+  become: true
+  ansible.builtin.shell: "docker run --name=node-ff --mount type=bind,src=/opt/test_files/gc2Tests,dst=/opt/test_files/gc2Tests -td 10.10.10.89:5000/node-ff:1.0.0"
+  # TODO: docker run/create: typically not idempotent — convert to community.docker.docker_container
+  # TODO: review changed_when for: docker run --name=node-ff --mount type=bind,src=/opt/test_fi

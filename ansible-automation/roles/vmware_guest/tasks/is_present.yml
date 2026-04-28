@@ -1,0 +1,22 @@
+
+- block:
+    - name: Create virtual machine from template
+      vmware_guest:
+        ansible.builtin.hostname: "{{ vsphere_host }}"
+        username: "{{ vsphere_user }}"
+        password: "{{ vsphere_pass }}"
+        folder: "{{ vsphere_datacenter }}/vm/"
+        validate_certs: no
+        name: "{{ vm_name }}"
+        datacenter: "{{ vsphere_datacenter }}"
+        cluster: "{{ vsphere_cluster }}"
+        state: poweredon
+        ansible.builtin.template: "{{ vm_template }}"
+        networks: "{{ vsphere_vm_nics }}"
+        disk: "{{ vm_size_target.disks }}"
+        hardware: "{{ vm_size_target.hardware }}"
+        resource_pool: "{{ string_resource_pool | default() }}"
+        customization:
+          ansible.builtin.hostname: "{{ vm_hostname }}"
+      delegate_to: localhost
+  become: true

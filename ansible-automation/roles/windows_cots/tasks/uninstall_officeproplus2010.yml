@@ -1,0 +1,40 @@
+---
+
+- name: Create Temp Folder for Config
+  ansible.windows.win_tempfile: 
+    state: directory 
+    suffix: 'officeproplus2010'
+  register: uninstall_loc
+
+- name: Copy Config to Temp Folder
+  ansible.windows.win_copy: 
+    src: "office2010UninstallConfig.xml"
+    dest: "{{ uninstall_loc.path }}\\"
+
+- set_fact: 
+    config_path: "{{ uninstall_loc.path }}\\office2010UninstallConfig.xml"
+
+- name: Wait for Any Other Installation Processes to Complete
+  win_wait_for_process:
+    process_name_pattern: 'msiexec'
+    state: absent
+    timeout: 600
+
+- name: Uninstalling Office Pro Plus 2010
+  ansible.windows.win_package:
+    path: C:\Program Files (x86)\Common Files\Microsoft Shared\Office14\Office Setup Controller\setup.exe
+    arguments: "/uninstall PROPLUS /config {{ config_path }} /dll OSETUP.DLL"    
+    product_id: Office14.PROPLUS
+    state: absent
+  register: uninstall_status
+  failed_when: uninstall_status.rc is defined and uninstall_status.rc not in [SUCCESS, SUCCESS_REBOOT_INITIATED]
+  changed_when: uninstall_status.rc is defined and uninstall_status.rc in [SUCCESS, SUCCESS_REBOOT_INITIATED]
+
+- name: Wait for Reboot
+  ansible.builtin.wait_for_connection:
+    delay: 15
+
+- name: Remove Uninstall Config 
+  ansible.windows.win_file: 
+    state: absent 
+    path: "{{ uninstall_loc.path }}"     

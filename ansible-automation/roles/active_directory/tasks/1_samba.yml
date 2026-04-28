@@ -1,0 +1,26 @@
+---
+- name: Install Samba
+  become: true
+  ansible.builtin.yum: name={{ item }} state=present
+  loop:
+    - samba
+    - samba-client
+    - samba-common
+    - samba-winbind
+    - samba-winbind-clients
+
+- name: Configure Samba as a domain member
+  become: true
+  ansible.builtin.template: src=smb.conf.j2 dest=/etc/samba/smb.conf
+            owner=root group=root mode=0644
+
+- name: Ensure Samba is started and enabled on boot
+  become: true
+  ansible.builtin.service: name=smb state=started enabled=yes
+
+- name: Join AD with Samba to generate the keytab
+#  no_log: yes
+  become: true
+  ansible.builtin.command: /usr/bin/net ads join -k -U "ad-add%{{ adauth_password }}"
+  args:
+    creates: /etc/krb5.keytab

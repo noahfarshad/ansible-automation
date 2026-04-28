@@ -1,0 +1,6 @@
+{{ apache_directory}}/*.log* {
+     weekly
+     missingok
+     notifempty
+     maxage 1
+}

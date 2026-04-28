@@ -1,0 +1,22 @@
+- name: "Checking for running fecru sessions"
+  # this causes 2 processes to be running. That's why the size check later is greater than 2
+  ansible.builtin.shell: ps -ef | grep fecru
+  register: fecru_svcs
+  changed_when: False
+
+- name: "Stopping fecru"
+  become: true
+  ansible.builtin.command: "/opt/atlassian/fecru-4.5.1/bin/stop.sh"
+  when: fecru_svcs.stdout_lines|length > 2
+
+  # TODO: review changed_when for: /opt/atlassian/fecru-4.5.1/bin/stop.sh
+- name: "Checking for running fecru sessions"
+  ansible.builtin.shell: ps -ef | grep fecru
+  register: fecru_svcs
+  changed_when: False
+
+- name: "Verify Fecru is shut down"
+  ansible.builtin.fail:
+    msg: |
+      Failed to stop running fecru processes on host!
+  when: fecru_svcs.stdout_lines|length > 2

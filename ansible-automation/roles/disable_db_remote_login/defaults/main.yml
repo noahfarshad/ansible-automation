@@ -1,0 +1,2 @@
+ORACLE_HOME: /opt/oracle/app/ora_rmt/product/12.1.0
+ORACLE_SID: example

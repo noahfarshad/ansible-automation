@@ -1,0 +1,24 @@
+---
+# tasks file for deployMicroservices — present
+
+- ansible.builtin.include_tasks: pre_configure_microservices.yml
+  tags:
+    - userPresence
+
+- name: Configuring User Presence
+  ansible.builtin.debug:
+     msg: Configuring User Presence For GC2
+  tags:
+    - userPresence
+
+- ansible.builtin.include_tasks: copy_userPresence_configuration.yml
+  tags:
+    - userPresence
+    
+- ansible.builtin.include_tasks: load_microservice_images.yml
+  tags:
+    - userPresence
+
+- ansible.builtin.include_tasks: create_microservice_stack.yml.j2
+  tags:
+    - userPresence

@@ -1,0 +1,99 @@
+---
+# tasks file for export_ldap — present
+
+- block:
+    - name: Get the hash id of the ldap container name.
+
+      ansible.builtin.shell: "docker service ps dagr_ldap -q --no-trunc | head -n1"
+      register: ldap_container_name_hash
+      tags:
+        - ldap
+        
+
+      # TODO: review changed_when for: docker service ps dagr_ldap -q --no-trunc | head -n1
+    - name: Get the container name of the keycloak container based on the hash.
+
+      ansible.builtin.shell: "docker ps -f name={{ldap_container_name_hash.stdout}} --format '{{ '{{' }} .Names {{ '}}' }}'"
+      register: ldap_container
+      tags:
+        - ldap
+        
+
+      changed_when: false
+    - name: Set the ldap docker exec command variable
+      ansible.builtin.set_fact: 
+        ldap_docker_exec: "docker exec {{ldap_container.stdout}}"
+      tags:
+        - ldap
+
+    - name: Create temp folder
+
+      become_user: app_admin
+      ansible.builtin.file:
+        owner: app_admin
+        ansible.builtin.group: app_admin
+        path: "{{ldif_dir}}"
+        state: directory
+        mode: 0755
+
+    # export the the users from LDAP
+    - name: Exporting users from DAGR LDAP
+
+      ansible.builtin.shell: >-
+         {{ldap_docker_exec}} ldapsearch -o ldif-wrap=no
+         -D "cn=Directory Manager" -w {{ldap_password}}
+         -L -s one -b "{{users_base_dn}}" > {{users_ldif}}
+
+      # TODO: review changed_when for: {{ldap_docker_exec}} ldapsearch -o ldif-wrap=no
+    - name: Remove password fields from the users ldif file.
+
+      ansible.builtin.replace: >
+         path="{{users_ldif}}"
+         regexp="^(userPassword::.+\n)"
+         replace="{{item}}"
+         backup=no
+      loop:
+         - ""
+
+    - name: Exporting groups from DAGR LDAP
+
+      ansible.builtin.shell: >-
+         {{ldap_docker_exec}} ldapsearch
+         -D "cn=Directory Manager" -w {{ldap_password}}
+         -L -s one -b "{{groups_base_dn}}" > {{groups_ldif}}
+
+      # TODO: review changed_when for: {{ldap_docker_exec}} ldapsearch
+    - name: Exporting roles from DAGR LDAP
+
+      ansible.builtin.shell: >-
+         {{ldap_docker_exec}} ldapsearch
+         -D "cn=Directory Manager" -w {{ldap_password}}
+         -L -s one -b "{{roles_base_dn}}" "(&(objectclass=*)(cn={{item}}))" "uniquemember" > {{ldif_dir}}/{{item | replace(' ','')}}_role.ldif
+      loop:
+        - "{{user_roles}}"
+
+      # TODO: review changed_when for: {{ldap_docker_exec}} ldapsearch
+    - name: Archiving DAGR LDIF
+
+      become_user: app_admin
+      ansible.builtin.archive:
+        owner: app_admin
+        ansible.builtin.group: app_admin
+        path: "{{ldif_dir}}/*"
+        dest: "{{ldif_dir}}/{{archive_ldif}}"
+        mode: 0755
+        remove: yes
+
+    #https://support.sonatype.com/hc/en-us/articles/115006744008
+    # Tried the URI module, but it does not allow for the file to be sent!
+    - name: Uploading to nexus
+      ansible.builtin.command: curl -u {{ nexus_admin }}:{{ nexus_password }} --upload-file {{ldif_dir}}/{{archive_ldif}} http://{{ nexus_host_qualified }}/repository/{{ nexus_gold_repository }}/{{ group }}/database/{{ version }}/{{archive_ldif}}
+
+      # TODO: review changed_when for: curl -u {{ nexus_admin }}:{{ nexus_password }} --upload-file
+    - name: Removing from filesystem
+
+      become_user: app_admin
+      ansible.builtin.file:
+        path: "{{ldif_dir}}"
+        state: absent
+  become: true

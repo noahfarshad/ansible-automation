@@ -1,0 +1,43 @@
+---
+# tasks file for nrpe_client — present
+
+#Playbook to install and enable the Prometheus node_exporter service
+- block:
+    - name: Install nrpe and plugins
+
+      ansible.builtin.yum:
+        name: "{{ item }}"
+        state: present  # use {{ nrpe_client_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+      loop:
+        - nrpe
+        - nagios-plugins-load
+        - nagios-plugins-disk
+        - nagios-plugins-swap
+      tags:
+        - skip_ansible_lint
+
+    - name: Copy config file
+
+      ansible.builtin.copy:
+        src: nrpe.cfg
+        dest: /etc/nagios/nrpe.cfg
+        owner: root
+        ansible.builtin.group: root
+        mode: 0644
+
+    - name: Enable nrpe service
+
+      ansible.builtin.service:
+        name:  nrpe
+        enabled: yes
+        state: started
+
+    - name: Open port in firewall
+
+      firewalld:
+        state: enabled
+        zone: public
+        port: 5666/tcp
+        permanent: yes
+        immediate: yes
+  become: true

@@ -1,0 +1,154 @@
+---
+# vars file for configure_affinity
+additional_media:
+- A5000N2428
+affinity:
+  groups:
+  - members:
+    - gws01-green
+    - gws02-green
+    - gws03-green
+    - gws04-green
+    name: gws-green-graphics
+    type: VM Group
+  - members:
+    - ctws01-green
+    - ctws02-green
+    - ctws03-green
+    - ctws04-green
+    name: ctws-green-graphics
+    type: VM Group
+  rules:
+  - affinity: false
+    host_rules:
+      host_group: null
+      policy: null
+      vm_group: null
+    members:
+    - master01-green
+    - master02-green
+    - master03-green
+    name: kubernetes-masters-green
+    type: Separate Virtual Machines
+  - affinity: false
+    host_rules:
+      host_group: null
+      policy: null
+      vm_group: null
+    members:
+    - worker01-green
+    - worker02-green
+    - worker03-green
+    name: kubernetes-workers-green-1
+    type: Separate Virtual Machines
+  - affinity: false
+    host_rules:
+      host_group: null
+      policy: null
+      vm_group: null
+    members:
+    - worker04-green
+    - worker05-green
+    - worker06-green
+    name: kubernetes-workers-green-2
+    type: Separate Virtual Machines
+  - affinity: false
+    host_rules:
+      host_group: null
+      policy: null
+      vm_group: null
+    members:
+    - worker07-green
+    - worker08-green
+    - worker09-green
+    name: kubernetes-workers-green-3
+    type: Separate Virtual Machines
+  - affinity: false
+    host_rules:
+      host_group: null
+      policy: null
+      vm_group: null
+    members:
+    - worker10-green
+    - worker11-green
+    - worker12-green
+    name: kubernetes-workers-green-4
+    type: Separate Virtual Machines
+  - affinity: false
+    host_rules:
+      host_group: null
+      policy: null
+      vm_group: null
+    members:
+    - worker13-green
+    - worker14-green
+    name: kubernetes-workers-green-5
+    type: Separate Virtual Machines
+  - affinity: false
+    host_rules:
+      host_group: null
+      policy: null
+      vm_group: null
+    members:
+    - mdfg01-green
+    - mdfg02-green
+    name: mdfg-green
+    type: Separate Virtual Machines
+  - affinity: false
+    host_rules:
+      host_group: null
+      policy: null
+      vm_group: null
+    members:
+    - gpe001-green
+    - gpe002-green
+    name: gpe-green
+    type: Separate Virtual Machines
+  - affinity: false
+    host_rules:
+      host_group: null
+      policy: null
+      vm_group: null
+    members:
+    - maas01-green
+    - maas02-green
+    - maas03-green
+    name: maas-green-1
+    type: Separate Virtual Machines
+  - affinity: false
+    host_rules:
+      host_group: null
+      policy: null
+      vm_group: null
+    members:
+    - maas04-green
+    - maas05-green
+    - maas06-green
+    name: maas-green-2
+    type: Separate Virtual Machines
+  - affinity: false
+    host_rules:
+      host_group: null
+      policy: null
+      vm_group: null
+    members:
+    - maas07-green
+    - maas08-green
+    name: maas-green-3
+    type: Separate Virtual Machines
+  - affinity: true
+    host_rules:
+      host_group: INFRA_vmserver01-graphics_host-group
+      policy: Must run on hosts in group
+      vm_group: INFRA-GREEN_gws-green-graphics_vm-group
+    members: []
+    name: gws-green-graphics
+    type: Virtual Machines to Hosts
+  - affinity: true
+    host_rules:
+      host_group: INFRA_vmserver01-graphics_host-group
+      policy: Must run on hosts in group
+      vm_group: INFRA-GREEN_ctws-green-graphics_vm-group
+    members: []
+    name: ctws-green-graphics
+    type: Virtual Machines to Hosts

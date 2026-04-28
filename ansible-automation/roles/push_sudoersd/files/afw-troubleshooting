@@ -1,0 +1,2 @@
+bumgarnf	ALL=(root) /bin/systemctl, /bin/chown, /bin/chgrp, /bin/chmod, /bin/setfacl, /bin/journalctl, /bin/vi, /bin/tail, /bin/firewall-cmd, /sbin/swapon, /sbin/swapoff, /bin/free, /bin/cat
+bumgarnf	 ALL = (root) NOPASSWD : ALL

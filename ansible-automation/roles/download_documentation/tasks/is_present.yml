@@ -1,0 +1,34 @@
+---
+# tasks file for download_documentation — present
+
+# Start playbook sequence. Include all playbooks for documentation here.
+# Variables are inherited from command line arguments on package_example.yml
+
+# Create Staging directory if it does not exist
+
+- name: Create string staging directory if it does not exist.
+  ansible.builtin.file: path="{{staging}}" state=directory mode=0755
+
+#TODO GC-25827 Re-enable the download of documentation artifacts
+#Download fortify, sonar, build log
+- name: Download {{version}} documentation artifacts from nexus to staging
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}/{{example_group}}/{{item.1}}/{{version}}/{{item.1}}-{{version}}{{item.0.classifier}}.{{item.0.ext}}
+    dest: "{{staging}}"
+  with_subelements:
+    - "{{documentation_artifacts}}"
+    - files
+  when: "version.find('{{ baseline_23 }}') == -1"
+
+- name: Download {{version}} tools from nexus to staging
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}&g={{example_group}}&a={{item.1}}&v={{version}}&e={{item.0.ext}}
+    dest: "{{staging}}"
+  with_subelements:
+    - "{{tool_artifacts}}"
+    - files
+  when: "version.find('{{ baseline_23 }}') != -1"
+
+#Copy Poam from Alchemist to Documentation folder
+- name: Copy poam from /var/GAP_CIE/Team Share/IA/ to staging
+  ansible.builtin.fetch: src="/var/GAP_CIE/Team Share/IA/ASD_POAM.docx" dest={{staging}} flat=yes

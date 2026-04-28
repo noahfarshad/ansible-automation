@@ -1,0 +1,16 @@
+---
+# tasks file for configure_external_ips — present
+
+- name: Configure external IPs
+  stingray:
+    type: TrafficIPGroup
+    state: present
+    name: "{{ item.name }}"
+    stingray_password: "{{ stingray_password }}"
+    stingray_username: "{{ stingray_username }}"
+    traffic_ip_config:
+      ips: "{{ item.ip }}"
+      traffic_managers: "{{ traffic_managers }}"
+      passive_managers: "{{ passive_managers }}"
+  loop: "{{ external_ips }}"
+...

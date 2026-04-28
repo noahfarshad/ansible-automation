@@ -1,0 +1,15 @@
+---
+# tasks file for software_factory_deploy
+
+- name: Deploying EKS
+  become: true
+  ansible.builtin.shell: |
+    cd /usr/local/bin
+    software-factory --config {{ string_name }}/{{ sw_factory_yaml }} eks-anywhere apply cluster --debug --yes
+
+# - name: Creating SW Factory Application
+#   become: true
+#   ansible.builtin.shell: |
+#     cd /usr/local/bin
+#     software-factory --config {{ string_name }}/{{ sw_factory_yaml }} deploy --argo-cd --certificates {{ eks_crt }} {{ eks_key }} --software-factory --vsphere-csi-driver --kubecontext {{ eks_wrkload_cluster }}
+  # TODO: review changed_when for: cd /usr/local/bin

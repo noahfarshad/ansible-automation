@@ -1,0 +1,130 @@
+oracle_user: ora_rmt
+# Disk Space checking
+opt_space: 6442450944
+u01_space: 42949672960
+# hugepages
+hugepages_nr: 10240
+#
+swap_required: 16777216
+swap_file_path: /u02/swapfile
+
+#
+packages_list:
+  - binutils
+  - compat-libcap1
+  - gcc
+  - gcc-c++
+  - glibc
+  - glibc-devel
+  - ksh
+  - libgcc
+  - libaio
+  - libaio-devel
+  - libstdc++
+  - libstdc++-devel
+  - libXi
+  - libXtst
+  - libX11
+  - libXau
+  - libxcb
+  - make
+  - sysstat
+  - unixODBC
+  - unzip
+
+kernel_params:
+# Shared memory and semaphore
+# # look for document 226209.1 in oracle support for details
+  kernel.sem: 250 32000 100 128
+  kernel.shmmni: 4096
+  kernel.shmall: 5242880
+  kernel.shmmax: 68719476736
+  net.core.rmem_max: 4194304
+  net.core.wmem_max: 1048576
+# Minimize swap file use
+  vm.swappiness: 60
+  vm.dirty_background_ratio: 3
+  vm.dirty_ratio: 15
+  fs.file-max: 6815744
+# maximize port range
+  net.ipv4.ip_local_port_range: 9000 65535
+#
+unzip_directory: /var/tmp
+oracle_owner: ora_rmt
+oracle_group: ora_rmt
+oracle_perms: "0755"
+tmp_directory: /var/shares/cots/SQL
+decompressed_directory: /var/tmp/SQL/
+destination_directory: "/opt/oracle/app/flyway-3.2.1"
+ORACLE_HOME: /opt/oracle/app/ora_rmt/product/12.1.0
+ORACLE_SID: example
+JAVA_HOME: /opt/Oracle/java
+PATH: "$ORACLE_HOME/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/var/shares/cots/midtier_share/admin_scripts/:/home/apps/ora_rmt/bin"
+template_directory: /opt/oracle/app/ora_rmt/product/12.1.0/assistants/dbca/templates
+listener_name: DB_1210
+#
+installation_files:
+  - ext: 'zip'
+    group: 'Oracle_12c_DB'
+    db_version: '1.0'
+    files:
+      - oracle_12c_install_1of2
+      - oracle_12c_install_2of2
+Templates:
+  - ext: 'dfb'
+    group: 'Oracle_12c_DB'
+    db_version: '1.0'
+    files:
+      - example_dfb_template
+  - ext: 'dbc'
+    group: 'Oracle_12c_DB'
+    db_version: '1.0'
+    files:
+      - example_template
+
+#
+#  Database Parameterization related items
+dbs_directory: /opt/oracle/app/ora_rmt/product/12.1.0/dbs
+example_init_file: initexample.ora
+example_spfile: spfileexample.ora
+db_process_name: ora_pmon_example
+initd_script_name_example: dbora_example
+
+
+#
+#  Variables for Listener Template Files
+#
+listener_name: DB_1210
+listener_adr_base: /opt/oracle/app/ora_rmt
+sqlnet_inbound_connect_timeout: 1800
+sqlnet_inbound_connect_listener_name_timeout: 600
+sqlnet_expire_time: 600
+listener_port: 1521
+listener_log_directory: /u01/oradata/data/diag
+
+#
+# Variables for db.rsp
+#
+oracle_hostname: vm3.example.coach
+unix_group_name: dba
+inventory_location: /opt/oracle/app/oraInventory
+oracle_home: /opt/oracle/app/ora_rmt/product/12.1.0
+oracle_base: /opt/oracle/app
+dba_group: oinstall
+backup_dba_group: oinstall
+dg_dba_group: oinstall
+km_dba_group: oinstall
+
+#
+# Variables for dbca.rsp
+#
+oracle_gdbname: example
+oracle_sid: example
+template_name: example.dbc
+data_files_destination: /u01/oradata/data/
+recovery_files_destination: /u01/oradata/flash_recovery_area
+characterset: "AL32UTF8"
+listeners: LISTENER
+automatic_memory_management: "FALSE"
+total_memory: 6144
+

@@ -1,0 +1,9 @@
+---
+# defaults file for install_package_delta
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# baseline_rhel_packages: ""
+# package_upgrade: ""
+# rhel_delta_packages: ""

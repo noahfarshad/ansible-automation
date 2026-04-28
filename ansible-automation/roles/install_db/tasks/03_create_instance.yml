@@ -1,0 +1,154 @@
+---
+- name: Move the template files
+  become: true
+  ansible.builtin.copy:
+    src: "{{staging}}/{{item.1}}-{{item.0.db_version}}.{{item.0.ext}}"
+    dest: "{{template_directory}}"
+    owner: "{{oracle_owner}}"
+    ansible.builtin.group: "{{oracle_group}}"
+    mode: 0644
+  with_subelements:
+    - "{{Templates}}"
+    - files
+
+# Before doing anymore work verify the database software actually installed correctly
+- ansible.builtin.include_tasks: check_sw_install_status.yml
+# Ensure the dbora_example file is in place because it is used extensively in this script
+- name: "Copy dbora_example init.d script"
+  become: true
+  ansible.builtin.template: src=dbora_example dest=/etc/init.d mode=0755
+
+- name: Create database specific passwd file
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: $ORACLE_HOME/bin/orapwd file=$ORACLE_HOME/dbs/orapwexample password=password entries=30 FORCE=y
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+
+# Get a time Hak
+  # TODO: review changed_when for: $ORACLE_HOME/bin/orapwd file=$ORACLE_HOME/dbs/orapwexample p
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+- name: Create Database via dbca
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: $ORACLE_HOME/bin/dbca -silent -createDatabase -templateName example_template-1.0.dbc -responseFile /var/tmp/dbca-1.0.rsp
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+
+  # TODO: review changed_when for: $ORACLE_HOME/bin/dbca -silent -createDatabase -templateName 
+- debug: msg="Current Time. {{ lookup('pipe','date +%Y/%m/%d--%H:%M:%S') }}"
+
+# Stop the database
+- ansible.builtin.include_tasks: shutdown_database.yml
+- name: Check if pfile exists
+  ansible.builtin.stat: path={{dbs_directory}}/{{example_init_file}}
+  register: stat_result
+
+- name: "Remove Existing pfile, if it exists"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.file:
+    path={{dbs_directory}}/{{example_init_file}}
+    state=absent
+  when: stat_result.stat.exists == True
+
+- name: Create New pfile from the spfile
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: |
+         $ORACLE_HOME/bin/sqlplus / as sysdba << EOF
+         create pfile from spfile;
+         exit;
+         << EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba << EOF
+- name: "Update database textual startup file Part 1"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: cat {{dbs_directory}}/{{example_init_file}} | grep -iv example.__ | grep -v shared > /tmp/xx_init.ora
+
+  changed_when: false
+- name: "Update database textual startup file Part 2"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.command: cp /tmp/xx_init.ora {{dbs_directory}}/{{example_init_file}}
+
+  # TODO: cp: not idempotent — convert to ansible.builtin.copy with src/dest
+  # TODO: review changed_when for: cp /tmp/xx_init.ora {{dbs_directory}}/{{example_init_file}}
+- name: "Remove Existing spfile"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.file: path={{dbs_directory}}/{{example_spfile}} state=absent
+
+- debug: msg="Startup the database using the pfile"
+
+# Start the database
+- ansible.builtin.include_tasks: start_database.yml
+# Check the database is running
+- ansible.builtin.include_tasks: check_db_status.yml
+# Shutdown the database
+- ansible.builtin.include_tasks: shutdown_database.yml
+- name: Create New spfile
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: |
+         $ORACLE_HOME/bin/sqlplus / as sysdba << EOF
+         create spfile from pfile;
+         exit;
+         << EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba << EOF
+- name: "Save Off spfile"
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.command: cp {{dbs_directory}}/{{example_spfile}} {{dbs_directory}}/{{example_spfile}}_after_create
+
+# Start the database
+  # TODO: cp: not idempotent — convert to ansible.builtin.copy with src/dest
+  # TODO: review changed_when for: cp {{dbs_directory}}/{{example_spfile}} {{dbs_directory}}/{{
+- ansible.builtin.include_tasks: start_database.yml
+# Check if the database is running
+- ansible.builtin.include_tasks: check_db_status.yml
+- debug: msg="Shutdown and Restart database Again - Just for good measure"
+
+# Stop the database
+- ansible.builtin.include_tasks: shutdown_database.yml
+# Start the database
+- ansible.builtin.include_tasks: start_database.yml
+# Check if the database is running
+- ansible.builtin.include_tasks: check_db_status.yml
+- name: Configure Database Admin User passwords
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.shell: |
+         $ORACLE_HOME/bin/sqlplus / as sysdba << EOF
+         alter user sys identified by "{{oracle_db_example_sys_password}}";
+         alter user system identified by "{{oracle_db_example_system_password}}";
+         exit;
+         << EOF
+  environment:
+     ORACLE_HOME: "{{ORACLE_HOME}}"
+     ORACLE_SID: "{{ORACLE_SID}}"
+
+  # TODO: review changed_when for: $ORACLE_HOME/bin/sqlplus / as sysdba << EOF
+- debug: msg="Shutdown and Restart database Again After Database Parameter Configuration"
+
+# Shutdown the database
+- ansible.builtin.include_tasks: shutdown_database.yml
+# Start the database
+- ansible.builtin.include_tasks: start_database.yml
+# Check that the database is running
+- ansible.builtin.include_tasks: check_db_status.yml
+- name: Remove Oracle home passwd utility
+  become: true
+  become_user: ora_rmt
+  ansible.builtin.file:
+    path: $ORACLE_HOME/bin/orapwd
+    state: absent

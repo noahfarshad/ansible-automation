@@ -1,0 +1,55 @@
+---
+# tasks file for deploy_plugin_updates — present
+
+- block:
+    - name: Clear the remote staging directory and recreate
+      ansible.builtin.file:
+        path: "{{ remote_stage_dir }}"
+        state: absent
+      ansible.builtin.file:
+        path: "{{ remote_stage_dir }}"
+        state: directory
+
+    - name: Copy plugins to Jenkins instance
+      ansible.builtin.copy:
+        src: "{{ plugins_stage_dir }}"
+        dest: "{{ stage_dir }}"
+
+    - name: Identify Plugin Updates
+      ansible.builtin.find:
+        paths: "{{ plugins_stage_dir }}"
+        patterns: '*.hpi'
+      register: remote_update_paths
+      delegate_to: localhost
+
+    - name: Execute Updates
+      ansible.builtin.shell: java -jar "{{cli_location}}/jenkins-cli.jar" -s "{{jenkins_url}}" -auth "{{cli_user}}:{{cli_auth_token}}" -"http" install-plugin file:///"{{ item.path }}"
+      loop: "{{ remote_update_paths.files }}"
+      delegate_to: localhost
+
+      # TODO: review changed_when for: java -jar "{{cli_location}}/jenkins-cli.jar" -s "{{jenkins_u
+    - name: Stop Jenkins
+      ansible.builtin.service:
+        name: jenkins
+        state: stopped
+
+    - name: Verify Jenkins.war was updated
+      ansible.builtin.stat: 
+        path: "{{ plugins_stage_dir }}/jenkins.war"
+      register: war_updated
+
+    - name: Deploy jenkins.war
+      ansible.builtin.copy:
+        src: "{{ plugins_stage_dir }}/jenkins.war"
+        dest: "/usr/lib/jenkins/"
+        owner: root
+        ansible.builtin.group: root
+        mode: 0755
+        backup: yes
+      when: war_updated.stat.exists == True
+
+    - name: Start Jenkins
+      ansible.builtin.service:
+        name: jenkins
+        state: started
+  become: true

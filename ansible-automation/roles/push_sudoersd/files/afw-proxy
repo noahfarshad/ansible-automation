@@ -1,0 +1,7 @@
+## Allow the un-sems-afwwebs to stop/start/restart the HA Proxy services
++un_sems-afwwebs	ALL=(root) /bin/systemctl start hapee-2.0-lb, /bin/systemctl stop hapee-2.0-lb, /bin/systemctl restart hapee-2.0-lb, /bin/systemctl status hapee-2.0-lb, /bin/journalctl -u hapee-2.0-lb, /bin/systemctl reload hapee-2.0-lb
++un_sems-afwwebs	ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_sems-cm	All=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-afwwebs	ALL=(root) /bin/systemctl start hapee-2.0-lb, /bin/systemctl stop hapee-2.0-lb, /bin/systemctl restart hapee-2.0-lb, /bin/systemctl status hapee-2.0-lb, /bin/journalctl -u hapee-2.0-lb, /bin/systemctl reload hapee-2.0-lb
++un_tads-afwwebs	ALL=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL
++un_tads-cm	All=(afwadmin) NOPASSWD: LOG_OUTPUT: LOG_INPUT: ALL

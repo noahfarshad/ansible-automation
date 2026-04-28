@@ -1,0 +1,30 @@
+---
+# tasks file for sssd_config
+- name: Make changes to sssd.conf file - ldap_uri
+  become: true
+  ansible.builtin.ini_file:
+    path: /etc/sssd/sssd.conf
+    section: "domain/LDAP"
+    option: "ldap_uri"
+    value: "{{ ldap_uri }}"
+    backup: false
+  when: ldap_uri is defined
+  tags: sssd_config,ldap_uri
+
+- name: Make changes to sssd.conf file - ldap_backup_uri
+  become: true
+  ansible.builtin.ini_file:
+    path: /etc/sssd/sssd.conf
+    section: "domain/LDAP"
+    option: "ldap_backup_uri"
+    value: "{{ ldap_backup_uri }}"
+    backup: false
+  when: ldap_backup_uri is defined
+  tags: sssd_config,ldap_backup_uri
+
+- name: Restart sssd 
+  become: true
+  ansible.builtin.service:
+    name: sssd
+    state: restarted
+  tags: sssd_config

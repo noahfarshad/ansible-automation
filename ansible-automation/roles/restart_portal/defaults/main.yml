@@ -1,0 +1,8 @@
+---
+# defaults file for restart_portal
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# vm51: ""
+# vm52: ""

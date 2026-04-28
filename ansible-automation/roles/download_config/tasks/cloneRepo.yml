@@ -1,0 +1,13 @@
+---
+# Download weblogic repo
+- name: Clone weblogic repository
+  hg:
+    repo: "{{weblogic_scm}}"
+    dest: "{{staging}}/weblogic"
+    force: yes
+
+# Mercurial history may cause issues with downstream events, such as rsync file transfers.  Removing it here is the consistent resolution to such issues. 
+- name: remove .hg directory
+  ansible.builtin.file:
+    state: absent
+    path: "{{staging}}/weblogic/.hg"

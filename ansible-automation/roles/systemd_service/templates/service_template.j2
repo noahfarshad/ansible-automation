@@ -1,0 +1,16 @@
+# Ansible generated Systemd unit file for {{ service_name }}
+[Unit]
+{% for key, value in service_configuration.unit|dictsort(true) %}
+{{ key }}={{ value }}
+{% endfor %}
+
+[Service]
+{% for key, value in service_configuration.service|dictsort(true) %}
+{% if key == 'Environment' %}
+{% for item in service_configuration.service.Environment %}
+Environment={{ item }}
+{% endfor %}
+{% else %}
+{{ key }}={{ value }}
+{% endif %}
+{% endfor %}

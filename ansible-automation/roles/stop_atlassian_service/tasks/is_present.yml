@@ -1,0 +1,6 @@
+---
+# tasks file for stop_atlassian_service — present
+
+- ansible.builtin.include_tasks: stop_jira_service.yml
+- ansible.builtin.include_tasks: stop_confluence_service.yml
+- ansible.builtin.include_tasks: stop_fecru_service.yml

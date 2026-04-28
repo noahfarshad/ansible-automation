@@ -1,0 +1,14 @@
+# ESS Nagios sudoers file
+# ...To allow sudo to Nagios account for sysadmins on services servers
+
+# User Aliases
+#ESS_ADMINS is already defined in ess-support file
+#User_Alias	ESS_ADMINS = +fn_sems-sysadmin
+
+# These are the allowed commands, referenced later
+
+# These define the possible hosts that users are allowed to run commands on
+Host_Alias	ESS_SERVICES = ess-services-a01t, ess-services-b01t, ess-services-a01p, ess-services-b01p
+
+# Command aliases
+ESS_ADMINS	ESS_SERVICES=(nagios) LOG_OUTPUT: LOG_INPUT: ALL

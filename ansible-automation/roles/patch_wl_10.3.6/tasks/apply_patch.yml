@@ -1,0 +1,99 @@
+---
+#This task is to deploy Oracle Weblogic 10.3.6 patch
+
+#Download the artifacts from Nexus
+- name: Download Regular Artifacts
+  become: true
+  become_user: app_admin
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}&g={{example_group}}&a={{item.1}}&v={{version}}&e={{item.0.ext}}&c={{item.0.classifier}}
+    dest: "{{dest_dir}}cache_dir/"
+  with_subelements:
+    - patches
+    - files
+
+#Download the artifacts from Nexus
+- name: Download Regular Artifacts
+  become: true
+  become_user: app_admin
+  ansible.builtin.get_url:
+    url: http://{{nexus_host}}/{{nexus_public}}&g={{example_group}}&a={{item.1}}&v={{version}}&e={{item.0.ext}}&c={{item.0.classifier}}
+    dest: "{{dest_dir2}}cache_dir/"
+  with_subelements:
+    - patches
+    - files
+  when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm2'"
+
+#Unzipping both files (p137 and p207)
+- name: unzipping files
+  become: true
+  ansible.builtin.unarchive:
+    owner: app_admin
+    ansible.builtin.group: app_admin
+    src: "{{dest_dir}}cache_dir/{{item.1}}-{{version}}.{{item.0.ext}}"
+    dest: "{{dest_dir}}cache_dir/"
+    ansible.builtin.copy: no
+  with_subelements:
+    - patches
+    - files
+
+#Unzipping both files (p137 and p207) on the second Weblogic home of vm2
+- name: unzipping both files on vm2 Middleware_OAM home
+  become: true
+  ansible.builtin.unarchive:
+    owner: app_admin
+    ansible.builtin.group: app_admin
+    src: "{{dest_dir2}}cache_dir/{{item.1}}-{{version}}.{{item.0.ext}}"
+    dest: "{{dest_dir2}}cache_dir"
+    ansible.builtin.copy: no
+  with_subelements:
+    - patches
+    - files
+  when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm2'"
+
+#Removing the prior 12UV patch
+- name: Remove prior patch
+  become: true
+  become_user: app_admin
+  ansible.builtin.shell: "cd {{dest_dir}}; ./bsu.sh -remove -patchlist=12UV -prod_dir={{prod_dir}}"
+
+#Installing EJUW patch
+  # TODO: review changed_when for: cd {{dest_dir}}; ./bsu.sh -remove -patchlist=12UV -prod_dir=
+- name: Installing EJUW patch
+  become: true
+  become_user: app_admin
+  ansible.builtin.shell: "cd {{dest_dir}}; ./bsu.sh -install -patch_download_dir={{dest_dir}}cache_dir -patchlist=EJUW -prod_dir={{prod_dir}}"
+
+#Installing L34G patch
+  # TODO: review changed_when for: cd {{dest_dir}}; ./bsu.sh -install -patch_download_dir={{des
+- name: Installing L34G patch
+  become: true
+  become_user: app_admin
+  ansible.builtin.shell: "cd {{dest_dir}}; ./bsu.sh -install -patch_download_dir={{dest_dir}}cache_dir -patchlist=L34G -prod_dir={{prod_dir}}"
+
+#Removing the prior 12UV patch  on Second Weblogic Home on VM2
+  # TODO: review changed_when for: cd {{dest_dir}}; ./bsu.sh -install -patch_download_dir={{des
+- name: Remove prior patch
+  become: true
+  become_user: app_admin
+  ansible.builtin.shell: "cd {{dest_dir2}}; ./bsu.sh -remove -patchlist=12UV -prod_dir={{prod_dir2}}"
+  when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm2'"
+
+#Installing EJUW patch  on Second Weblogic Home on VM2
+  # TODO: review changed_when for: cd {{dest_dir2}}; ./bsu.sh -remove -patchlist=12UV -prod_dir
+- name: Installing EJUW patch
+  become: true
+  become_user: app_admin
+  ansible.builtin.shell: "cd {{dest_dir2}}; ./bsu.sh -install -patch_download_dir={{dest_dir2}}cache_dir -patchlist=EJUW -prod_dir={{prod_dir2}}"
+  when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm2'"
+
+#Installing L34G patch on Second Weblogic Home on VM2
+  # TODO: review changed_when for: cd {{dest_dir2}}; ./bsu.sh -install -patch_download_dir={{de
+- name: Installing L34G patch
+  become: true
+  become_user: app_admin
+  ansible.builtin.shell: "cd {{dest_dir2}}; ./bsu.sh -install -patch_download_dir={{dest_dir2}}cache_dir -patchlist=L34G -prod_dir={{prod_dir2}}"
+  when: "'{{hostvars[inventory_hostname]['inventory_hostname']}}' == 'vm2'"
+
+
+  # TODO: review changed_when for: cd {{dest_dir2}}; ./bsu.sh -install -patch_download_dir={{de

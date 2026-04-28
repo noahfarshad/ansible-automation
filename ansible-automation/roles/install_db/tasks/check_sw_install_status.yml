@@ -1,0 +1,18 @@
+---
+
+- name: Check if dbca file exists
+  ansible.builtin.stat: path={{ORACLE_HOME}}/bin/dbca
+  register: stat_result
+
+- name: Verify If Software Actually installed
+  ansible.builtin.fail: msg="Oracle Database software did not install completely, terminating"
+  when: stat_result.stat.exists == False
+
+- name: Check if expdp file exists
+  ansible.builtin.stat: path={{ORACLE_HOME}}/bin/expdp
+  register: stat_result
+
+- name: Verify If Software Actually installed
+  ansible.builtin.fail: msg="Oracle Database software did not install completely, terminating"
+  when: stat_result.stat.exists == False
+

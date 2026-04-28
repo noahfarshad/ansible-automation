@@ -1,0 +1,96 @@
+---
+
+- block:
+    - name: Change file permissions
+
+      ansible.builtin.file:
+        path: /var/www/html/"{{ appstream_repo }}"/repodata
+        mode: '0755'
+        owner: root
+        ansible.builtin.group: root
+        recurse: yes
+
+    - name: Change file permissions
+
+      ansible.builtin.file:
+        path: /var/www/html/"{{ appstream_repo }}"/repodata/*
+        mode: '0755'
+        owner: root
+        ansible.builtin.group: root
+        recurse: yes
+
+    - name: Change file permissions
+
+      ansible.builtin.file:
+        path: /var/www/html/"{{ baseos_repo }}"/repodata
+        mode: '0755'
+        owner: root
+        ansible.builtin.group: root
+        recurse: yes
+
+    - name: Change file permissions
+
+      ansible.builtin.file:
+        path: /var/www/html/"{{ baseos_repo }}"/repodata/*
+        mode: '0755'
+        owner: root
+        ansible.builtin.group: root
+        recurse: yes
+
+    - name: Create appstream repo
+
+      ansible.builtin.shell:
+        cmd: createrepo "{{ appstream_repo }}"/
+        chdir: /var/www/html
+
+
+      changed_when: false
+    - name: Create BaseOS repo
+
+      ansible.builtin.shell:
+        cmd: createrepo "{{ baseos_repo }}"/
+        chdir: /var/www/html
+
+
+      changed_when: false
+    - name: yum clean
+
+      ansible.builtin.shell:
+        cmd: yum clean all
+        chdir: /var/www/html
+
+
+      # TODO: review changed_when for: cmd: yum clean all
+    - name: Add repository
+
+      ansible.builtin.yum_repository:
+        description: '{{ item.description }}'
+        name: '{{ item.name }}'
+        baseurl: '{{ item.baseurl }}'
+        enabled: yes
+        gpgcheck: no
+      loop: '{{ baseline_local_repos }}'
+
+    - name: Add repository
+
+      ansible.builtin.yum_repository:
+        description: '{{ item.description }}'
+        name: '{{ item.name }}'
+        baseurl: '{{ item.baseurl }}'
+        enabled: yes
+        gpgcheck: no
+      loop: '{{ baseline__local_repos }}'
+      when: delta_repos is defined
+
+    - name: Reload service httpd, in all cases
+
+      ansible.builtin.service:
+        name: httpd
+        enabled: true
+
+    - name: Reload service httpd, in all cases
+
+      ansible.builtin.service:
+        name: httpd
+        state: started
+  become: true

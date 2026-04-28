@@ -1,0 +1,13 @@
+---
+
+target_dir: '/home/apps/app_admin/'
+CA_name: 'GCCA'
+key_jks_name: "{{target_dir}}/{{CA_name}}/cert_staging/identity.jks"
+trust_jks_name: "{{target_dir}}/{{CA_name}}/cert_staging/cacerts"
+wallet_name: "{{target_dir}}/{{CA_name}}/cert_staging/wallet"
+fetch_list:
+  - 'identity.jks'
+  - 'cacerts'
+  - 'wallet/ewallet.p12'
+  - 'wallet/cwallet.sso'
+  - 'apache_cas'

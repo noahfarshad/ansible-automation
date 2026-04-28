@@ -1,0 +1,49 @@
+---
+# tasks file for install_fmw_infrastructure — present
+
+# This task installs the Oracle FMW Infrastructure software
+#
+- block:
+    - name: Create temp installation directory if it does not exist
+
+      become_user: '{{os_user}}'
+      ansible.builtin.file:
+        path: '{{temp_install_dir}}'
+        state: directory
+
+    # Copies response file and oracle inventory location to remote
+    - name: Copying the artifact configuration
+
+      become_user: '{{os_user}}'
+      ansible.builtin.template: src='{{item}}' dest='{{temp_install_dir}}' mode=0755
+      loop:
+        - '{{fmw_shared_files}}{{fmw_responseFile}}'
+        - '{{fmw_shared_files}}{{fmw_invPtrLoc}}'
+
+    - name: Copy the artifacts to remote
+
+      become_user: '{{os_user}}'
+      ansible.builtin.copy: src='{{staging}}/{{fmw_product_installer}}' dest='{{temp_install_dir}}' mode=0755
+
+    # Do the install
+    - name: 'Install Fusion Middleware {{fmw_product}}'
+
+      become_user: '{{os_user}}'
+      ansible.builtin.command: '{{java_loc}} -d64 -jar {{temp_install_dir}}/{{fmw_product_installer}} -silent -responseFile {{temp_install_dir}}{{fmw_responseFile}} -invPtrLoc {{temp_install_dir}}{{fmw_invPtrLoc}} ORACLE_HOME={{oracle_middleware_home}}'
+
+      # TODO: review changed_when for: {{java_loc}} -d64 -jar {{temp_install_dir}}/{{fmw_product_in
+    - name: Clean up installation artifacts
+
+      become_user: '{{os_user}}'
+      ansible.builtin.file:
+        path: '{{temp_install_dir}}'
+        state: absent
+
+    - name: Create logs directory in Middleware home
+      become_user: '{{os_user}}'
+      ansible.builtin.file:
+        path: '{{middleware_logs}}'
+        state: directory
+        owner: '{{os_user}}'
+        ansible.builtin.group: '{{os_group}}'
+  become: true

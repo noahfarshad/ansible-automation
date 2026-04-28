@@ -1,0 +1,39 @@
+---
+
+
+#-------------------------------------------------------------------
+#  Mail Session Variables
+#-------------------------------------------------------------------
+#
+#  These are all non-SSL parameter values
+Admin_Protocol: "{{Admin_Protocol}}"
+admin_host: "{{admin_host}}"
+admin_server_port: "{{admin_server_port}}"
+
+weblogic_admin: "{{weblogic_admin}}"
+
+pickle_file_name: "{{pickle_file_name}}"
+
+# Mail specific settings
+mail_session_name: "{{mail_session_name}}"
+mail_Cluster: "{{mail_Cluster}}"
+mail_Server: "{{mail_Server}}"
+jndi_name: "{{jndi_name}}"
+session_username: "{{session_username}}"
+
+os_user: "{{os_user}}"
+os_group: "{{os_group}}"
+
+ansible_os_user: "{{ansible_os_user}}"
+ansible_os_group: "{{ansible_os_group}}"
+
+gc2_remote_dir: "{{gc2_remote_dir}}"
+gc2_wlst_path: "{{gc2_wlst_path}}"
+
+# Mail session properties
+mail_host: "{{mail_host}}"
+mail_user: "{{mail_user}}"
+mail_transport_protocol: "{{mail_transport_protocol}}"
+mail_smtps_host: "{{mail_smtps_host}}"
+mail_from: "{{mail_from}}"
+mail_debug: "{{mail_debug}}"

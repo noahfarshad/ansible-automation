@@ -1,0 +1,27 @@
+---
+# tasks file for install_prometheus_node_exporter — present
+
+#Playbook to install and enable the Prometheus node_exporter service
+- name: Install exporter
+  ansible.builtin.yum:
+    name: node_exporter
+    state: present  # use {{ install_prometheus_node_exporter_upgrade | default(false) | ternary("latest", "present") }} to upgrade
+  become: true
+  tags:
+    - skip_ansible_lint
+
+- name: Enable node_exporter service
+  ansible.builtin.service:
+    name:  node_exporter
+    enabled: yes
+    state: started
+  become: true
+
+- name: Open port in firewall
+  firewalld:
+    state: enabled
+    zone: public
+    port: 9100/tcp
+    permanent: yes
+    immediate: yes
+  become: true

@@ -1,0 +1,33 @@
+---
+# tasks file for notifications — present
+
+- assert:
+    that: "notify_message is defined"
+    fail_msg: "You must define notify_message when running this role"
+
+- name: "Make {{ dev_admin_scripts_dir }} directory"
+  ansible.builtin.file:
+    path: "{{ dev_admin_scripts_dir }}"
+    state: directory
+
+- name: Moving Script to host
+  become: true
+  ansible.builtin.copy:
+    src:  "{{ notify_script_name }}"
+    dest: "{{ dev_admin_scripts_dir }}/{{ notify_script_name }}"
+    mode: 0744
+
+- name: Running notify script
+  become: true
+  ansible.builtin.command: "{{ notify_script_expression }} {{ notify_params }}"
+  async: "{{ notify_async_wait }}"
+  poll: 0
+  register: notify_async_ref
+
+  # TODO: review changed_when for: {{ notify_script_expression }} {{ notify_params }}
+- name: Wait for asynchronous job to end
+  async_status:
+    jid: '{{ notify_async_ref.ansible_job_id }}'
+  register: job_result
+  until: job_result.finished
+  retries: "{{ notify_async_retries }}"

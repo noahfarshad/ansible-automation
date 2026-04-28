@@ -1,0 +1,23 @@
+---
+- block:
+  - name: Copy Trellix Agent Installer to temp
+    ansible.windows.win_copy:
+      src: "{{ artifact_staging }}\\Trellix\\{{ trellix_path_win }}"
+      dest: "C:\\Trellix\\"
+      remote_src: true
+  
+  - name: Run Installer Silently
+    ansible.windows.win_command:
+      cmd: "C:\\Trellix\\FramePkg.exe /S /INSTALL=AGENT"
+  
+  - name: Remove Temp Installer
+    ansible.windows.win_file:
+      path: C:\Trellix\
+      state: absent
+  
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{system_name}}\\{{domainadmin_user}}"
+    ansible_become_password: '{{domain_password}}'

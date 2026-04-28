@@ -1,0 +1,40 @@
+# tasks to upgrade OS on cisco nxos
+# Need to ensure the device is able to receive files by enabling feature scp-server
+- name: ensure scp is enabled
+  nxos_feature:
+    feature: scp-server
+    state: enabled
+
+# copy running config to start up
+# wait for the copy to bootflash complete 
+- name: Copy running config to bootflash
+  nxos_command:
+    commands: 
+    - conf t
+    - copy run bootflash:{{cfg_name}}-{{site}}-{{ifc_current}}-OSbackup.txt
+    ansible.builtin.wait_for:
+    - result[1] contains complete
+
+# Copies the specified firmweare image from the host file. The timeout vars need to be set to
+# 600 or greater, otherwise the trasnfer will fail on large files.
+- name: copy {{ firmware_image }} to {{ name }}
+  cisco.nxos.nxos_file_copy:
+    #local_file: ~/ansible/isos/{{ firmware_image }}
+    local_file: /mnt/software/{{ released_os }}/{{ firmware_image }}
+    remote_file: '{{ firmware_image }}'
+  vars:
+    ansible_command_timeout: 1000
+    ansible_connect_timeout: 1000
+
+# initiates the upgrade, by setting issu: desired it will attempt to do it non-disruptivly,
+# but will fall back to a disruptive upgrade if needed. The timeout vars need to be set to
+# 600 or greater, otherwise the module will not run. 
+- name: Upgrading OS initiated - {{ name }}
+  cisco.nxos.nxos_install_os:
+    system_image_file: '{{ firmware_image }}'
+    issu: desired
+  ignore_errors: true
+  vars:
+    ansible_command_timeout: 600
+    ansible_connect_timeout: 600
+

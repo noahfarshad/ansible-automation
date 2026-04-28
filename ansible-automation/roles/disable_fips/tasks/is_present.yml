@@ -1,0 +1,27 @@
+---
+# tasks file for disable_fips — present
+
+# Disable FIPS
+- block:
+    - name: Remove the dracut-fips* packages
+      ansible.builtin.yum:
+        name: "dracut-fips"
+        state: absent
+    - name: Backup existing FIPS initramfs
+      ansible.builtin.shell: |
+        mv -v /boot/initramfs-$(uname -r).img /tmp/initramfs-$(uname -r).img.FIPS-bak
+      # TODO: mv: not idempotent — gate with creates: <dest> or removes: <src>
+      # TODO: review changed_when for: mv -v /boot/initramfs-$(uname -r).img /tmp/initramfs-$(uname
+    - name: Run dracut to rebuild the initramfs
+      ansible.builtin.shell: |
+        /sbin/dracut
+      async: 300
+      poll: 5
+      # TODO: review changed_when for: /sbin/dracut
+    - name: Remove the fips=1 argument from the kernel command-line
+      ansible.builtin.shell: |
+        /sbin/grubby --update-kernel=ALL --remove-args=fips=1
+      # TODO: review changed_when for: /sbin/grubby --update-kernel=ALL --remove-args=fips=1
+    - name: Reboot after disabling FIPS
+      ansible.builtin.reboot:
+  become: true

@@ -1,0 +1,33 @@
+---
+# tasks file for configure_vmware_parameters — present
+
+- block:
+    - name: Edit the VM Advanced configurations file
+      community.vmware.vmware_guest:
+        vars:
+          username: "{{ users.vcenter_admin_user }}"
+          password: "{{ users.vcenter_admin_password }}"
+          vm: "{{ inventory_hostname }}"
+          config: "{{ item }}" 
+          ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+    #      uuid: "{{ vm_uuid }}"
+          name: "{{ inventory_hostname }}"    
+      register: result
+      delegate_to: localhost
+      loop: "{{ parameters.vmware_adv_config_list }}"
+
+
+    - name: Wait for confirmation of VMWareGuestTools Running
+      community.vmware.vmware_guest_info:
+        ansible.builtin.hostname: "{{ vmware.vcenter_hostname }}"
+        username: "{{ users.vcenter_admin_user }}"
+        password: "{{ users.vcenter_admin_password }}"
+        datacenter: "{{ vmware.datacenter }}"
+        validate_certs: no
+        name: "{{ inventory_hostname }}"
+      register: facts
+      delay: 60
+      retries: 5
+      until: facts.instance.guest_tools_status == "guestToolsRunning"
+      delegate_to: localhost
+  become: true

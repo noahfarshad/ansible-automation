@@ -1,0 +1,48 @@
+---
+- name: Install SSSD and related
+  become: true
+  ansible.builtin.yum: name={{ item }} state=installed
+  ignore_errors: yes
+  loop:
+    - sssd
+    - oddjob-mkhomedir
+    - authconfig
+
+- name: Get kerberos ticket with the sambe keytab
+  become: true
+  ansible.builtin.command: kinit -k -t /etc/krb5.keytab {{ hostvars[inventory_hostname]['inventory_hostname'] | upper }}$\@{{ adauth_realm }}
+  args:
+    creates: /tmp/krb5cc_0
+
+- name: Check if authconfig did a previous run
+  ansible.builtin.command: "/bin/egrep '^auth.*sufficient.*pam_sss.so' /etc/pam.d/system-auth"
+  register: authconfig_run
+  changed_when: false
+  ignore_errors: true
+
+- name: Configure server to use SSSD for authentication
+  become: true
+  ansible.builtin.command: /usr/sbin/authconfig --enablesssd --enablesssdauth --enablemkhomedir --updateall --nostart
+  when: authconfig_run.rc != 0
+
+  changed_when: false
+- name: Configure SSSD to use AD for authentication
+  become: true
+  ansible.builtin.template: src=sssd.conf.j2 dest=/etc/sssd/sssd.conf
+            owner=root group=root mode=0600
+
+- name: Ensure SSSD is started and enabled on boot XXXX
+  become: true
+  ansible.builtin.service: name=sssd state=started enabled=yes
+
+- name: Ensure messagebus is enabled
+  become: true
+  ansible.builtin.service: name=messagebus state=started enabled=yes
+
+- name: Ensure oddjobd for mkhomedir is started and enabled on boot
+  become: true
+  ansible.builtin.service: name=oddjobd state=started enabled=yes
+
+- name: Copy over the sudoers file
+  become: true
+  ansible.builtin.template: src=sudoers.j2 dest=/etc/sudoers

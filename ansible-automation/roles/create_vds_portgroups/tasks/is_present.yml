@@ -1,0 +1,19 @@
+---
+# tasks file for create_vds_portgroups
+- block:
+    - name: Create vDS Port Group
+      community.vmware.vmware_dvs_portgroup:
+        ansible.builtin.hostname: "{{ vcenter_hostname }}"
+        username: "{{ vsphere_account }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: False
+        switch_name: 'DSwitch'
+        portgroup_name: "{{ item.name }}"
+        vlan_id: "{{ item.vlan_id }}"
+        num_ports: "{{ num_ports }}"
+        port_binding: static
+        state: 'present'
+      delegate_to: localhost
+      loop: "{{ vds_portgroups }}"
+      when: vds_portgroups | length > 0
+  become: true

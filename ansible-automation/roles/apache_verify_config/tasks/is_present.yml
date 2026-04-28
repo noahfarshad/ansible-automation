@@ -1,0 +1,20 @@
+---
+# tasks file for apache_verify_config — present
+
+        
+- name: Get the container name of the keycloak container.
+  become: true
+  ansible.builtin.shell: "docker ps -f name=apache\\\\. --format  '{{ '{{' }} .Names {{ '}}' }}'"
+  register: container
+  tags:
+    - apache.check.config
+
+  changed_when: false
+- name: Set the keycloak container variable
+  ansible.builtin.set_fact: 
+    apache_container: "{{container.stdout}}"
+  tags:
+    - apache.check.config
+    
+- ansible.builtin.include_tasks: apache_fips_check.yml
+- ansible.builtin.include_tasks: apache_check_proxy.yml

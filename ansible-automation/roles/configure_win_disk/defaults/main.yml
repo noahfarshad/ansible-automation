@@ -1,0 +1,10 @@
+---
+# defaults file for configure_win_disk
+
+# Variables this role needs from the caller. Uncomment and set, or
+# document a real default. Variables left commented are REQUIRED inputs.
+
+# disks: ""
+# drive_letter: ""
+# hostname: ""
+# partition_number: ""

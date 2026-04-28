@@ -1,0 +1,5 @@
+---
+# Default CA Directory
+target_dir: '/home/apps/app_admin/'
+keytool_path: '/opt/Oracle/Middleware/java/bin'
+CA_name: 'GCCA'
